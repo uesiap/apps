@@ -315,120 +315,127 @@
         }
     </style>
 </head>
-<body class="bg-gray-100" style="margin: 15px">
+<body class="bg-gray-100" style="margin-left: 15px; margin-right: 15px">
 
-  <!-- Loader -->
-  <div id="loaderContainer" style="display: none;">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
+    <!-- Loader -->
+    <div id="loaderContainer" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
     </div>
-  </div>
 
-  <!-- Success Message -->
-  <div id="thanksContainer" style="display: none;">
-    <div class="alert alert-success mt-3">
-      <h3>✅ Login Successful</h3>
-      <p>Redirecting to your dashboard...</p>
+    <!-- Success Message -->
+    <div id="thanksContainer" style="display: none;">
+        <div class="contain">
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h3 class="card-title text-xl font-bold text-success">
+                        ✅ Login Successful.
+                    </h3>
+                    <p>Redirecting to dashboard...</p>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Error Dialog -->
-  <div id="dialog" class="alert alert-danger" style="display: none;">
-    <span class="close float-end" onclick="closeDialog()">&times;</span>
-    <h5>Error Occurred</h5>
-    <p id="dialog-message"></p>
-  </div>
+    <!-- Error Dialog -->
+    <div id="dialog" class="alert alert-danger" style="display: none;">
+        <span class="close float-end" onclick="closeDialog()">&times;</span>
+        <h5>Error</h5>
+        <p id="dialog-message"></p>
+    </div>
 
-  <!-- Login Form -->
-  <div class="container mt-5" id="formContainer">
-    <h3 class="text-primary">UESI STAFF LOGIN</h3>
-    <p style="color: green">Login to your Staff Account</p>
+    <!-- Login Form -->
+    <div class="container mx-auto mt-5" id="formContainer" style="margin-bottom: 130px;">
+        <h3 class="card-title text-xl font-bold mb-3 text-primary">UESI STAFF LOGIN</h3>
+        <p style="color: green">Please enter your credentials</p>
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="email">Email:</label>
+                <input type="email" id="email" class="form-control" required>
+            </div>
 
-    <form id="loginForm">
-      <div class="mb-3">
-        <label for="email">Email:</label>
-        <input type="email" id="email" class="form-control" required>
-      </div>
+            <div class="mb-3">
+                <label for="password">Password:</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
 
-      <div class="mb-3">
-        <label for="password">Password:</label>
-        <input type="password" id="password" class="form-control" required>
-      </div>
+            <button type="submit" class="btn btn-outline-primary">Login</button>
+        </form>
+    </div>
 
-      <button type="submit" class="btn btn-outline-primary">Login</button>
-    </form>
-  </div>
+    <!-- Firebase & JS Logic -->
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "0AzyPiDT3wSi6WAuNX7YzbyJcvUgV0nyoxMwahn0",
+            authDomain: "uesi-ap-default-rtdb.firebaseio.com",
+            projectId: "uesi-ap",
+            storageBucket: "uesi-ap.appspot.com"
+        };
 
-  <!-- Firebase Login Logic -->
-  <script>
-    // Firebase Config
-    const firebaseConfig = {
-      apiKey: "0AzyPiDT3wSi6WAuNX7YzbyJcvUgV0nyoxMwahn0",
-      authDomain: "uesi-ap-default-rtdb.firebaseio.com",
-      projectId: "uesi-ap",
-      storageBucket: "uesi-ap.appspot.com"
-    };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+        // Handle Login
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
 
-    // Login handler
-    document.getElementById('loginForm').addEventListener('submit', function (e) {
-      e.preventDefault();
+            document.getElementById('loaderContainer').style.display = 'block';
 
-      document.getElementById('loaderContainer').style.display = 'block';
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
 
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-
-      if (!email || !password) {
-        openDialog('Please fill in both email and password.');
-        document.getElementById('loaderContainer').style.display = 'none';
-        return;
-      }
-
-      const userRef = database.ref(`apps/uesi/staff-work/${email.replace('.', '_')}`);
-
-      userRef.once('value')
-        .then(snapshot => {
-          document.getElementById('loaderContainer').style.display = 'none';
-
-          if (snapshot.exists()) {
-            const userData = snapshot.val();
-            if (userData.password === password) {
-              // Store name and role
-              localStorage.setItem('bbsName', userData.name || '');
-              localStorage.setItem('bbsRole', userData.role || 'staff');
-
-              document.getElementById('formContainer').style.display = 'none';
-              document.getElementById('thanksContainer').style.display = 'block';
-
-              setTimeout(() => {
-                window.location.replace('/apps/uesi/staff-work/index');
-              }, 2000);
-            } else {
-              openDialog('Incorrect password. Please try again.');
+            if (!email || !password) {
+                openDialog('Please fill in both email and password.');
+                document.getElementById('loaderContainer').style.display = 'none';
+                return;
             }
-          } else {
-            openDialog('No user found with this email.');
-          }
-        })
-        .catch(error => {
-          openDialog('Database error: ' + error.message);
-          document.getElementById('loaderContainer').style.display = 'none';
+
+            const userRef = database.ref(`apps/uesi/staff-work/${email.replace('.', '_')}`);
+
+            userRef.once('value')
+                .then(snapshot => {
+                    document.getElementById('loaderContainer').style.display = 'none';
+
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+
+                        if (userData.password === password) {
+                            // Set localStorage values
+                            localStorage.setItem('bbsName', userData.name || '');
+                            localStorage.setItem('bbsRole', userData.email || '');
+
+                            document.getElementById('formContainer').style.display = 'none';
+                            document.getElementById('thanksContainer').style.display = 'block';
+
+                            setTimeout(() => {
+                                window.location.replace('/apps/uesi/staff-work/');
+                            }, 1500);
+                        } else {
+                            openDialog('Incorrect password.');
+                        }
+                    } else {
+                        openDialog('User not found. Please register first.');
+                    }
+                })
+                .catch(error => {
+                    openDialog('Database error: ' + error.message);
+                    document.getElementById('loaderContainer').style.display = 'none';
+                });
         });
-    });
 
-    // Dialog functions
-    function openDialog(message) {
-      document.getElementById('dialog-message').innerText = message;
-      document.getElementById('dialog').style.display = 'block';
-    }
+        // Dialog handlers
+        function openDialog(message) {
+            document.getElementById('dialog-message').innerText = message;
+            document.getElementById('dialog').style.display = 'block';
+        }
 
-    function closeDialog() {
-      document.getElementById('dialog').style.display = 'none';
-    }
-  </script>
+        function closeDialog() {
+            document.getElementById('dialog').style.display = 'none';
+        }
+    </script>
 
+</body>
 </html>
