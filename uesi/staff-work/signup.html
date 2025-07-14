@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // Specify the key to retain in localStorage
+        const keyToRetain = "theme";
+
+        // Retrieve the value of the "theme" key from localStorage
+        const valueToRetain = localStorage.getItem(keyToRetain);
+
+        // Clear all keys in localStorage except the specified key
+        Object.keys(localStorage).forEach((key) => {
+            if (key !== keyToRetain) {
+                localStorage.removeItem(key);
+            }
+        });
+
+        // Restore the "theme" key-value pair in localStorage
+        if (valueToRetain !== null) {
+            localStorage.setItem(keyToRetain, valueToRetain);
+        }
+
+
+    </script>
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMS Enrollment - AMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.0.10/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/6ff5af2422.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@490&display=swap" rel="stylesheet">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        :root {
+            --bg-color-light: #f8f9fa;
+            --text-color-light: #333;
+            --container-bg-light: #FEF7FF4;
+            --input-bg-light: #fff;
+
+            --bg-color-dark: #171c20;
+            --text-color-dark: #f8f9fa;
+            --container-bg-dark: #171c20;
+            --input-bg-dark: #2e2e2e;
+        }
+
+        body {
+            font-family: 'Google Sans', sans-serif;
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
+            padding: 20px;
+        }
+
+        body.dark-mode input:focus,
+        body.dark-mode select:focus,
+        body.dark-mode textarea:focus {
+            background-color: #444;
+            border-color: #90caf9;
+            color: #fff;
+            outline: none;
+        }
+
+        input,
+        button,
+        select {
+            background-color: var(--input-bg-light);
+            color: var(--text-color-light);
+        }
+
+        .alert {
+            display: none;
+        }
+
+        h2.text-center {
+            font-size: 18px;
+            color: #197afe;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid #197afe;
+            padding-bottom: 10px;
+        }
+
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+        }
+
+        .form-control {
+            background-color: var(--input-bg-light);
+            color: var(--text-color-light);
+        }
+
+        body.dark-mode .form-control {
+            background-color: var(--input-bg-dark);
+            color: var(--text-color-dark);
+        }
+
+        body.dark-mode .container {
+            background-color: var(--container-bg-dark);
+        }
+
+        body.dark-mode input,
+        body.dark-mode button,
+        body.dark-mode select {
+            background-color: var(--input-bg-dark);
+            color: var(--text-color-dark);
+        }
+
+        body.dark-mode h2.text-center {
+            color: #90caf9;
+            /* border-bottom: 2px solid #90caf9; */
+        }
+
+        body.dark-mode footer {
+            background-color: var(--container-bg-dark);
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            border: 1px solid #197afe;
+            background-color: var(--container-bg-light);
+            padding: 20px;
+            border-radius: 0px;
+        }
+
+        .form-control {
+            font-size: 1.1rem;
+            border-radius: 0rem;
+        }
+
+        .btn {
+            border-radius: 0rem;
+            margin-top: 0.1rem;
+            align-items: center;
+            justify-content: middle;
+        }
+
+        /* Loader Styles */
+        #loaderContainer {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        #loader {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+        }
+
+        #loader .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #imagePreview {
+            margin-top: 10px;
+            max-width: 100%;
+            max-height: 200px;
+            display: none;
+            /* Initially hidden */
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        /* Centering the Thank You Message */
+        #thanksContainer {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .dialog {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .error {
+            display: flex;
+            justify-content: top;
+            align-items: top;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .dialog-content {
+            background-color: #fff;
+            padding: 20px;
+            height: 150px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 70%;
+        }
+
+        .close {
+            float: right;
+            margin-top: -65px;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .dialog button {
+            position: sticky;
+            border: 1px solid grey;
+            background: #197afe;
+            border-radius: 10px;
+            padding: 5px;
+            color: white;
+            width: 80px;
+        }
+
+        #dialog-message {
+            color: red;
+            font-size: large;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<!-- <body class="bg-gray-100" style="margin-left: 15px; margin-right: 15px">
+
+    <div id='loaderContainer'>
+        <div id='loader'>
+            <div class='spinner'></div>
+        </div>
+    </div>
+
+    <div id='thanksContainer'>
+        <div class='contain'>
+            <div class='card mt-3'>
+                <div class='card-body'>
+                    <h3 class="card-title text-xl font-bold" style="color: green">👨‍🎓 You've Registered Successfully.
+                    </h3>
+                    <br>
+                    <button onclick="window.location.replace('/error')">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dialog" class="dialog" style="display: none;">
+        <div class="dialog-content" style="text-align: left;">
+            <h2>Error Occured..</h2> <span class="close" onclick="closeDialog()">&times;</span>
+            <p id="dialog-message"></p>
+        </div>
+    </div>
+
+    <div id="error" class="error" style="display: none;">
+        <div class="dialog-content" style="text-align: left;">
+            <h1>404 Not Found..</h1>
+            <p>Huuuummm, you have reached here in a wrong way 🚧 .</p>
+        </div>
+    </div>
+     <div class="container mx-auto mt-5" id="formContainer" style="margin-bottom: 130px; display: flex;">
+        <h3 class="card-title text-xl font-bold mb-3" style="color: #197afe">UESI Staff Work Registration</h3>
+        <p style="color: green">UESI Staff Work</p>
+        <form id="enrollForm">
+            <div class="mb-3">
+                <label for="studentName" class="form-label">Enter Your Name:</label>
+                <input type="text" class="form-control" id="studentName" name="studentName" required
+                    placeholder="Enter name only (don't type surname)">
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Your Personal Email Address:<p
+                        style="color: brown; font-size: 15px">It will be used for authentication purpose</p></label>
+                <input type="email" class="form-control" id="email" name="email" required disabled>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Enter Password:</label>
+                <input type="text" class="form-control" id="password" name="password" required
+                    placeholder="Enter password">
+            </div>
+            <div class="mb-3">
+                <label for="confirmPassword" class="form-label">Confirm Password:</label>
+                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required
+                    placeholder="Confirm password">
+                <br>
+                <button type="submit" class="btn btn-outline-primary">Register Me</button>
+        </form>
+    </div>
+
+    <script>
+        // Get URL parameters
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Populate email field if available from URL
+        const emailParam = getUrlParameter('email');
+        if (emailParam) {
+            document.getElementById('email').value = emailParam;
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+            errorDialog('Seems like you got lost.');
+            document.getElementById('formContainer').style.display = '';
+        }
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "0AzyPiDT3wSi6WAuNX7YzbyJcvUgV0nyoxMwahn0",
+            authDomain: "uesi-ap-default-rtdb.firebaseio.com"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Name validation: only letters and spaces
+        document.getElementById('studentName').addEventListener('input', function () {
+            const pattern = /^[A-Za-z\s]+$/;
+            if (!pattern.test(this.value)) {
+                openDialog('Please enter only alphabets for the name.');
+                this.value = this.value.slice(0, -1);
+            }
+        });
+
+        // Form submission handler
+        document.getElementById('enrollForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Show loader
+            document.getElementById('loaderContainer').style.display = 'block';
+
+            const studentName = document.getElementById('studentName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Basic field validation
+            if (!studentName || !email || !password || !confirmPassword) {
+                openDialog('Please fill out all fields.');
+                document.getElementById('loaderContainer').style.display = 'none';
+                return;
+            }
+
+            // Email format check
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                openDialog('Please enter a valid email address.');
+                document.getElementById('loaderContainer').style.display = 'none';
+                return;
+            }
+
+            // Password match check
+            if (password !== confirmPassword) {
+                openDialog('Passwords do not match.');
+                document.getElementById('loaderContainer').style.display = 'none';
+                return;
+            }
+
+            // Check if user already exists
+            const userRef = database.ref(`apps/UESI/${email}`);
+            userRef.once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        openDialog('This email is already registered.');
+                    } else {
+                        const studentData = {
+                            name: studentName,
+                            email: email,
+                            password: password
+                        };
+
+                        // Save user data
+                        userRef.set(studentData, function (error) {
+                            document.getElementById('loaderContainer').style.display = 'none';
+                            if (error) {
+                                openDialog('Error saving data: ' + error.message);
+                            } else {
+                                document.getElementById('formContainer').style.display = 'none';
+                                document.getElementById('thanksContainer').style.display = 'flex';
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    openDialog('Database error: ' + error.message);
+                    document.getElementById('loaderContainer').style.display = 'none';
+                });
+        });
+
+        // Dialog functions
+        function openDialog(message) {
+            document.getElementById('dialog-message').innerText = message;
+            document.getElementById('dialog').style.display = 'flex';
+        }
+
+        function errorDialog(message) {
+            document.getElementById('dialog-message').innerText = message;
+            document.getElementById('error').style.display = 'flex';
+        }
+
+        function closeDialog() {
+            document.getElementById('dialog').style.display = 'none';
+        }
+    </script>
+
+</body> -->
+
+<body class="bg-gray-100" style="margin-left: 15px; margin-right: 15px">
+    <!-- Loader -->
+    <div id="loaderContainer" style="display: none;">
+        <div id="loader">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Thank You Message -->
+    <div id="thanksContainer" style="display: none;">
+        <div class="contain">
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h3 class="card-title text-xl font-bold" style="color: green">
+                        👨‍🎓 You've Registered Successfully.
+                    </h3>
+                    <br>
+                    <button onclick="window.location.replace('/login')">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Dialog -->
+    <div id="dialog" class="dialog" style="display: none;">
+        <div class="dialog-content" style="text-align: left;">
+            <span class="close" onclick="closeDialog()">&times;</span>
+            <h2>Error Occurred</h2>
+            <p id="dialog-message"></p>
+        </div>
+    </div>
+
+    <!-- 404 Error -->
+    <div id="error" class="error" style="display: none;">
+        <div class="dialog-content" style="text-align: left;">
+            <h1>404 Not Found..</h1>
+            <p>Huuuummm, you have reached here in a wrong way 🚧 .</p>
+        </div>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="container mx-auto mt-5" id="formContainer" style="margin-bottom: 130px;">
+        <h3 class="card-title text-xl font-bold mb-3" style="color: #197afe">UESI STAFF WORK</h3>
+        <p style="color: green">Staff Registration</p>
+        <form id="enrollForm">
+            <div class="mb-3">
+                <label for="studentName">Your Name:</label>
+                <input type="text" id="studentName" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email">Email:</label>
+                <input type="email" id="email" class="form-control" required disabled>
+            </div>
+
+            <div class="mb-3">
+                <label for="password">Password:</label>
+                <input type="text" id="password" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="confirmPassword">Confirm Password:</label>
+                <input type="password" id="confirmPassword" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-outline-primary">Register Me</button>
+        </form>
+
+    </div>
+
+    <!-- Firebase and JS Logic -->
+    <script>
+        // Get email from URL
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        const email = getUrlParameter('email');
+
+        if (email) {
+            document.getElementById('email').value = email;
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+            errorDialog('Seems like you are lost. Email parameter is missing.');
+            document.getElementById('formContainer').style.display = 'none';
+        }
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "0AzyPiDT3wSi6WAuNX7YzbyJcvUgV0nyoxMwahn0",
+            authDomain: "uesi-ap-default-rtdb.firebaseio.com",
+            projectId: "uesi-ap",
+            storageBucket: "uesi-ap.appspot.com"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Name validation: only letters and spaces
+        document.getElementById('studentName').addEventListener('input', function () {
+            const pattern = /^[A-Za-z\s]+$/;
+            if (!pattern.test(this.value)) {
+                openDialog('Please enter only alphabets for the name.');
+                this.value = this.value.slice(0, -1);
+            }
+        });
+
+        // Handle form submit
+        document.getElementById('enrollForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            document.getElementById('loaderContainer').style.display = 'block';
+
+            const studentName = document.getElementById('studentName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validate
+            if (!studentName || !email || !password || !confirmPassword) {
+                openDialog('Please fill out all fields.');
+                document.getElementById('loaderContainer').style.display = 'none';
+                return;
+            }
+
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                openDialog('Please enter a valid email address.');
+                document.getElementById('loaderContainer').style.display = 'none';
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                openDialog('Passwords do not match.');
+                document.getElementById('loaderContainer').style.display = 'none';
+                return;
+            }
+
+            // Check if already registered
+            const userRef = database.ref(`apps/uesi/staff-work/${email.replace('.', '_')}`);
+            userRef.once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        openDialog('This email is already registered.');
+                        document.getElementById('loaderContainer').style.display = 'none';
+                    } else {
+                        const studentData = {
+                            name: studentName,
+                            email: email,
+                            password: password
+                        };
+
+                        userRef.set(studentData, function (error) {
+                            document.getElementById('loaderContainer').style.display = 'none';
+
+                            if (error) {
+                                openDialog('Error while saving student data: ' + error.message);
+                            } else {
+                                document.getElementById('formContainer').style.display = 'none';
+                                document.getElementById('thanksContainer').style.display = 'flex';
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    openDialog('Database error: ' + error.message);
+                    document.getElementById('loaderContainer').style.display = 'none';
+                });
+        });
+
+        // Dialog Functions
+        function openDialog(message) {
+            document.getElementById('dialog-message').innerText = message;
+            document.getElementById('dialog').style.display = 'flex';
+        }
+
+        function errorDialog(message) {
+            document.getElementById('dialog-message').innerText = message;
+            document.getElementById('error').style.display = 'flex';
+        }
+
+        function closeDialog() {
+            document.getElementById('dialog').style.display = 'none';
+        }
+    </script>
+
+</body>
+
+</html>
