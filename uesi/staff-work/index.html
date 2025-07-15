@@ -1264,10 +1264,26 @@
             firebase.initializeApp(firebaseConfig);
 
             // Helper: Get safe email
+            // function getSafeEmail() {
+            //     let userEmail = "melamrahul8@gmail.com"; // Default for now
+            //     return userEmail.replace(/\./g, '_');
+            // }
+
             function getSafeEmail() {
-                let userEmail = "melamrahul8@gmail.com"; // Default for now
+                let userEmail = localStorage.getItem("bbsRole"); // fallback
+
+                // Simple email regex for validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (!emailRegex.test(userEmail)) {
+                    console.warn("Invalid email format. Falling back to default email.");
+                    userEmail = "melamrahul8@gmail.com"; // fallback if invalid
+                }
+
+                // Replace dots to make it Firebase path-safe
                 return userEmail.replace(/\./g, '_');
             }
+
 
             // Save form data to Firebase
             function saveFormData(formType, safeEmail, date, day, purpose, zone) {
@@ -1405,7 +1421,7 @@
             waNameBtn.addEventListener('click', openWhatsApp);
             document.getElementById('shareButton').addEventListener('click', shareContent);
             document.getElementById('okkkButton').addEventListener('click', hideDialogs);
-            
+
             // Show share section in March - June
             const month = new Date().getMonth();
             if (month >= 2 && month <= 5) {
