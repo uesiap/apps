@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        (function () {
+            // Keys to retain in localStorage
+            const keysToRetain = ["bbsRole", "bbsName"];
+
+            // Retrieve the values of the keys to retain
+            const valuesToRetain = {};
+            keysToRetain.forEach((key) => {
+                const value = localStorage.getItem(key);
+                if (value !== null) {
+                    valuesToRetain[key] = value;
+                }
+            });
+
+            // Clear all keys in localStorage except the specified keys
+            Object.keys(localStorage).forEach((key) => {
+                if (!keysToRetain.includes(key)) {
+                    localStorage.removeItem(key);
+                }
+            });
+
+            // Restore the retained key-value pairs
+            Object.keys(valuesToRetain).forEach((key) => {
+                localStorage.setItem(key, valuesToRetain[key]);
+            });
+
+            console.log("LocalStorage cleared except for:", keysToRetain);
+
+            // Clear sessionStorage
+            sessionStorage.clear();
+            console.log("SessionStorage cleared.");
+
+            // Clear IndexedDB data
+            const clearIndexedDB = () => {
+                if (!window.indexedDB) {
+                    console.warn("IndexedDB is not supported by this browser.");
+                    return;
+                }
+                indexedDB.databases().then((databases) => {
+                    databases.forEach((db) => {
+                        indexedDB.deleteDatabase(db.name);
+                        console.log(`Deleted IndexedDB: ${db.name}`);
+                    });
+                }).catch((error) => {
+                    console.error("Error clearing IndexedDB:", error);
+                });
+            };
+
+            // Clear browser cache
+            const clearCache = () => {
+                if ("caches" in window) {
+                    caches.keys().then((cacheNames) => {
+                        cacheNames.forEach((cacheName) => {
+                            caches.delete(cacheName);
+                            console.log(`Deleted Cache: ${cacheName}`);
+                        });
+                    }).catch((error) => {
+                        console.error("Error clearing cache:", error);
+                    });
+                } else {
+                    console.warn("Cache API is not supported by this browser.");
+                }
+            };
+
+            // Execute cleanup functions
+            clearIndexedDB();
+            clearCache();
+
+            console.log(`All data cleared except for ${keysToRetain.join(", ")} in localStorage.`);
+        })();
+    </script>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- App Title and Description -->
+    <meta name="description" content="Submit, Edit, Generate Report using UESI Staff Work App." />
+
+    <!-- App Theme and Colors -->
+    <meta name="theme-color" content="#128C7E" />
+    <meta name="background-color" content="#ffffff" />
+
+    <!-- Favicon and Icons -->
+    <link rel="icon" href="/au-zone/bbs/icons/icon-32.png" type="image/png">
+    <link rel="apple-touch-icon" href="/au-zone/bbs/icons/icon-192.png">
+
+    <!-- Web App Manifest for PWA -->
+    <link rel="manifest" href="/au-zone/bbs/manifest.json" />
+    <link rel="canonical" href="https://uesiap.github.io/au-zone/bbs/" />
+
+    <meta property="og:title" content="AU - ZONE Bible Study I/C App" />
+    <meta property="og:description" content="Submit, Edit, Generate Report using UESI Staff Work App." />
+    <meta property="og:image" content="https://uesiap.github.io/au-zone/bbs/icons/icon-192.png" />
+    <meta property="og:url" content="https://uesiap.github.io/au-zone/bbs/" />
+    <meta property="og:type" content="website" />
+
+    <!-- Enable Standalone Mode on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="UESI Staff Work" />
+    <title>AU - ZONE Bible Study I/C App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #075E54;
+            --primary-dark: #075E54;
+            --text-light: #ffffff;
+            --text-dark: #333333;
+            --text-gray: #666666;
+            --bg-light: #f5f5f5;
+            --bg-white: #ffffff;
+            --border-light: #eeeeee;
+            --shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        /* App Bar */
+        .action-bar {
+            background: var(--primary-color);
+            color: #FFFFFF;
+            border-bottom: 2px dashed #FFFFFF;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        hr {
+            border-bottom: 2px dotted black;
+        }
+
+        .app-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: white;
+            letter-spacing: 0.025rem;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: #1d1d1d;
+            font-size: 2.25rem;
+            cursor: pointer;
+            width: 3rem;
+            color: white;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+            margin-right: 1rem;
+            /* Added margin-right */
+        }
+
+        .menu-button:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Navigation Drawer - Now on the left */
+        .nav-drawer {
+            position: fixed;
+            top: 5rem;
+            left: -300px;
+            /* Changed from right to left */
+            width: 300px;
+            height: calc(100vh - 5rem);
+            background: #FFFFFF;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+            /* Changed shadow direction */
+            transition: transform 0.4s ease-in-out;
+            z-index: 1000;
+            overflow-y: auto;
+            scrollbar-width: none;
+            /* For Firefox */
+            -ms-overflow-style: none;
+        }
+
+        .nav-drawer::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-drawer.open {
+            transform: translateX(300px);
+            /* Changed direction */
+        }
+
+        .nav-header {
+            padding: 2rem;
+            background: var(--primary-color);
+            color: #FFFFFF;
+        }
+
+        .nav-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.375rem;
+        }
+
+        .nav-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .nav-items {
+            padding: 1.25rem 1rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 1.125rem 1.25rem;
+            cursor: pointer;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            margin-bottom: 0.75rem;
+        }
+
+        .nav-item:hover {
+            background: #F3EDF7;
+        }
+
+        .nav-item i {
+            margin-right: 1.25rem;
+            font-size: 1.5rem;
+            width: 1.75rem;
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .nav-item span {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+
+        .nav-divider {
+            /*height: 1px;
+            background: #e0e0e0;
+            margin: 1.25rem 0;*/
+            border-bottom: 2px dashed #555;
+        }
+
+        /* User Info Container */
+        .user-info-container {
+            padding: 1.25rem;
+            background: #FFF;
+            border-radius: 0.5rem;
+            border: 1.5px solid var(--primary-color);
+            margin: 0 1rem 1.25rem 1rem;
+        }
+
+        .user-info-title {
+            color: var(--primary-color);
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-info-value {
+            font-size: 1.1rem;
+            color: green;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            word-break: break-word;
+        }
+
+        .user-info-value:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+
+        /* Dialog Box */
+        .dialog-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            background: #FFFFFF;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            width: 360px;
+            max-width: 90%;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .dialog-box.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .dialog-title {
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1.25rem;
+        }
+
+        .dialog-box select,
+        .dialog-box input {
+            width: 100%;
+            padding: 0.95rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            color: #333;
+            background-color: #f9f9f9;
+            transition: border-color 0.2s;
+        }
+
+        .dialog-box select:focus,
+        .dialog-box input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .dialog-box button {
+            width: 100%;
+            padding: 0.95rem;
+            background: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+
+        .dialog-box button:hover {
+            background: #5a46a1;
+        }
+
+        /* Confirmation Dialog */
+        .confirmation-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            background: #FFFFFF;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 1002;
+            width: 360px;
+            max-width: 90%;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .confirmation-dialog.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .confirmation-icon {
+            font-size: 3rem;
+            color: #4CAF50;
+            margin-bottom: 1rem;
+        }
+
+        .confirmation-message {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .confirmation-dialog button {
+            width: 100%;
+            padding: 0.95rem;
+            background: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+
+        .confirmation-dialog button:hover {
+            background: #5a46a1;
+        }
+
+        .container {
+            margin-top: -20px;
+            margin-left: -20px;
+            margin-right: 10px;
+            margin-bottom: 0px;
+            margin: 20px auto;
+            width: 100%;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            color: #0c1319;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            color: #1d1d1d;
+            margin-bottom: 5px;
+        }
+
+        .form-group textarea::before {
+            border-color: #0eab1e;
+        }
+
+        .form-group input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            color: #000;
+            font-size: 17px;
+            border-bottom: 2px solid #11b030;
+            border-radius: 5px;
+            box-sizing: border-box;
+            border-color: #0eab1e;
+        }
+
+        .form-group input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #11b030;
+            /* Maintain the green border */
+            box-shadow: 0 0 5px var(--primary-color);
+            /* Optional: Add a subtle glow */
+            outline: none;
+            /* Ensure no orange outline */
+        }
+
+        .form-group input[type="submit"] {
+            background-color: #34abeb;
+            border: 2px solid #34abeb;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .form-group input[type="submit"]:hover {
+            background-color: #197afe;
+            border: 2px solid #017cc2;
+        }
+
+        select::before {
+            content: '\25BC';
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            font-size: 17px;
+            transform: translateY(-50%);
+            pointer-events: none;
+            border-radius: 5px;
+            box-sizing: border-box;
+            border-color: #999;
+            box-shadow: 0 0 2px #ccc;
+            width: 100%;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        .select:hover {
+            border-color: #017cc2;
+        }
+
+        .select:focus {
+            outline-color: #017cc2;
+            border-color: #017cc2;
+            font-size: 20px;
+            box-shadow: 0 0 2px #017cc2;
+        }
+
+        .select::after {
+            outline-color: #017cc2;
+            border-color: #017cc2;
+            font-size: 20px;
+            box-shadow: 0 0 2px #017cc2;
+        }
+
+        .success-message {
+            display: none;
+            margin-top: 20px;
+            color: green;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .access-denied {
+            display: none;
+            text-align: center;
+            color: #ff0000;
+            margin-top: 20px;
+        }
+
+        .whatsapp-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 10px;
+            margin-left: 10%;
+            margin-right: 10%;
+            border: 2px solid #00acee;
+            border-radius: 5px;
+            color: #00acee;
+            background-color: transparent;
+            text-decoration: none;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .whatsapp-button:hover {
+            background-color: #00acee;
+            color: white;
+        }
+
+        .whatsapp-icon {
+            margin-right: 10px;
+        }
+
+        input,
+        textarea {
+            outline-color: #999;
+            border-radius: 5px;
+            border: 2px solid #999;
+        }
+
+        input,
+        textarea:focus {
+            outline-color: none;
+            border-radius: 5px;
+            font-size: 17px;
+            border: 3px solid #017cc2;
+        }
+
+        textarea {
+            font-size: 17px;
+        }
+
+        .confirmation-dialo {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            background: #FFFFFF;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            z-index: 1002;
+            width: 290px;
+            max-width: 90%;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .confirmation-dialo.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .confirmation-icon {
+            font-size: 3rem;
+            color: #4CAF50;
+            margin-bottom: 1rem;
+        }
+
+        .confirmation-message {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .confirmation-dialo button {
+            width: 100%;
+            padding: 0.95rem;
+            background: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+
+        .confirmation-dialo button:hover {
+            background: #5a46a1;
+        }
+
+        .app-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f7f9fc;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 600px;
+            margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .app-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+        }
+
+        .app-info {
+            flex: 1;
+            margin-left: 16px;
+        }
+
+        .app-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .app-description {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .install-btn {
+            background-color: green;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background-color 0.3s;
+        }
+
+        .install-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .install-btnn {
+            background-color: green;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background-color 0.3s;
+        }
+
+        .install-btnn:hover {
+            background-color: #0056b3;
+        }
+
+        .shareDialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            background: #FFFFFF;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            z-index: 1002;
+            width: 290px;
+            max-width: 90%;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .shareDialog.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .shareIcon .fa-check-circle {
+            font-size: 3rem;
+            color: #4CAF50;
+            margin-bottom: 1rem;
+        }
+
+        .shareMessage {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .Sharebutton {
+            width: 100%;
+            padding: 0.95rem;
+            background: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .Sharebutton:hover {
+            background: #5a46a1;
+        }
+
+        .tab-btn-container {
+            display: flex;
+            justify-content: center;
+            margin: 0px 0;
+        }
+
+        .tab-btn {
+            background-color: #fcfcfc;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px 13px;
+            cursor: pointer;
+            margin: 0 5px;
+            border-radius: 0;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, color 0.3s ease, border 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background-color: var(--primary-color);
+            color: var(--bg-light);
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+
+        .container {
+            background-color: #fdfdff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .form-heading {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px dotted var(--primary-color);
+        }
+
+        .active {
+            display: block;
+        }
+
+        input[type="date"],
+        input[type="text"],
+        textarea,
+        #day1,
+        #day2 {
+            border-top: 2px solid white;
+            border-left: 2px solid white;
+            border-right: 2px solid white;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- App Bar -->
+    <div class="action-bar">
+        <div style="display: flex; align-items: center;">
+            <button class="menu-button" id="menuButton">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="app-title" style="color: white;">UESI Staff Work</span>
+        </div>
+    </div>
+
+    <!-- Navigation Drawer -->
+    <div class="nav-drawer" id="navDrawer">
+        <div class="nav-header"
+            style="height: 7.5rem; margin-top: -1rem; background-color: #F3EDF7; border-bottom: 2px dashed #555;">
+            <div class="nav-title" style="color: #555;">Welcome,</div>
+            <div class="nav-subtitle" id="greet" style="color: #1d1d1d;">Dear Staff Worker</div>
+        </div>
+
+        <!-- User Info Container -->
+        <div class="nav-items">
+            <!-- Submit Data (Default Active) -->
+            <!-- <div class="nav-item active" id="submitDataBtn" onclick="toggleDrawer();">
+        <i class="fas fa-upload"></i>
+        <span>Submit Data</span>
+      </div> -->
+
+            <div class="nav-item" id="editReviewBtn"
+                onclick="Redirect(this, '/apps/uesi/staff-work/view-field-report')">
+                <i class="fas fa-edit"></i>
+                <span>Field Report</span>
+            </div>
+
+            <div class="nav-item" id="genReportBtn" onclick="Redirect(this, '/apps/uesi/staff-work/view-itinerary')">
+                <i class="fas fa-file-alt"></i>
+                <span>Itinerary</span>
+            </div>
+
+            <div class="nav-divider"></div>
+            <div style="margin-bottom: 10px;"></div>
+            <span id="share-app" style="display: none;">
+                <!-- Share Button to Open Dialog -----------* nclick="showDialog()"-->
+                <div class="nav-item" id="share" onclick="Redirect(this, '/apps/uesi/staff-work/app')">
+                    <i class="fas fa-share"></i>
+                    <span>Share App</span>
+                </div>
+                <div class="nav-divider"></div>
+                <div style="margin-bottom: 10px;"></div>
+            </span>
+
+            <!-- <div class="nav-item" id="chooseBBSRoleBtn">
+        <i class="fas fa-users-cog"></i>
+        <span>Select My Portfolio</span>
+      </div> -->
+
+            <!-- Portfolio Display -->
+            <div class="user-info-container" id="userInfoContainer">
+                <div class="user-info-title">Your Name:</div>
+                <div class="user-info-value" id="selectedNameDisplay">Not Login</div>
+            </div>
+
+            <!-- Enter Name -->
+            <!-- <div class="nav-item" id="setBBSNameBtn">
+        <i class="fas fa-user-edit"></i>
+        <span>Enter My Name</span>
+      </div> -->
+            <div class="user-info-container">
+                <div class="user-info-title">Your Email:</div>
+                <div class="user-info-value" id="selectedRoleDisplay">Not Login</div>
+            </div>
+
+            <div class="nav-divider" style="margin-bottom: 15px;"></div>
+            <div class="nav-section-heading">Any Issue? Simply mail it</div>
+
+            <div class="nav-item" id="mail" onclick="openMail()">
+                <i class="fa-regular fa-envelope"></i>
+                <span>mrahul.eu</span>
+            </div>
+
+            <!-- <div class="nav-item" id="wa" onclick="openWhatsApp()">
+        <i class="fa-brands fa-whatsapp"></i>
+        <span>9347450441</span>
+      </div> -->
+
+            <div class="nav-divider" style="margin-bottom: 15px;"></div>
+            <div class="nav-section-heading">UESI Staff Work App</div>
+            <div class="app-version" style="margin-bottom: 1rem; margin-left: 1rem; margin-top: 1rem;">
+                <span style="font-size: 1rem; font-weight: bold;">App Version: 1.0</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+
+    <!-- Confirmation Dialog -->
+    <div class="confirmation-dialog" id="confirmationDialog">
+        <div class="confirmation-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="confirmation-message" id="confirmationMessage">
+            Your selection has been confirmed!
+        </div>
+        <button id="okButton">OK</button>
+    </div>
+    <br><br><br><br>
+    <div class="app-banner" id="app-banner" style="display: none">
+        <img src="https://uesiap.github.io/au-zone/bbs/icons/icon-192.png" alt="App Icon" class="app-icon" />
+        <div class="app-info">
+            <div class="app-title">UESI Staff Work</div>
+            <div class="app-description">Submit, Edit, Generate Report</div>
+        </div>&ensp;
+        <button class="install-btn">Install</button>
+    </div>
+    <div class="app-banner" id="app-banner-open" style="display: none">
+        <img src="https://uesiap.github.io/au-zone/bbs/icons/icon-192.png" alt="App Icon" class="app-icon" />
+        <div class="app-info">
+            <div class="app-title">UESI Staff Work</div>
+        </div>&ensp;
+        <button class="install-btn" onclick="window.open('https://uesiap.github.io/au-zone/bbs/', '_blank')">Open
+            App</button>
+    </div>
+    <br>
+    <div
+        style="display: flex;align-items: center;justify-content: left; margin-left: 1rem; margin-bottom: -1rem; margin-top: -1rem;">
+        <p style="color: black;font-weight: 500;">Hello,</p>&ensp;<p id="greetings"
+            style="color: green; font-weight: bold;">Please Login</p>
+    </div>
+    <hr>
+    <div id="openclose">
+        <!-- Tab Buttons -->
+        <div class="tab-btn-container">
+            <button class="tab-btn active" onclick="showTabs('field', event)">Field Report</button>
+            <button class="tab-btn" onclick="showTabs('itinerary', event)">Itinerary Form</button>
+        </div>
+        <br>
+
+        <!-- Forms Container -->
+        <span>
+            <!-- Field Report Tab -->
+            <section id="form1">
+                <div class="container" style="margin-top: -10px;">
+                    <h3 class="form-heading">Field Report</h3>
+                    <form id="fieldReportForm">
+                        <div class="form-group">
+                            <label for="date1">Select Date:</label>
+                            <input type="date" id="date1" name="date" required style="background-color: #f8f9fa;">
+                        </div>
+                        <div class="form-group">
+                            <label for="day1">Select Day:</label>
+                            <select id="day1" name="day" required style="background-color: #f8f9fa;">
+                                <option value="" selected disabled>select day</option>
+                                <option value="Mon">Monday</option>
+                                <option value="Tue">Tuesday</option>
+                                <option value="Wed">Wednesday</option>
+                                <option value="Thu">Thursday</option>
+                                <option value="Fri">Friday</option>
+                                <option value="Sat">Saturday</option>
+                                <option value="Sun">Sunday</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="zone1">Zone/Division:</label>
+                            <input type="text" id="zone1" name="zone" list="typeList" placeholder="enter zone/division"
+                                required style="background-color: #f8f9fa;">
+                        </div>
+                        <div class="form-group">
+                            <label for="purpose1">Purpose:</label>
+                            <textarea id="purpose1" name="purpose" rows="2" placeholder="write the purpose" required
+                                style="background-color: #f8f9fa;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Submit"
+                                style="background-color: var(--primary-color); border-color: var(--primary-color); color: white;">
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Itinerary Form Tab -->
+            <section id="form2" class="hidden">
+                <div class="container" style="margin-top: -10px;">
+                    <h3 class="form-heading">Itinerary Form</h3>
+                    <form id="itineraryForm">
+                        <div class="form-group">
+                            <label for="date2">Select Date:</label>
+                            <input type="date" id="date2" name="date" required style="background-color: #f8f9fa;">
+                        </div>
+                        <div class="form-group">
+                            <label for="day2">Select Day:</label>
+                            <select id="day2" name="day" required style="background-color: #f8f9fa;">
+                                <option value="" selected disabled>select day</option>
+                                <option value="Mon">Monday</option>
+                                <option value="Tue">Tuesday</option>
+                                <option value="Wed">Wednesday</option>
+                                <option value="Thu">Thursday</option>
+                                <option value="Fri">Friday</option>
+                                <option value="Sat">Saturday</option>
+                                <option value="Sun">Sunday</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="zone2">Zone/Division:</label>
+                            <input type="text" id="zone2" name="zone" list="typeList" placeholder="enter zone/division"
+                                required style="background-color: #f8f9fa;">
+                        </div>
+                        <div class="form-group">
+                            <label for="purpose2">Purpose:</label>
+                            <textarea id="purpose2" name="purpose" rows="2" placeholder="write the purpose" required
+                                style="background-color: #f8f9fa;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Submit"
+                                style="background-color: var(--primary-color); border-color: var(--primary-color); color: white;">
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </span>
+
+    </div>
+
+    <div class="confirmation-dialog hidden" id="successMessage">
+        <div class="confirmation-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="confirmation-message" id="confirmationMessage">
+            Data Uploaded Successfully!
+        </div>
+        <button id="okkButton" onclick="window.location.reload()">Okay</button>
+    </div>
+
+    <!-- Share Dialog Box -->
+    <!-- <div class="shareDialog" id="share-dialog">
+        <div class="shareIcon">
+            <i class="fas fa-exclamation-circle" style="color: #D32F2F; font-size: 3rem;"></i>
+        </div>
+        <div class="shareMessage confirmation-message">
+            Share only with your successor. Please Keep it Confidential.
+        </div>
+        <button class="Sharebutton" id="shareButton">Share</button>
+        <button class="Sharebutton" id="okkkButton" style="background-color: grey;">OK</button>
+    </div> -->
+
+    <footer id="foot"
+        style="margin-left: -0.625rem; justify-content: space-evenly; z-index:2; bottom: 0.025rem; width: 100%; background-color: white; color: #333; text-align: center; padding: 0.5rem 0;">
+        <p style="margin: 0; font-size: 0.7625rem;">
+            App crafted by <a href="https://melamrahul.github.io/" style="text-decoration: none; color: #197afe;">
+                Rahul</a>
+        </p>
+    </footer>
+    <script>
+        function showTabs(format, event = null) {
+            const form1 = document.getElementById('form1');
+            const form2 = document.getElementById('form2');
+            const buttons = document.querySelectorAll('.tab-btn');
+
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            if (format === 'field') {
+                form1.classList.remove('hidden');
+                form2.classList.add('hidden');
+                history.replaceState(null, '', '#FieldReport');
+                buttons[0].classList.add('active');
+            } else {
+                form1.classList.add('hidden');
+                form2.classList.remove('hidden');
+                history.replaceState(null, '', '#ItineraryForm');
+                buttons[1].classList.add('active');
+            }
+
+            // Optional: filterSongs(currentQuery);
+        }
+
+        // window.addEventListener('DOMContentLoaded', () => {
+        //     const dateInput = document.getElementById('date1');
+        //     const daySelect = document.getElementById('day1');
+
+        //     // Get today's date
+        //     const today = new Date();
+        //     const yyyy = today.getFullYear();
+        //     const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        //     const dd = String(today.getDate()).padStart(2, '0');
+        //     const formattedDate = `${yyyy}-${mm}-${dd}`;
+
+        //     // Set the date input
+        //     dateInput.value = formattedDate;
+
+        //     // Set the day select based on current weekday
+        //     const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        //     const todayDayShort = weekdays[today.getDay()];
+
+        //     // Loop through options and select the matching day
+        //     for (let option of daySelect.options) {
+        //         if (option.value === todayDayShort) {
+        //             option.selected = true;
+        //             break;
+        //         }
+        //     }
+        // });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const dateInput1 = document.getElementById('date1');
+            const daySelect1 = document.getElementById('day1');
+            const dateInput2 = document.getElementById('date2');
+            const daySelect2 = document.getElementById('day2');
+
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            // Auto-set date1 and day1 to today
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const formattedDate = `${yyyy}-${mm}-${dd}`;
+            dateInput1.value = formattedDate;
+
+            const todayDayShort = weekdays[today.getDay()];
+            for (let option of daySelect1.options) {
+                if (option.value === todayDayShort) {
+                    option.selected = true;
+                    break;
+                }
+            }
+
+            // 🔁 Auto-set day2 when date2 changes
+            dateInput2.addEventListener('change', () => {
+                const selectedDate = new Date(dateInput2.value);
+                if (!isNaN(selectedDate)) {
+                    const selectedDayShort = weekdays[selectedDate.getDay()];
+                    for (let option of daySelect2.options) {
+                        option.selected = option.value === selectedDayShort;
+                    }
+                }
+            });
+
+            const zone1Input = document.getElementById('zone1');
+            const zone2Input = document.getElementById('zone2');
+
+            function capitalizeFirstLetter(value) {
+                if (!value) return '';
+                return value.charAt(0).toUpperCase() + value.slice(1);
+            }
+
+            function handleZoneCapitalization(input) {
+                input.value = capitalizeFirstLetter(input.value.trim());
+            }
+
+            // Auto-capitalize on losing focus (you can also use 'change' instead of 'blur')
+            zone1Input.addEventListener('blur', () => handleZoneCapitalization(zone1Input));
+            zone2Input.addEventListener('blur', () => handleZoneCapitalization(zone2Input));
+        });
+
+        function Redirect(element, url = null) {
+            const bbsRole = localStorage.getItem('bbsRole') || 'unknown';
+            const bbsName = localStorage.getItem('bbsName') || 'unknown';
+
+            let finalUrl = url;
+            if (url === '/apps/uesi/staff-work/view-field-report') {
+                finalUrl = `${url}?name=${encodeURIComponent(bbsName)}&email=${encodeURIComponent(bbsRole)}`;
+            } else {
+                finalUrl = `${url}?name=${encodeURIComponent(bbsName)}&email=${encodeURIComponent(bbsRole)}`;
+            }
+
+            window.location.href = finalUrl;
+            toggleDrawer();
+        }
+
+        // </script>
+
+    <!-- ✅ Add Firebase SDK scripts before your own script -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Load greet name
+            const greet = localStorage.getItem('bbsName');
+            const mail = localStorage.getItem('bbsRole');
+            if (greet && mail) {
+                document.getElementById('greet').textContent = `${greet} ✨`;
+                document.getElementById('greetings').textContent = `${greet} ✨`;
+                document.getElementById('selectedNameDisplay').textContent = `${greet}`;
+                document.getElementById('selectedRoleDisplay').textContent = `${mail}`;
+            }
+
+            // DOM Elements 
+            const menuButton = document.getElementById('menuButton');
+            const navDrawer = document.getElementById('navDrawer');
+            const overlay = document.getElementById('overlay');
+            const overlayer = document.getElementById('overlay');
+
+            const roleDialogBox = document.getElementById('roleDialogBox');
+            const nameDialogBox = document.getElementById('nameDialogBox');
+            const confirmationDialog = document.getElementById('confirmationDialog');
+
+            const confirmRoleBtn = document.getElementById('confirmRoleBtn');
+            const confirmNameBtn = document.getElementById('confirmNameBtn');
+            const okButton = document.getElementById('okButton');
+
+            const roleDropdown = document.getElementById('roleDropdown');
+            const nameInput = document.getElementById('nameInput');
+
+            const confirmationMessage = document.getElementById('confirmationMessage');
+
+            const submitDataBtn = document.getElementById('submitDataBtn');
+            const editReviewBtn = document.getElementById('editReviewBtn');
+            const genReportBtn = document.getElementById('genReportBtn');
+            const chooseBBSRoleBtn = document.getElementById('chooseBBSRoleBtn');
+            const setBBSNameBtn = document.getElementById('setBBSNameBtn');
+            const mailNameBtn = document.getElementById('mail');
+            const waNameBtn = document.getElementById('wa');
+
+            // Firebase Config
+            var firebaseConfig = {
+                apiKey: "0AzyPiDT3wSi6WAuNX7YzbyJcvUgV0nyoxMwahn0",
+                authDomain: "uesi-ap-default-rtdb.firebaseio.com",
+                databaseURL: "https://uesi-ap-default-rtdb.firebaseio.com",
+                projectId: "uesi-ap"
+            };
+            firebase.initializeApp(firebaseConfig);
+
+            // Helper: Get safe email
+            function getSafeEmail() {
+                let userEmail = "melamrahul8@gmail.com"; // Default for now
+                return userEmail.replace(/\./g, '_');
+            }
+
+            // Save form data to Firebase
+            function saveFormData(formType, safeEmail, date, day, purpose, zone) {
+                if (!safeEmail || !date || !formType) {
+                    console.error("Missing required parameters.");
+                    return;
+                }
+
+                const typePath = formType === "Field_Report" ? "Field_Report" : "Itinerary_Form";
+                const data = { day, purpose, zone };
+                const path = `apps/uesi/staff-work/${safeEmail}/userData/${typePath}/${date}`;
+                const dbRef = firebase.database().ref(path);
+
+                dbRef.push(data)
+                    .then(() => {
+                        console.log(`${formType} data saved successfully`);
+                        document.getElementById('successMessage').classList.add('active');
+                    })
+                    .catch((error) => {
+                        console.error(`Error saving ${formType} data: `, error);
+                    });
+            }
+
+            // Form submission handlers
+            document.getElementById("fieldReportForm").addEventListener("submit", function (e) {
+                e.preventDefault();
+                const safeEmail = getSafeEmail();
+                const date = document.getElementById("date1").value;
+                const day = document.getElementById("day1").value;
+                const zone = document.getElementById("zone1").value;
+                const purpose = document.getElementById("purpose1").value;
+                saveFormData("Field_Report", safeEmail, date, day, purpose, zone);
+            });
+
+            document.getElementById("itineraryForm").addEventListener("submit", function (e) {
+                e.preventDefault();
+                const safeEmail = getSafeEmail();
+                const date = document.getElementById("date2").value;
+                const day = document.getElementById("day2").value;
+                const zone = document.getElementById("zone2").value;
+                const purpose = document.getElementById("purpose2").value;
+                saveFormData("Itinerary_Form", safeEmail, date, day, purpose, zone);
+            });
+
+            // Drawer toggle
+            function toggleDrawer() {
+                navDrawer.classList.toggle('open');
+                overlay.classList.toggle('active');
+            }
+
+            // Dialog functions
+            function showRoleDialog() {
+                roleDialogBox.classList.add('active');
+                overlay.classList.add('active');
+                navDrawer.classList.remove('open');
+            }
+
+            function showNameDialog() {
+                nameDialogBox.classList.add('active');
+                overlay.classList.add('active');
+                navDrawer.classList.remove('open');
+            }
+
+            function showConfirmationDialog(message) {
+                confirmationMessage.textContent = message;
+                confirmationDialog.classList.add('active');
+                okButton.removeEventListener('click', handleOkClick);
+                okButton.addEventListener('click', handleOkClick);
+            }
+
+            function hideDialogs() {
+                roleDialogBox.classList.remove('active');
+                nameDialogBox.classList.remove('active');
+                confirmationDialog.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+
+            function handleOkClick() {
+                hideDialogs();
+                window.location.reload();
+            }
+
+            // Confirm role and name
+            function confirmRole() {
+                const role = roleDropdown.value;
+                if (role) {
+                    localStorage.setItem('bbsRole', role);
+                    showConfirmationDialog(`Role saved as "${role}"`);
+                }
+            }
+
+            function confirmName() {
+                const name = nameInput.value.trim();
+                if (name) {
+                    localStorage.setItem('bbsName', name);
+                    showConfirmationDialog(`Name saved as "${name}"`);
+                }
+            }
+
+            // Redirection
+
+            function openMail() {
+                window.location.href = "mailto:mrahul.eu@gmail.com";
+            }
+
+            function openWhatsApp() {
+                const url = `https://wa.me/9347450441?text=Hello%20Rahul,%20I%20need%20some%20assistance%20Regarding%20BBS%20Portal.`;
+                window.open(url, '_blank');
+            }
+
+            function shareContent() {
+                const title = document.querySelector('meta[property="og:title"]')?.content || "UESI App";
+                const description = document.querySelector('meta[property="og:description"]')?.content || "Staff Work App";
+                const url = "https://uesiap.github.io/apps/uesi/staff-worker/";
+                const message = `Hi, Thank you for Installing Staff Work App.\n\nName: *${title}*\n\nUsage: *${description}*\n\nUse this link: *${url}*`;
+
+                if (navigator.share) {
+                    navigator.share({ title, text: message }).then(() => {
+                        console.log("Shared successfully");
+                    }).catch(console.error);
+                } else {
+                    alert("Sharing not supported");
+                }
+            }
+
+            // Misc event listeners
+            menuButton.addEventListener('click', toggleDrawer);
+            overlay.addEventListener('click', hideDialogs);
+            overlayer.addEventListener('click', toggleDrawer);
+            confirmRoleBtn.addEventListener('click', confirmRole);
+            confirmNameBtn.addEventListener('click', confirmName);
+            chooseBBSRoleBtn.addEventListener('click', showRoleDialog);
+            setBBSNameBtn.addEventListener('click', showNameDialog);
+            mailNameBtn.addEventListener('click', openMail);
+            waNameBtn.addEventListener('click', openWhatsApp);
+            document.getElementById('shareButton').addEventListener('click', shareContent);
+            document.getElementById('okkkButton').addEventListener('click', hideDialogs);
+            
+            // Show share section in March - June
+            const month = new Date().getMonth();
+            if (month >= 2 && month <= 5) {
+                document.getElementById('share-app').style.display = 'block';
+            }
+
+            // "Okay" for dialog
+            document.getElementById('okkButton').addEventListener('click', function () {
+                document.getElementById('confirmationDialo').classList.remove('active');
+                document.getElementById('openclose').style.display = 'block';
+            });
+        });
+    </script>
+
+
+    <script>
+        let deferredPrompt;
+
+        // Function to hide both banners
+        function hideBanners() {
+            const appBanner = document.getElementById('app-banner');
+            const appBannerOpen = document.getElementById('app-banner-open');
+
+            if (appBanner) appBanner.style.display = 'none';
+            if (appBannerOpen) appBannerOpen.style.display = 'none';
+        }
+
+        // Function to show the open app banner
+        function showOpenAppBanner() {
+            const appBanner = document.getElementById('app-banner');
+            const appBannerOpen = document.getElementById('app-banner-open');
+
+            if (appBanner) appBanner.style.display = 'none';
+            if (appBannerOpen) appBannerOpen.style.display = 'flex';
+        }
+
+        // Capture the beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+
+            const appBanner = document.getElementById('app-banner');
+            const appBannerOpen = document.getElementById('app-banner-open');
+
+            // Show install banner if not in standalone mode
+            if (!isRunningAsPWA()) {
+                if (appBanner) appBanner.style.display = 'flex';
+                if (appBannerOpen) appBannerOpen.style.display = 'none';
+            }
+        });
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/au-zone/bbs/service-worker.js')
+                .then(() => console.log('Service Worker Registered'))
+                .catch(error => console.error('Service Worker Registration Failed:', error));
+        }
+
+        // Handle button clicks
+        document.addEventListener('DOMContentLoaded', () => {
+            const installButtons = document.querySelectorAll('.install-btn');
+
+            installButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    if (button.textContent.toLowerCase() === 'install') {
+                        // Install app
+                        if (deferredPrompt) {
+                            deferredPrompt.prompt();
+                            deferredPrompt.userChoice.then((choiceResult) => {
+                                if (choiceResult.outcome === 'accepted') {
+                                    console.log('User accepted the install prompt');
+                                } else {
+                                    console.log('User dismissed the install prompt');
+                                }
+                                deferredPrompt = null;
+
+                                // Hide install banner
+                                const appBanner = document.getElementById('app-banner');
+                                if (appBanner) appBanner.style.display = 'none';
+                            });
+                        }
+                    } else if (button.textContent.toLowerCase() === 'open') {
+                        // Open app in new tab
+                        window.open('https://uesiap.github.io/au-zone/bbs/', '_blank');
+                    }
+                });
+            });
+
+            // Show open app banner only when not in PWA mode
+            if (!isRunningAsPWA()) {
+                showOpenAppBanner();
+            }
+        });
+
+        // Detect if app is already running as PWA
+        function isRunningAsPWA() {
+            return window.matchMedia('(display-mode: standalone)').matches ||
+                navigator.standalone ||
+                window.navigator.standalone === true;
+        }
+
+        // Always hide banners if running as PWA
+        if (isRunningAsPWA()) {
+            hideBanners();
+        }
+    </script>
+</body>
+
+</html>
