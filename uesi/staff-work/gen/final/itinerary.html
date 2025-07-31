@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Itinerary Report</title>
+    <meta property="og:site_name" content="UESI Staff Work">
+    <meta property="og:title" content="Generated Itinerary Report">
+    <meta property="og:description" content="Generate Itinerary for UESI Staff Work.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #075E54;
+            --primary-dark: #054a43;
+            --text-dark: #333333;
+            --text-gray: #666666;
+            --bg-light: #f8f9fa;
+            --bg-white: #ffffff;
+            --border-light: #eeeeee;
+            --shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .action-bar {
+            background: var(--primary-color);
+            color: var(--text-light);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .app-title {
+            font-size: 1.65rem;
+            font-weight: 600;
+            color: var(--text-light);
+            letter-spacing: 0.025rem;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 2.25rem;
+            cursor: pointer;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+            margin-right: 1rem;
+        }
+
+        .menu-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .report-container {
+            background-color: var(--bg-white);
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            max-width: 800px;
+            width: 100%;
+            margin-top: 6rem;
+            font-size: 0.95rem;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .report-header p {
+            font-size: 1.2rem;
+            margin-bottom: 0.2rem;
+            color: #000;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .report-header .report-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .staff-info {
+            font-size: 1.4rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .table-scroll-wrapper {
+            overflow-x: auto;
+            width: 100%;
+            margin-top: 1.5rem;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .report-table {
+            width: 100%;
+            min-width: 700px;
+            border-collapse: collapse;
+            margin: 0 auto;
+            font-size: 0.9em;
+        }
+
+        .report-table th,
+        .report-table td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: center;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+
+        .report-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        /* Left align specific columns */
+        .report-table td:nth-child(4),
+        .report-table td:nth-child(5) {
+            text-align: left;
+        }
+
+        .no-data-message {
+            text-align: center;
+            color: var(--text-gray);
+            font-style: italic;
+            margin-top: 20px;
+        }
+
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .export-button-container {
+            margin-top: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .export-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .export-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .export-dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .export-dialog-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .export-dialog-content {
+            background: var(--bg-white);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+
+        .export-dialog-overlay.active .export-dialog-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .export-dialog-content h3 {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .export-options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .export-option-btn {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 15px 10px;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .export-option-btn:hover {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            border-color: var(--primary-color);
+        }
+
+        .export-option-btn i {
+            font-size: 1.5rem;
+        }
+
+        .export-option-btn:hover i {
+            color: var(--text-light);
+        }
+
+        .export-option-btn.excel-option:hover {
+            background-color: #217346;
+            border-color: #217346;
+        }
+
+        .export-option-btn.pdf-option:hover {
+            background-color: #DC382C;
+            border-color: #DC382C;
+        }
+
+        .export-option-btn.doc-option:hover {
+            background-color: #2B579A;
+            border-color: #2B579A;
+        }
+
+        .export-dialog-close {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .export-dialog-close:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="action-bar">
+        <div style="display: flex; align-items: center;">
+            <button class="menu-button" id="menuButton" onclick="history.back()">
+                <i class="fas fa-arrow-left" style="color: white;"></i>
+            </button>
+            <span class="app-title" style="color: white;">Generated Itinerary</span>
+        </div>
+    </div>
+
+    <div class="report-container" id="reportContent" style="display: none;">
+        <div class="report-header">
+            <h5 style="font-size: 1.2rem; margin-bottom: 0.2rem; color: #000; font-weight: 600;">Union of Evangelical Students of India - <span id="staffState"></span></h5>
+            <h5 class="report-title" id="reportGeneratedTitle">ITINERARY - [MONTH] [YEAR]</h5>
+            <h2 class="staff-info">NAME: <span id="staffInfoName"></span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span id="staffInfoBase"></span></h2>
+        </div>
+
+        <div class="table-scroll-wrapper">
+            <table class="report-table" id="fieldReportTable">
+                <thead>
+                    <tr>
+                        <th>Sl. No</th>
+                        <th>Date</th>
+                        <th>DAY</th>
+                        <th>Zone / Division</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <p class="no-data-message" id="noDataMessage" style="display: none;">No report data found for the selected period.</p>
+    </div>
+
+    <div class="export-button-container">
+        <button id="exportReportBtn" class="export-btn" style="display: none;">
+            <i class="fas fa-share-square"></i> Export / Share Document
+        </button>
+    </div>
+
+    <div id="exportLoadingOverlay" class="loader-overlay" style="display: none;">
+        <div class="loader"></div>
+        <p style="margin-top: 15px;">Generating document...</p>
+    </div>
+
+    <div class="loader" id="loader"></div>
+
+    <div class="export-dialog-overlay" id="exportDialogOverlay">
+        <div class="export-dialog-content">
+            <h3>Export Report As:</h3>
+            <div class="export-options-grid">
+                <button class="export-option-btn pdf-option" id="exportPdfBtn">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button class="export-option-btn excel-option" id="exportExcelBtn">
+                    <i class="fas fa-file-excel"></i> Excel
+                </button>
+                <button class="export-option-btn doc-option" id="exportDocBtn">
+                    <i class="fas fa-file-word"></i> Word
+                </button>
+            </div>
+            <button class="export-dialog-close" id="closeExportDialogBtn">Close</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        // Firebase Config
+        var firebaseConfig = {
+            apiKey: "0AzyPiDT3wSi6WAuNX7YzbyJcvUgV0nyoxMwahn0",
+            authDomain: "uesi-ap-default-rtdb.firebaseio.com",
+            databaseURL: "https://uesi-ap-default-rtdb.firebaseio.com",
+            projectId: "uesi-ap"
+        };
+        firebase.initializeApp(firebaseConfig);
+        var database = firebase.database();
+
+        // Get URL Parameters
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        const userName = getQueryParam('name') || '';
+        const userEmail = getQueryParam('email') || 'sample@test.com';
+        const userBase = getQueryParam('base') || '';
+        const userState = getQueryParam('state') || '';
+        const selectedMonthNum = getQueryParam('month') || '';
+        const selectedYear = getQueryParam('year') || '';
+
+        // Display basic staff info
+        document.getElementById('staffInfoName').textContent = userName;
+        document.getElementById('staffInfoBase').textContent = userBase;
+        document.getElementById('staffState').textContent = userState;
+
+        // Set Report Title
+        const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        const monthName = monthNames[parseInt(selectedMonthNum) - 1];
+        if (monthName && selectedYear) {
+            document.getElementById('reportGeneratedTitle').textContent = `ITINERARY - ${monthName.toUpperCase()} ${selectedYear}`;
+        }
+
+        let reportDataForExport = [];
+
+        // Sample data for demonstration
+        const sampleData = [
+        ];
+
+        // Populate table with sample data
+        function populateTable() {
+            const tableBody = document.getElementById('fieldReportTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            let serialNo = 1;
+
+            sampleData.forEach((data, index) => {
+                const row = tableBody.insertRow();
+                const dateObj = new Date(data.date + 'T12:00:00');
+                const formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+
+                let displayZone = data.zone;
+                let displayPurpose = data.purpose;
+
+                // Hide repeated zone/purpose for consecutive days (except special purposes)
+                if (index > 0 && !data.purpose.toLowerCase().includes('day off')) {
+                    const prevData = sampleData[index - 1];
+                    if (data.zone === prevData.zone && data.purpose === prevData.purpose) {
+                        displayZone = '';
+                        displayPurpose = '';
+                    }
+                }
+
+                row.insertCell(0).textContent = serialNo++;
+                row.insertCell(1).textContent = formattedDate;
+                row.insertCell(2).textContent = data.day;
+                row.insertCell(3).textContent = displayZone;
+                row.insertCell(4).textContent = displayPurpose;
+
+                reportDataForExport.push({
+                    "Sl. No": serialNo - 1,
+                    "Date": formattedDate,
+                    "DAY": data.day,
+                    "Zone / Division": displayZone,
+                    "Purpose": displayPurpose
+                });
+            });
+
+            document.getElementById('reportContent').style.display = 'block';
+            document.getElementById('exportReportBtn').style.display = 'block';
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        // Initialize with sample data
+        populateTable();
+
+        // Export Dialog Logic
+        const exportDialogOverlay = document.getElementById('exportDialogOverlay');
+        const exportReportBtn = document.getElementById('exportReportBtn');
+        const closeExportDialogBtn = document.getElementById('closeExportDialogBtn');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const exportExcelBtn = document.getElementById('exportExcelBtn');
+        const exportDocBtn = document.getElementById('exportDocBtn');
+        const exportLoadingOverlay = document.getElementById('exportLoadingOverlay');
+
+        function showExportLoading() {
+            exportLoadingOverlay.style.display = 'flex';
+        }
+
+        function hideExportLoading() {
+            exportLoadingOverlay.style.display = 'none';
+        }
+
+        exportReportBtn.addEventListener('click', () => {
+            exportDialogOverlay.classList.add('active');
+        });
+
+        closeExportDialogBtn.addEventListener('click', () => {
+            exportDialogOverlay.classList.remove('active');
+        });
+
+        exportDialogOverlay.addEventListener('click', (event) => {
+            if (event.target === exportDialogOverlay) {
+                exportDialogOverlay.classList.remove('active');
+            }
+        });
+
+        // PDF Export
+        exportPdfBtn.addEventListener('click', () => {
+            exportDialogOverlay.classList.remove('active');
+            generatePDF();
+        });
+
+        // Excel Export
+        exportExcelBtn.addEventListener('click', () => {
+            exportDialogOverlay.classList.remove('active');
+            generateExcel();
+        });
+
+        // Word Export
+        exportDocBtn.addEventListener('click', () => {
+            exportDialogOverlay.classList.remove('active');
+            generateWord();
+        });
+
+        function generatePDF() {
+            showExportLoading();
+            
+            const pdfHtmlContent = generatePdfHtmlContent(reportDataForExport, userName, userBase, userState, monthName, selectedYear);
+            const tempDiv = document.createElement('div');
+            tempDiv.style.cssText = `
+                position: absolute;
+                left: -9999px;
+                top: -9999px;
+                display: block !important;
+                width: 794px;
+                background-color: #fff;
+                padding: 20px;
+                box-sizing: border-box;
+                font-family: 'Poppins', sans-serif;
+                color: #000;
+                line-height: 1.4;
+            `;
+            tempDiv.innerHTML = pdfHtmlContent;
+            document.body.appendChild(tempDiv);
+
+            setTimeout(() => {
+                html2canvas(tempDiv, {
+                    scale: 2,
+                    logging: false,
+                    useCORS: true,
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF('p', 'mm', 'a4');
+                    const imgWidth = 210;
+                    const pageHeight = 297;
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft > 0) {
+                        position = heightLeft - imgHeight;
+                        doc.addPage();
+                        doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+
+                    doc.save(`${userName}_Itinerary_Form_${monthName}_${selectedYear}.pdf`);
+                    document.body.removeChild(tempDiv);
+                    hideExportLoading();
+                }).catch(error => {
+                    console.error("Error generating PDF:", error);
+                    alert("Failed to generate PDF. Please try again.");
+                    if (tempDiv.parentNode) {
+                        document.body.removeChild(tempDiv);
+                    }
+                    hideExportLoading();
+                });
+            }, 100);
+        }
+
+        function generateExcel() {
+            showExportLoading();
+
+            try {
+                // Create workbook and worksheet
+                const wb = XLSX.utils.book_new();
+                
+                // Create header data
+                const headerData = [
+                    [`Union of Evangelical Students of India - ${userState}`],
+                    [`ITINERARY - ${monthName.toUpperCase()} ${selectedYear}`],
+                    [`NAME: ${userName}      Base: ${userBase}`],
+                    [], // Empty row
+                    ['Sl. No', 'Date', 'DAY', 'Zone / Division', 'Purpose'] // Table headers
+                ];
+
+                // Add report data
+                const tableData = reportDataForExport.map(row => [
+                    row["Sl. No"],
+                    row["Date"],
+                    row["DAY"],
+                    row["Zone / Division"],
+                    row["Purpose"]
+                ]);
+
+                // Combine all data
+                const wsData = [...headerData, ...tableData];
+                
+                // Create worksheet
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+                // Set column widths
+                ws['!cols'] = [
+                    { wch: 8 },  // Sl. No
+                    { wch: 12 }, // Date
+                    { wch: 12 }, // DAY
+                    { wch: 25 }, // Zone / Division
+                    { wch: 40 }  // Purpose
+                ];
+
+                // Style the headers
+                const range = XLSX.utils.decode_range(ws['!ref']);
+                
+                // Center align all cells
+                for (let R = range.s.r; R <= range.e.r; ++R) {
+                    for (let C = range.s.c; C <= range.e.c; ++C) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                        if (!ws[cellAddress]) continue;
+                        
+                        if (!ws[cellAddress].s) ws[cellAddress].s = {};
+                        ws[cellAddress].s.alignment = { 
+                            horizontal: R < 4 || C < 3 ? 'center' : (C >= 3 ? 'left' : 'center'),
+                            vertical: 'center'
+                        };
+                        
+                        // Bold headers
+                        if (R === 4) {
+                            ws[cellAddress].s.font = { bold: true };
+                        }
+                    }
+                }
+
+                // Add worksheet to workbook
+                XLSX.utils.book_append_sheet(wb, ws, 'Itinerary Report');
+
+                // Generate Excel file
+                XLSX.writeFile(wb, `${userName}_Itinerary_Form_${monthName}_${selectedYear}.xlsx`);
+                
+                hideExportLoading();
+            } catch (error) {
+                console.error("Error generating Excel:", error);
+                alert("Failed to generate Excel file. Please try again.");
+                hideExportLoading();
+            }
+        }
+
+        function generateWord() {
+            showExportLoading();
+
+            try {
+                // Generate HTML content for Word
+                const wordHtmlContent = generateWordHtmlContent(reportDataForExport, userName, userBase, userState, monthName, selectedYear);
+                
+                // Create a Blob with the HTML content
+                const blob = new Blob([wordHtmlContent], {
+                    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                });
+
+                // Create download link
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${userName}_Itinerary_Form_${monthName}_${selectedYear}.doc`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                hideExportLoading();
+            } catch (error) {
+                console.error("Error generating Word document:", error);
+                alert("Failed to generate Word document. Please try again.");
+                hideExportLoading();
+            }
+        }
+
+        function generatePdfHtmlContent(data, userName, userBase, userState, monthName, selectedYear) {
+            let tableHtml = '<table border="1" style="width:100%; border-collapse: collapse; margin: 20px auto; font-family: Arial, sans-serif;"><thead><tr>';
+            const headers = ["Sl. No", "Date", "DAY", "Zone / Division", "Purpose"];
+            const colWidths = {
+                "Sl. No": "8%",
+                "Date": "12%",
+                "DAY": "12%",
+                "Zone / Division": "18%",
+                "Purpose": "50%"
+            };
+
+            headers.forEach(header => {
+                tableHtml += `<th style="background-color:#f2f2f2; padding:8px; text-align:center; font-weight:bold; border:1px solid #444; white-space: nowrap; width:${colWidths[header] || 'auto'};">${header}</th>`;
+            });
+
+            tableHtml += '</tr></thead><tbody>';
+
+            data.forEach(row => {
+                tableHtml += '<tr>';
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Sl. No"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Date"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["DAY"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Zone / Division"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Purpose"]}</td>`;
+                tableHtml += '</tr>';
+            });
+
+            tableHtml += '</tbody></table>';
+
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>${userName} Itinerary Report - ${monthName} ${selectedYear}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; }
+                        h1, h2, p { margin: 0; padding: 0; }
+                        .report-header { text-align: center; margin-bottom: 10px; }
+                        .report-header p { font-size: 14px; font-weight: bold; text-align: center; }
+                        .report-header h1 { font-size: 18px; font-weight: bold; text-transform: uppercase; text-align: center; color: #075E54; }
+                        .staff-info { font-size: 14px; text-align: center; font-weight: bold; margin-bottom: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px auto; table-layout: fixed; }
+                        th, td { border: 1px solid #444; padding: 8px; vertical-align: top; font-size: 13px; word-wrap: break-word; text-align: center; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                        td:nth-child(1) { width: 8%; }
+                        td:nth-child(2) { width: 12%; white-space: nowrap; }
+                        td:nth-child(3) { width: 12%; white-space: nowrap; }
+                        td:nth-child(4) { width: 18%; }
+                        td:nth-child(5) { width: 50%; }
+                    </style>
+                </head>
+                <body>
+                    <div class="report-header">
+                        <h5>Union of Evangelical Students of India - ${userState || 'N/A'}</h5>
+                        <h5>ITINERARY - ${monthName.toUpperCase()} ${selectedYear}</h5>
+                    </div>
+                    <h2 class="staff-info">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Base: ${userBase || 'N/A'}</h2>
+                    ${tableHtml}
+                </body>
+                </html>
+            `;
+        }
+
+        function generateWordHtmlContent(data, userName, userBase, userState, monthName, selectedYear) {
+            let tableHtml = '<table border="1" style="width:100%; border-collapse: collapse; margin: 20px auto;"><thead><tr>';
+            const headers = ["Sl. No", "Date", "DAY", "Zone / Division", "Purpose"];
+
+            headers.forEach(header => {
+                tableHtml += `<th style="background-color:#f2f2f2; padding:8px; text-align:center; font-weight:bold; border:1px solid #444;">${header}</th>`;
+            });
+
+            tableHtml += '</tr></thead><tbody>';
+
+            data.forEach(row => {
+                tableHtml += '<tr>';
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Sl. No"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Date"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["DAY"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Zone / Division"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Purpose"]}</td>`;
+                tableHtml += '</tr>';
+            });
+
+            tableHtml += '</tbody></table>';
+
+            return `
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>${userName} itinerary - ${monthName} ${selectedYear}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; color: #000; }
+                        .report-header { text-align: center; margin-bottom: 20px; }
+                        .report-header p { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+                        .report-header h1 { font-size: 20px; font-weight: bold; color: #075E54; margin-bottom: 10px; }
+                        .staff-info { font-size: 16px; text-align: center; font-weight: bold; margin-bottom: 30px; }
+                        table { width: 100%; border-collapse: collapse; }
+                        th, td { border: 1px solid #444; padding: 10px; text-align: center; font-size: 14px; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="report-header">
+                        <h5>Union of Evangelical Students of India - ${userState || 'N/A'}</h5>
+                        <h5>ITINERARY - ${monthName.toUpperCase()} ${selectedYear}</h5>
+                    </div>
+                    <div class="staff-info">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Base: ${userBase || 'N/A'}</div>
+                    ${tableHtml}
+                </body>
+                </html>
+            `;
+        }
+
+        // Firebase data fetching (if needed)
+        if (userEmail && userEmail !== 'sample@test.com') {
+            const safeUserEmail = userEmail.replace(/\./g, '_');
+            const fieldReportRef = database.ref(`apps/uesi/staff-work/users/${safeUserEmail}/userData/Itinerary_Form`);
+
+            if (fieldReportRef && selectedYear && selectedMonthNum) {
+                document.getElementById('loader').style.display = 'block';
+                document.getElementById('exportReportBtn').style.display = 'none';
+
+                fieldReportRef.orderByKey()
+                    .startAt(`${selectedYear}-${String(selectedMonthNum).padStart(2, '0')}-01`)
+                    .endAt(`${selectedYear}-${String(selectedMonthNum).padStart(2, '0')}-31`)
+                    .once('value', function (snapshot) {
+                        document.getElementById('loader').style.display = 'none';
+                        const tableBody = document.getElementById('fieldReportTable').getElementsByTagName('tbody')[0];
+                        tableBody.innerHTML = '';
+                        reportDataForExport = []; // Reset export data
+                        let serialNo = 1;
+                        const rawData = [];
+
+                        snapshot.forEach(function (dateSnapshot) {
+                            const dateKey = dateSnapshot.key;
+                            const dateData = dateSnapshot.val();
+                            if (dateData && typeof dateData === 'object') {
+                                rawData.push({ id: dateKey, date: dateKey, ...dateData });
+                            }
+                        });
+
+                        rawData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                        if (rawData.length === 0) {
+                            document.getElementById('noDataMessage').style.display = 'block';
+                            document.getElementById('reportContent').style.display = 'block';
+                            return;
+                        }
+
+                        let previousEntry = null;
+                        rawData.forEach(function (data) {
+                            const row = tableBody.insertRow();
+                            const dateObj = new Date(data.date + 'T12:00:00');
+                            const formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+
+                            let currentPurpose = data.purpose || '';
+                            let currentZone = data.zone || '';
+                            let currentDay = data.day || '';
+                            let displayZone = currentZone;
+                            let displayPurpose = currentPurpose;
+
+                            const specialPurposeKeywords = ['day off', 'preparation', 'holidays'];
+                            const isSpecialPurpose = specialPurposeKeywords.some(keyword => 
+                                currentPurpose.toLowerCase().includes(keyword.toLowerCase())
+                            );
+
+                            if (previousEntry && !isSpecialPurpose) {
+                                const prevDateObj = new Date(previousEntry.date + 'T12:00:00');
+                                const daysDiff = (dateObj - prevDateObj) / (1000 * 60 * 60 * 24);
+                                if (daysDiff === 1 && currentZone === previousEntry.zone && currentPurpose === previousEntry.purpose) {
+                                    displayZone = '';
+                                    displayPurpose = '';
+                                }
+                            }
+
+                            row.insertCell(0).textContent = serialNo++;
+                            row.insertCell(1).textContent = formattedDate;
+                            row.insertCell(2).textContent = currentDay;
+                            row.insertCell(3).textContent = displayZone;
+                            row.insertCell(4).textContent = displayPurpose;
+
+                            reportDataForExport.push({
+                                "Sl. No": serialNo - 1,
+                                "Date": formattedDate,
+                                "DAY": currentDay,
+                                "Zone / Division": displayZone,
+                                "Purpose": displayPurpose
+                            });
+
+                            previousEntry = data;
+                        });
+
+                        document.getElementById('reportContent').style.display = 'block';
+                        document.getElementById('exportReportBtn').style.display = 'block';
+                    })
+                    .catch(function (error) {
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('noDataMessage').textContent = `Error fetching data: ${error.message}`;
+                        document.getElementById('noDataMessage').style.display = 'block';
+                        document.getElementById('reportContent').style.display = 'block';
+                        console.error("Firebase data fetch error:", error);
+                    });
+            }
+        }
+    </script>
+</body>
+</html>
