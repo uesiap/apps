@@ -1100,7 +1100,8 @@
         <div class="app-info">
             <div class="app-title">UESI Staff Work</div>
         </div>&ensp;
-        <button class="install-btn" onclick="window.open('https://uesiap.github.io/apps/uesi/staff-work/', '_blank')">Open
+        <button class="install-btn"
+            onclick="window.open('https://uesiap.github.io/apps/uesi/staff-work/', '_blank')">Open
             App</button>
     </div>
     <br>
@@ -1274,49 +1275,49 @@
 
         // This function will continuously check the state and manage the splash screen
         function checkAndToggleSplashScreen() {
-    const splashScreen = document.getElementById('splashScreen');
-    const bbsRole = localStorage.getItem('bbsRole'); // Should be email
-    const bbsName = localStorage.getItem('bbsName'); // Should be name
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const splashScreen = document.getElementById('splashScreen');
+            const bbsRole = localStorage.getItem('bbsRole'); // Should be email
+            const bbsName = localStorage.getItem('bbsName'); // Should be name
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    console.log("Checking splash screen visibility:");
-    console.log("  bbsRole:", bbsRole);
-    console.log("  bbsName:", bbsName);
-    console.log("  bbsRole is valid email format:", emailPattern.test(bbsRole));
+            console.log("Checking splash screen visibility:");
+            console.log("  bbsRole:", bbsRole);
+            console.log("  bbsName:", bbsName);
+            console.log("  bbsRole is valid email format:", emailPattern.test(bbsRole));
 
-    const isUserLoggedInAndValid = (bbsRole && bbsName && emailPattern.test(bbsRole));
+            const isUserLoggedInAndValid = (bbsRole && bbsName && emailPattern.test(bbsRole));
 
-    if (!isUserLoggedInAndValid) {
-        console.log("  Splash screen should be VISIBLE (not logged in or invalid credentials)");
-        splashScreen.classList.remove('hidden');
+            if (!isUserLoggedInAndValid) {
+                console.log("  Splash screen should be VISIBLE (not logged in or invalid credentials)");
+                splashScreen.classList.remove('hidden');
 
-        if (!splashScreen.dataset.listenersAttached) {
-            const splashLoginBtn = document.getElementById('splashLoginBtn');
-            const splashRegisterBtn = document.getElementById('splashRegisterBtn');
+                if (!splashScreen.dataset.listenersAttached) {
+                    const splashLoginBtn = document.getElementById('splashLoginBtn');
+                    const splashRegisterBtn = document.getElementById('splashRegisterBtn');
 
-            splashLoginBtn.addEventListener('click', () => {
-                // Do NOT set hasVisited here, as it's no longer used for visibility.
-                // The visibility depends on actual login state from localStorage.
+                    splashLoginBtn.addEventListener('click', () => {
+                        // Do NOT set hasVisited here, as it's no longer used for visibility.
+                        // The visibility depends on actual login state from localStorage.
+                        splashScreen.classList.add('hidden');
+                        // Ensure redirectToAuth correctly handles the base URL if needed
+                        redirectToAuth('login');
+                    });
+
+                    splashRegisterBtn.addEventListener('click', () => {
+                        // Do NOT set hasVisited here
+                        splashScreen.classList.add('hidden');
+                        // Ensure redirectToAuth correctly handles the base URL if needed
+                        redirectToAuth('register');
+                    });
+                    splashScreen.dataset.listenersAttached = 'true';
+                }
+            } else {
+                console.log("  Splash screen should be HIDDEN (logged in and valid credentials)");
                 splashScreen.classList.add('hidden');
-                // Ensure redirectToAuth correctly handles the base URL if needed
-                redirectToAuth('login');
-            });
-
-            splashRegisterBtn.addEventListener('click', () => {
-                // Do NOT set hasVisited here
-                splashScreen.classList.add('hidden');
-                // Ensure redirectToAuth correctly handles the base URL if needed
-                redirectToAuth('register');
-            });
-            splashScreen.dataset.listenersAttached = 'true';
+                // Optionally, ensure your main content is visible if it was hidden initially
+                // document.getElementById('mainContentContainer').style.display = 'block';
+            }
         }
-    } else {
-        console.log("  Splash screen should be HIDDEN (logged in and valid credentials)");
-        splashScreen.classList.add('hidden');
-        // Optionally, ensure your main content is visible if it was hidden initially
-        // document.getElementById('mainContentContainer').style.display = 'block';
-    }
-}
 
 
         document.addEventListener("DOMContentLoaded", function () {
