@@ -77,32 +77,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- App Title and Description -->
     <meta name="description" content="Submit, Edit, Generate Report using UESI Staff Work App." />
 
-    <!-- App Theme and Colors -->
-    <meta name="theme-color" content="#128C7E" />
+    <meta name="theme-color" content="#075E54" />
     <meta name="background-color" content="#ffffff" />
 
-    <!-- Favicon and Icons -->
-    <link rel="icon" href="/au-zone/bbs/icons/icon-32.png" type="image/png">
-    <link rel="apple-touch-icon" href="/au-zone/bbs/icons/icon-192.png">
+    <link rel="icon" href="/vidhyardhi-geethavali/Icon192.jpg" type="image/png">
+    <link rel="apple-touch-icon" href="/vidhyardhi-geethavali/Icon-192.jpg">
 
-    <!-- Web App Manifest for PWA -->
-    <link rel="manifest" href="/au-zone/bbs/manifest.json" />
-    <link rel="canonical" href="https://uesiap.github.io/au-zone/bbs/" />
+    <link rel="manifest" href="https://uesiap.github.io/apps/uesi/staff-work/manifest.json" />
+    <link rel="canonical" href="https://uesiap.github.io/apps/uesi/staff-work/" />
 
-    <meta property="og:title" content="AU - ZONE Bible Study I/C App" />
+    <meta property="og:title" content="UESI STAFF WORK App" />
     <meta property="og:description" content="Submit, Edit, Generate Report using UESI Staff Work App." />
-    <meta property="og:image" content="https://uesiap.github.io/au-zone/bbs/icons/icon-192.png" />
-    <meta property="og:url" content="https://uesiap.github.io/au-zone/bbs/" />
+    <meta property="og:image" content="https://uesiap.github.io/vidhyardhi-geethavali/Icon192.jpg" />
+    <meta property="og:url" content="https://uesiap.github.io/apps/uesi/staff-work/" />
     <meta property="og:type" content="website" />
 
-    <!-- Enable Standalone Mode on iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="UESI Staff Work" />
-    <title>AU - ZONE Bible Study I/C App</title>
+    <title>UESI STAFF WORK App</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
@@ -833,18 +828,163 @@
         input[type="date"],
         input[type="text"],
         #purpose1,
-        #purpose2,
-        #day1,
-        #day2 {
+        #purpose2 {
             border-top: 2px solid white;
             border-left: 2px solid white;
             border-right: 2px solid white;
+        }
+
+        /* New styles for radio button group */
+        .radio-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            justify-content: flex-start;
+            padding-left: 5px;
+        }
+
+        .radio-group label {
+            display: inline-block;
+            margin-left: 5px;
+            margin-right: 15px;
+            font-weight: normal;
+            color: #333;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        .radio-group input[type="radio"] {
+            width: auto;
+            margin-right: 5px;
+            vertical-align: middle;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+            transform: scale(1.6);
+        }
+
+        .radio-group input[type="radio"]:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .radio-group-title {
+            display: block;
+            font-weight: bold;
+            color: #1d1d1d;
+            margin-bottom: 5px;
+        }
+
+        /* Splash Screen Styles */
+        .splash-screen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary-color);
+            /* Matches your app's primary color */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            /* Ensure it's on top of everything */
+            flex-direction: column;
+            color: var(--text-light);
+            text-align: center;
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+        }
+
+        .splash-screen-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            /* Allows clicks on elements behind it once hidden */
+        }
+
+        .splash-screen-content {
+            padding: 20px;
+            max-width: 350px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .splash-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .splash-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+
+        .splash-message {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            color: var(--text-light);
+        }
+
+        .splash-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .splash-btn-primary,
+        .splash-btn-secondary {
+            display: block;
+            width: 100%;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            /* For links if you change button to anchor */
+            text-align: center;
+        }
+
+        .splash-btn-primary {
+            background-color: var(--bg-white);
+            /* White background */
+            color: var(--primary-color);
+            /* Primary text color */
+            border: 2px solid var(--bg-white);
+        }
+
+        .splash-btn-primary:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .splash-btn-secondary {
+            background-color: transparent;
+            color: var(--text-light);
+            border: 2px solid var(--text-light);
+            /* White border */
+        }
+
+        .splash-btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: var(--text-light);
         }
     </style>
 </head>
 
 <body>
-    <!-- App Bar -->
     <div class="action-bar">
         <div style="display: flex; align-items: center;">
             <button class="menu-button" id="menuButton">
@@ -854,7 +994,6 @@
         </div>
     </div>
 
-    <!-- Navigation Drawer -->
     <div class="nav-drawer" id="navDrawer">
         <div class="nav-header"
             style="height: 7.5rem; margin-top: -1rem; background-color: #F3EDF7; border-bottom: 2px dashed #555;">
@@ -862,21 +1001,26 @@
             <div class="nav-subtitle" id="greet" style="color: #1d1d1d;">Dear Staff Worker</div>
         </div>
 
-        <!-- User Info Container -->
         <div class="nav-items">
-            <!-- Submit Data (Default Active) -->
-            <!-- <div class="nav-item active" id="submitDataBtn" onclick="toggleDrawer();">
-        <i class="fas fa-upload"></i>
-        <span>Submit Data</span>
-      </div> -->
-
+            <div class="nav-section-heading">---> VIEW DATA</div>
             <div class="nav-item" id="editReviewBtn"
-                onclick="Redirect(this, '/apps/uesi/staff-work/view-field-report')">
+                onclick="Redirect(this, '/apps/uesi/staff-work/view/field-report')">
                 <i class="fas fa-edit"></i>
                 <span>Field Report</span>
             </div>
 
-            <div class="nav-item" id="genReportBtn" onclick="Redirect(this, '/apps/uesi/staff-work/view-itinerary')">
+            <div class="nav-item" id="genReportBtn" onclick="Redirect(this, '/apps/uesi/staff-work/view/itinerary')">
+                <i class="fas fa-file-alt"></i>
+                <span>Itinerary</span>
+            </div>
+            <div class="nav-divider" style="margin-bottom: 15px;"></div>
+            <div class="nav-section-heading">---> GENERATE REPORT</div>
+            <div class="nav-item" id="editReviewBtn" onclick="Redirect(this, '/apps/uesi/staff-work/gen/field-report')">
+                <i class="fas fa-edit"></i>
+                <span>Field Report</span>
+            </div>
+
+            <div class="nav-item" id="genReportBtn" onclick="Redirect(this, '/apps/uesi/staff-work/gen/itinerary')">
                 <i class="fas fa-file-alt"></i>
                 <span>Itinerary</span>
             </div>
@@ -884,7 +1028,6 @@
             <div class="nav-divider"></div>
             <div style="margin-bottom: 10px;"></div>
             <span id="share-app" style="display: none;">
-                <!-- Share Button to Open Dialog -----------* nclick="showDialog()"-->
                 <div class="nav-item" id="share" onclick="Redirect(this, '/apps/uesi/staff-work/app')">
                     <i class="fas fa-share"></i>
                     <span>Share App</span>
@@ -893,22 +1036,11 @@
                 <div style="margin-bottom: 10px;"></div>
             </span>
 
-            <!-- <div class="nav-item" id="chooseBBSRoleBtn">
-        <i class="fas fa-users-cog"></i>
-        <span>Select My Portfolio</span>
-      </div> -->
-
-            <!-- Portfolio Display -->
             <div class="user-info-container" id="userInfoContainer">
                 <div class="user-info-title">Your Name:</div>
                 <div class="user-info-value" id="selectedNameDisplay">Not Login</div>
             </div>
 
-            <!-- Enter Name -->
-            <!-- <div class="nav-item" id="setBBSNameBtn">
-        <i class="fas fa-user-edit"></i>
-        <span>Enter My Name</span>
-      </div> -->
             <div class="user-info-container">
                 <div class="user-info-title">Your Email:</div>
                 <div class="user-info-value" id="selectedRoleDisplay">Not Login</div>
@@ -922,11 +1054,6 @@
                 <span>mrahul.eu</span>
             </div>
 
-            <!-- <div class="nav-item" id="wa" onclick="openWhatsApp()">
-        <i class="fa-brands fa-whatsapp"></i>
-        <span>9347450441</span>
-      </div> -->
-
             <div class="nav-divider" style="margin-bottom: 15px;"></div>
             <div class="nav-section-heading">UESI Staff Work App</div>
             <div class="app-version" style="margin-bottom: 1rem; margin-left: 1rem; margin-top: 1rem;">
@@ -936,11 +1063,20 @@
     </div>
 
 
-    <!-- Overlay -->
     <div class="overlay" id="overlay"></div>
+    <div id="splashScreen" class="splash-screen-overlay">
+        <div class="splash-screen-content">
+            <img src="https://uesiap.github.io/vidhyardhi-geethavali/Icon192.jpg" alt="App Icon" class="splash-icon">
+            <h1 class="splash-title">UESI Staff Work</h1>
+            <p class="splash-message">Your dedicated app for seamless daily reporting.</p>
+            <div class="splash-buttons">
+                <button id="splashLoginBtn" class="splash-btn-primary">Login</button>
+                <button id="splashRegisterBtn" class="splash-btn-secondary">Register</button>
+            </div>
+        </div>
+    </div>
 
 
-    <!-- Confirmation Dialog -->
     <div class="confirmation-dialog" id="confirmationDialog">
         <div class="confirmation-icon">
             <i class="fas fa-check-circle"></i>
@@ -952,7 +1088,7 @@
     </div>
     <br><br><br><br>
     <div class="app-banner" id="app-banner" style="display: none">
-        <img src="https://uesiap.github.io/au-zone/bbs/icons/icon-192.png" alt="App Icon" class="app-icon" />
+        <img src="https://uesiap.github.io/vidhyardhi-geethavali/Icon192.jpg" alt="App Icon" class="app-icon" />
         <div class="app-info">
             <div class="app-title">UESI Staff Work</div>
             <div class="app-description">Submit, Edit, Generate Report</div>
@@ -960,11 +1096,11 @@
         <button class="install-btn">Install</button>
     </div>
     <div class="app-banner" id="app-banner-open" style="display: none">
-        <img src="https://uesiap.github.io/au-zone/bbs/icons/icon-192.png" alt="App Icon" class="app-icon" />
+        <img src="https://uesiap.github.io/vidhyardhi-geethavali/Icon192.jpg" alt="App Icon" class="app-icon" />
         <div class="app-info">
             <div class="app-title">UESI Staff Work</div>
         </div>&ensp;
-        <button class="install-btn" onclick="window.open('https://uesiap.github.io/au-zone/bbs/', '_blank')">Open
+        <button class="install-btn" onclick="window.open('https://uesiap.github.io/apps/uesi/staff-work/', '_blank')">Open
             App</button>
     </div>
     <br>
@@ -975,37 +1111,46 @@
     </div>
     <hr>
     <div id="openclose">
-        <!-- Tab Buttons -->
         <div class="tab-btn-container">
             <button class="tab-btn active" onclick="showTabs('field', event)">Field Report</button>
             <button class="tab-btn" onclick="showTabs('itinerary', event)">Itinerary Form</button>
         </div>
         <br>
 
-        <!-- Forms Container -->
         <span>
-            <!-- Field Report Tab -->
             <section id="form1">
                 <div class="container" style="margin-top: -10px;">
                     <h3 class="form-heading">Field Report</h3>
                     <form id="fieldReportForm">
                         <div class="form-group">
-                            <label for="date1">Select Date:</label>
-                            <input type="date" id="date1" name="date" required style="background-color: #f8f9fa;">
+                            <span class="radio-group-title">Select Date Type:</span>
+                            <div class="radio-group">
+                                <input type="radio" id="date1_single" name="dateType1" value="single" checked>
+                                <label for="date1_single">Single Day</label>
+                                <input type="radio" id="date1_multi" name="dateType1" value="multi">
+                                <label for="date1_multi">Multi-Day</label>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="day1">Select Day:</label>
-                            <select id="day1" name="day" required style="background-color: #f8f9fa;">
-                                <option value="" selected disabled>select day</option>
-                                <option value="Mon">Monday</option>
-                                <option value="Tue">Tuesday</option>
-                                <option value="Wed">Wednesday</option>
-                                <option value="Thu">Thursday</option>
-                                <option value="Fri">Friday</option>
-                                <option value="Sat">Saturday</option>
-                                <option value="Sun">Sunday</option>
-                            </select>
+
+                        <div id="date1_single_fields" class="form-group">
+                            <label for="date1_start_single">Select Date:</label>
+                            <input type="date" id="date1_start_single" name="dateStartSingle" required
+                                style="background-color: #f8f9fa;">
                         </div>
+
+                        <div id="date1_multi_fields" class="form-group hidden">
+                            <div class="form-group">
+                                <label for="date1_start_multi">Select Start Date:</label>
+                                <input type="date" id="date1_start_multi" name="dateStartMulti"
+                                    style="background-color: #f8f9fa;">
+                            </div>
+                            <div class="form-group">
+                                <label for="date1_end_multi">Select End Date:</label>
+                                <input type="date" id="date1_end_multi" name="dateEndMulti"
+                                    style="background-color: #f8f9fa;">
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label for="zone1">Zone/Division:</label>
                             <input type="text" id="zone1" name="zone" list="typeList" placeholder="enter zone/division"
@@ -1024,28 +1169,39 @@
                 </div>
             </section>
 
-            <!-- Itinerary Form Tab -->
             <section id="form2" class="hidden">
                 <div class="container" style="margin-top: -10px;">
                     <h3 class="form-heading">Itinerary Form</h3>
                     <form id="itineraryForm">
                         <div class="form-group">
-                            <label for="date2">Select Date:</label>
-                            <input type="date" id="date2" name="date" required style="background-color: #f8f9fa;">
+                            <span class="radio-group-title">Select Date Type:</span>
+                            <div class="radio-group">
+                                <input type="radio" id="date2_single" name="dateType2" value="single" checked>
+                                <label for="date2_single">Single Day</label>
+                                <input type="radio" id="date2_multi" name="dateType2" value="multi">
+                                <label for="date2_multi">Multi-Day</label>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="day2">Select Day:</label>
-                            <select id="day2" name="day" required style="background-color: #f8f9fa;">
-                                <option value="" selected disabled>select day</option>
-                                <option value="Mon">Monday</option>
-                                <option value="Tue">Tuesday</option>
-                                <option value="Wed">Wednesday</option>
-                                <option value="Thu">Thursday</option>
-                                <option value="Fri">Friday</option>
-                                <option value="Sat">Saturday</option>
-                                <option value="Sun">Sunday</option>
-                            </select>
+
+                        <div id="date2_single_fields" class="form-group">
+                            <label for="date2_start_single">Select Date:</label>
+                            <input type="date" id="date2_start_single" name="dateStartSingle" required
+                                style="background-color: #f8f9fa;">
                         </div>
+
+                        <div id="date2_multi_fields" class="form-group hidden">
+                            <div class="form-group">
+                                <label for="date2_start_multi">Select Start Date:</label>
+                                <input type="date" id="date2_start_multi" name="dateStartMulti"
+                                    style="background-color: #f8f9fa;">
+                            </div>
+                            <div class="form-group">
+                                <label for="date2_end_multi">Select End Date:</label>
+                                <input type="date" id="date2_end_multi" name="dateEndMulti"
+                                    style="background-color: #f8f9fa;">
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label for="zone2">Zone/Division:</label>
                             <input type="text" id="zone2" name="zone" list="typeList" placeholder="enter zone/division"
@@ -1077,18 +1233,6 @@
         <button id="okkButton" onclick="window.location.reload()">Okay</button>
     </div>
 
-    <!-- Share Dialog Box -->
-    <!-- <div class="shareDialog" id="share-dialog">
-        <div class="shareIcon">
-            <i class="fas fa-exclamation-circle" style="color: #D32F2F; font-size: 3rem;"></i>
-        </div>
-        <div class="shareMessage confirmation-message">
-            Share only with your successor. Please Keep it Confidential.
-        </div>
-        <button class="Sharebutton" id="shareButton">Share</button>
-        <button class="Sharebutton" id="okkkButton" style="background-color: grey;">OK</button>
-    </div> -->
-
     <footer id="foot"
         style="margin-left: -0.625rem; justify-content: space-evenly; z-index:2; bottom: 0.025rem; width: 100%; background-color: white; color: #333; text-align: center; padding: 0.5rem 0;">
         <p style="margin: 0; font-size: 0.7625rem;">
@@ -1097,6 +1241,82 @@
         </p>
     </footer>
     <script>
+        function Redirect(element, url = null) {
+            const bbsRole = localStorage.getItem('bbsRole') || 'unknown';
+            const bbsName = localStorage.getItem('bbsName') || 'unknown';
+
+            // Construct the query parameters
+            const params = new URLSearchParams();
+            params.append('name', encodeURIComponent(bbsName));
+            params.append('email', encodeURIComponent(bbsRole));
+
+            // Append the parameters to the URL
+            const finalUrl = `${url}?${params.toString()}`;
+
+            window.location.href = finalUrl;
+            // Ensure toggleDrawer is also defined in a scope accessible by this function,
+            // or remove it if it's not applicable here or causes other errors.
+            toggleDrawer();
+        }
+
+        function redirectToAuth(page) {
+            let redirectUrl = '';
+
+            if (page === 'login') {
+                redirectUrl = 'https://uesiap.github.io/apps/uesi/staff-work/login';
+            } else if (page === 'register') {
+                redirectUrl = 'https://rahul.serv00.net/apps/uesi/staff-work.php';
+            }
+
+            window.location.href = redirectUrl;
+        }
+
+
+        // This function will continuously check the state and manage the splash screen
+        function checkAndToggleSplashScreen() {
+            const splashScreen = document.getElementById('splashScreen');
+            const bbsRole = localStorage.getItem('bbsRole');
+            const bbsName = localStorage.getItem('bbsName');
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            const isUserLoggedInAndValid = (bbsRole && bbsName && emailPattern.test(bbsRole));
+
+            if (!isUserLoggedInAndValid) {
+                // If user is NOT logged in or credentials are invalid, show splash screen
+                splashScreen.classList.remove('hidden');
+                // Attach listeners only once
+                if (!splashScreen.dataset.listenersAttached) {
+                    const splashLoginBtn = document.getElementById('splashLoginBtn');
+                    const splashRegisterBtn = document.getElementById('splashRegisterBtn');
+
+                    splashLoginBtn.addEventListener('click', () => {
+                        splashScreen.classList.add('hidden');
+                        setTimeout(() => redirectToAuth('login'), 500);
+                    });
+
+                    splashRegisterBtn.addEventListener('click', () => {
+                        splashScreen.classList.add('hidden');
+                        setTimeout(() => redirectToAuth('register'), 500);
+                    });
+                    splashScreen.dataset.listenersAttached = 'true'; // Mark listeners as attached
+                }
+            } else {
+                // If user IS logged in with valid credentials, hide splash screen
+                splashScreen.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            checkAndToggleSplashScreen();
+
+            // Set up continuous checking every 500ms
+            setInterval(checkAndToggleSplashScreen, 500);
+
+        });
+
+
+
+
         function showTabs(format, event = null) {
             const form1 = document.getElementById('form1');
             const form2 = document.getElementById('form2');
@@ -1119,67 +1339,61 @@
             // Optional: filterSongs(currentQuery);
         }
 
-        // window.addEventListener('DOMContentLoaded', () => {
-        //     const dateInput = document.getElementById('date1');
-        //     const daySelect = document.getElementById('day1');
-
-        //     // Get today's date
-        //     const today = new Date();
-        //     const yyyy = today.getFullYear();
-        //     const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-        //     const dd = String(today.getDate()).padStart(2, '0');
-        //     const formattedDate = `${yyyy}-${mm}-${dd}`;
-
-        //     // Set the date input
-        //     dateInput.value = formattedDate;
-
-        //     // Set the day select based on current weekday
-        //     const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        //     const todayDayShort = weekdays[today.getDay()];
-
-        //     // Loop through options and select the matching day
-        //     for (let option of daySelect.options) {
-        //         if (option.value === todayDayShort) {
-        //             option.selected = true;
-        //             break;
-        //         }
-        //     }
-        // });
-
         window.addEventListener('DOMContentLoaded', () => {
-            const dateInput1 = document.getElementById('date1');
-            const daySelect1 = document.getElementById('day1');
-            const dateInput2 = document.getElementById('date2');
-            const daySelect2 = document.getElementById('day2');
+            // --- Date Type Radio Button Logic ---
+            const dateType1Single = document.getElementById('date1_single');
+            const dateType1Multi = document.getElementById('date1_multi');
+            const date1SingleFields = document.getElementById('date1_single_fields');
+            const date1MultiFields = document.getElementById('date1_multi_fields');
 
-            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const dateType2Single = document.getElementById('date2_single');
+            const dateType2Multi = document.getElementById('date2_multi');
+            const date2SingleFields = document.getElementById('date2_single_fields');
+            const date2MultiFields = document.getElementById('date2_multi_fields');
 
-            // Auto-set date1 and day1 to today
+            // Function to toggle date fields visibility for a given form
+            function toggleDateFields(singleRadio, multiRadio, singleFieldsDiv, multiFieldsDiv) {
+                if (singleRadio.checked) {
+                    singleFieldsDiv.classList.remove('hidden');
+                    multiFieldsDiv.classList.add('hidden');
+                    // Ensure multi-day fields are not required if hidden
+                    multiFieldsDiv.querySelectorAll('input[type="date"]').forEach(input => input.removeAttribute('required'));
+                    singleFieldsDiv.querySelector('input[type="date"]').setAttribute('required', 'true');
+                } else {
+                    singleFieldsDiv.classList.add('hidden');
+                    multiFieldsDiv.classList.remove('hidden');
+                    // Ensure single-day field is not required if hidden
+                    singleFieldsDiv.querySelector('input[type="date"]').removeAttribute('required');
+                    // Make multi-day start date required, end date optional
+                    multiFieldsDiv.querySelector('input[name*="dateStartMulti"]').setAttribute('required', 'true');
+                    multiFieldsDiv.querySelector('input[name*="dateEndMulti"]').removeAttribute('required'); // End date is optional
+                }
+            }
+
+            // Initial setup on load
+            toggleDateFields(dateType1Single, dateType1Multi, date1SingleFields, date1MultiFields);
+            toggleDateFields(dateType2Single, dateType2Multi, date2SingleFields, date2MultiFields);
+
+
+            // Event listeners for Field Report (form1) radio buttons
+            dateType1Single.addEventListener('change', () => toggleDateFields(dateType1Single, dateType1Multi, date1SingleFields, date1MultiFields));
+            dateType1Multi.addEventListener('change', () => toggleDateFields(dateType1Single, dateType1Multi, date1SingleFields, date1MultiFields));
+
+            // Event listeners for Itinerary Form (form2) radio buttons
+            dateType2Single.addEventListener('change', () => toggleDateFields(dateType2Single, dateType2Multi, date2SingleFields, date2MultiFields));
+            dateType2Multi.addEventListener('change', () => toggleDateFields(dateType2Single, dateType2Multi, date2SingleFields, date2MultiFields));
+
+            // --- Auto-set current date and capitalization (existing logic, slightly adjusted) ---
+            const dateInput1StartSingle = document.getElementById('date1_start_single');
+            // const dateInput2StartSingle = document.getElementById('date2_start_single'); // Removed auto-setting for Itinerary Form
+
+            // Auto-set single day date input for Field Report to today
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
             const dd = String(today.getDate()).padStart(2, '0');
             const formattedDate = `${yyyy}-${mm}-${dd}`;
-            dateInput1.value = formattedDate;
-
-            const todayDayShort = weekdays[today.getDay()];
-            for (let option of daySelect1.options) {
-                if (option.value === todayDayShort) {
-                    option.selected = true;
-                    break;
-                }
-            }
-
-            // 🔁 Auto-set day2 when date2 changes
-            dateInput2.addEventListener('change', () => {
-                const selectedDate = new Date(dateInput2.value);
-                if (!isNaN(selectedDate)) {
-                    const selectedDayShort = weekdays[selectedDate.getDay()];
-                    for (let option of daySelect2.options) {
-                        option.selected = option.value === selectedDayShort;
-                    }
-                }
-            });
+            dateInput1StartSingle.value = formattedDate;
 
             const zone1Input = document.getElementById('zone1');
             const zone2Input = document.getElementById('zone2');
@@ -1193,29 +1407,29 @@
                 input.value = capitalizeFirstLetter(input.value.trim());
             }
 
-            // Auto-capitalize on losing focus (you can also use 'change' instead of 'blur')
             zone1Input.addEventListener('blur', () => handleZoneCapitalization(zone1Input));
             zone2Input.addEventListener('blur', () => handleZoneCapitalization(zone2Input));
+
+            // function Redirect(element, url = null) {
+            //     const bbsRole = localStorage.getItem('bbsRole') || 'unknown';
+            //     const bbsName = localStorage.getItem('bbsName') || 'unknown';
+
+            //     // Construct the query parameters
+            //     const params = new URLSearchParams();
+            //     params.append('name', encodeURIComponent(bbsName));
+            //     params.append('email', encodeURIComponent(bbsRole));
+
+            //     // Append the parameters to the URL
+            //     // If the URL already has parameters, append new ones. Otherwise, start the query string.
+            //     const finalUrl = `${url}?${params.toString()}`;
+
+            //     window.location.href = finalUrl;
+            //     toggleDrawer();
+            // }
         });
 
-        function Redirect(element, url = null) {
-            const bbsRole = localStorage.getItem('bbsRole') || 'unknown';
-            const bbsName = localStorage.getItem('bbsName') || 'unknown';
+    </script>
 
-            let finalUrl = url;
-            if (url === '/apps/uesi/staff-work/view-field-report') {
-                finalUrl = `${url}?name=${encodeURIComponent(bbsName)}&email=${encodeURIComponent(bbsRole)}`;
-            } else {
-                finalUrl = `${url}?name=${encodeURIComponent(bbsName)}&email=${encodeURIComponent(bbsRole)}`;
-            }
-
-            window.location.href = finalUrl;
-            toggleDrawer();
-        }
-
-        // </script>
-
-    <!-- ✅ Add Firebase SDK scripts before your own script -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -1231,7 +1445,7 @@
                 document.getElementById('selectedRoleDisplay').textContent = `${mail}`;
             }
 
-            // DOM Elements 
+            // DOM Elements
             const menuButton = document.getElementById('menuButton');
             const navDrawer = document.getElementById('navDrawer');
             const overlay = document.getElementById('overlay');
@@ -1267,16 +1481,9 @@
             };
             firebase.initializeApp(firebaseConfig);
 
-            // Helper: Get safe email
-            // function getSafeEmail() {
-            //     let userEmail = "melamrahul8@gmail.com"; // Default for now
-            //     return userEmail.replace(/\./g, '_');
-            // }
-
             function getSafeEmail() {
                 let userEmail = localStorage.getItem("bbsRole"); // fallback
 
-                // Simple email regex for validation
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
                 if (!emailRegex.test(userEmail)) {
@@ -1284,52 +1491,140 @@
                     userEmail = "melamrahul8@gmail.com"; // fallback if invalid
                 }
 
-                // Replace dots to make it Firebase path-safe
                 return userEmail.replace(/\./g, '_');
+            }
+
+            // Function to get dates between two dates (inclusive)
+            function getDatesBetween(startDateStr, endDateStr) {
+                const dates = [];
+                let currentDate = new Date(startDateStr + 'T12:00:00'); // Add time to avoid timezone issues
+                const endDate = new Date(endDateStr + 'T12:00:00'); // Add time to avoid timezone issues
+
+                while (currentDate <= endDate) {
+                    dates.push(currentDate.toISOString().split('T')[0]); // Format YYYY-MM-DD
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                return dates;
             }
 
 
             // Save form data to Firebase
-            function saveFormData(formType, safeEmail, date, day, purpose, zone) {
-                if (!safeEmail || !date || !formType) {
-                    console.error("Missing required parameters.");
+            // This function now uses .set() to use the date as the key, potentially overwriting
+            // existing data for that specific date.
+            function saveFormData(formType, safeEmail, dates, purpose, zone) {
+                if (!safeEmail || !dates || dates.length === 0 || !formType) {
+                    console.error("Missing required parameters for saveFormData.");
                     return;
                 }
 
                 const typePath = formType === "Field_Report" ? "Field_Report" : "Itinerary_Form";
-                const data = { day, purpose, zone };
-                const path = `apps/uesi/staff-work/${safeEmail}/userData/${typePath}/${date}`;
-                const dbRef = firebase.database().ref(path);
 
-                dbRef.push(data)
-                    .then(() => {
-                        console.log(`${formType} data saved successfully`);
-                        document.getElementById('successMessage').classList.add('active');
-                    })
-                    .catch((error) => {
-                        console.error(`Error saving ${formType} data: `, error);
-                    });
+                let submissionsCount = 0;
+                const totalSubmissions = dates.length;
+
+                dates.forEach(date => {
+                    const data = {
+                        day: new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }), // Auto-derive day, ensure timezone safety
+                        purpose,
+                        zone
+                    };
+                    // Changed dbRef.push(data) to dbRef.child(date).set(data)
+                    const path = `apps/uesi/staff-work/${safeEmail}/userData/${typePath}/${date}`;
+                    const dbRef = firebase.database().ref(path);
+
+                    // Using .set() will overwrite any existing data at this specific date path
+                    // If you want to allow multiple entries per day and *append* them, you would need
+                    // to add another level of push() like: dbRef.child(date).push(data)
+                    // But your request was to remove the auto-generated key, implying unique per date.
+                    dbRef.set(data)
+                        .then(() => {
+                            submissionsCount++;
+                            if (submissionsCount === totalSubmissions) {
+                                console.log(`${formType} data saved successfully for multiple dates.`);
+                                document.getElementById('openclose').style.display = 'none';
+                                document.getElementById('successMessage').classList.add('active');
+                            }
+                        })
+                        .catch((error) => {
+                            console.error(`Error saving ${formType} data for ${date}: `, error);
+                            // You might want to show a more detailed error message to the user here
+                        });
+                });
             }
 
             // Form submission handlers
             document.getElementById("fieldReportForm").addEventListener("submit", function (e) {
                 e.preventDefault();
                 const safeEmail = getSafeEmail();
-                const date = document.getElementById("date1").value;
-                const day = document.getElementById("day1").value;
+                const dateType = document.querySelector('input[name="dateType1"]:checked').value;
+                let datesToSubmit = [];
+
+                if (dateType === 'single') {
+                    const singleDate = document.getElementById("date1_start_single").value;
+                    if (singleDate) {
+                        datesToSubmit = [singleDate];
+                    }
+                } else { // multi
+                    const startDate = document.getElementById("date1_start_multi").value;
+                    const endDate = document.getElementById("date1_end_multi").value;
+
+                    // Basic validation for multi-day
+                    if (!startDate || !endDate) {
+                        alert("Please select both start and end dates for multi-day entry.");
+                        return;
+                    }
+                    if (new Date(startDate) > new Date(endDate)) {
+                        alert("Start date cannot be after end date.");
+                        return;
+                    }
+                    datesToSubmit = getDatesBetween(startDate, endDate);
+                }
+
                 const zone = document.getElementById("zone1").value;
                 const purpose = document.getElementById("purpose1").value;
-                saveFormData("Field_Report", safeEmail, date, day, purpose, zone);
+
+                if (datesToSubmit.length > 0) {
+                    saveFormData("Field_Report", safeEmail, datesToSubmit, purpose, zone);
+                } else {
+                    alert("Please select at least one date.");
+                }
             });
 
             document.getElementById("itineraryForm").addEventListener("submit", function (e) {
                 e.preventDefault();
                 const safeEmail = getSafeEmail();
-                const date = document.getElementById("date2").value;
-                const day = document.getElementById("day2").value;
+                const dateType = document.querySelector('input[name="dateType2"]:checked').value;
+                let datesToSubmit = [];
+
+                if (dateType === 'single') {
+                    const singleDate = document.getElementById("date2_start_single").value;
+                    if (singleDate) {
+                        datesToSubmit = [singleDate];
+                    }
+                } else { // multi
+                    const startDate = document.getElementById("date2_start_multi").value;
+                    const endDate = document.getElementById("date2_end_multi").value;
+
+                    // Basic validation for multi-day
+                    if (!startDate || !endDate) {
+                        alert("Please select both start and end dates for multi-day entry.");
+                        return;
+                    }
+                    if (new Date(startDate) > new Date(endDate)) {
+                        alert("Start date cannot be after end date.");
+                        return;
+                    }
+                    datesToSubmit = getDatesBetween(startDate, endDate);
+                }
+
                 const zone = document.getElementById("zone2").value;
                 const purpose = document.getElementById("purpose2").value;
-                saveFormData("Itinerary_Form", safeEmail, date, day, purpose, zone);
+
+                if (datesToSubmit.length > 0) {
+                    saveFormData("Itinerary_Form", safeEmail, datesToSubmit, purpose, zone);
+                } else {
+                    alert("Please select at least one date.");
+                }
             });
 
             // Drawer toggle
@@ -1417,14 +1712,16 @@
             menuButton.addEventListener('click', toggleDrawer);
             overlay.addEventListener('click', hideDialogs);
             overlayer.addEventListener('click', toggleDrawer);
-            confirmRoleBtn.addEventListener('click', confirmRole);
-            confirmNameBtn.addEventListener('click', confirmName);
-            chooseBBSRoleBtn.addEventListener('click', showRoleDialog);
-            setBBSNameBtn.addEventListener('click', showNameDialog);
+            // The following are commented out in your original HTML, keeping them for reference
+            // confirmRoleBtn.addEventListener('click', confirmRole);
+            // confirmNameBtn.addEventListener('click', confirmName);
+            // chooseBBSRoleBtn.addEventListener('click', showRoleDialog);
+            // setBBSNameBtn.addEventListener('click', showNameDialog);
             mailNameBtn.addEventListener('click', openMail);
-            waNameBtn.addEventListener('click', openWhatsApp);
-            document.getElementById('shareButton').addEventListener('click', shareContent);
-            document.getElementById('okkkButton').addEventListener('click', hideDialogs);
+            // waNameBtn.addEventListener('click', openWhatsApp); // This button also appears commented out
+            // document.getElementById('shareButton').addEventListener('click', shareContent); // This button also appears commented out
+            // document.getElementById('okkkButton').addEventListener('click', hideDialogs); // This button also appears commented out
+
 
             // Show share section in March - June
             const month = new Date().getMonth();
@@ -1434,7 +1731,9 @@
 
             // "Okay" for dialog
             document.getElementById('okkButton').addEventListener('click', function () {
-                document.getElementById('confirmationDialo').classList.remove('active');
+                // Assuming 'confirmationDialo' is the success dialog.
+                // It was originally id="successMessage" in your provided code
+                document.getElementById('successMessage').classList.remove('active');
                 document.getElementById('openclose').style.display = 'block';
             });
         });
@@ -1481,7 +1780,7 @@
 
         // Register service worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/au-zone/bbs/service-worker.js')
+            navigator.serviceWorker.register('/apps/uesi/staff-work/service-worker.js')
                 .then(() => console.log('Service Worker Registered'))
                 .catch(error => console.error('Service Worker Registration Failed:', error));
         }
@@ -1509,9 +1808,9 @@
                                 if (appBanner) appBanner.style.display = 'none';
                             });
                         }
-                    } else if (button.textContent.toLowerCase() === 'open') {
+                    } else if (button.textContent.toLowerCase() === 'open app') { // Changed to 'open app' based on button text
                         // Open app in new tab
-                        window.open('https://uesiap.github.io/au-zone/bbs/', '_blank');
+                        window.open('https://uesiap.github.io/apps/uesi/staff-work/', '_blank');
                     }
                 });
             });
