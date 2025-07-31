@@ -725,10 +725,6 @@
         }
 
         async function shareContent() {
-            const bbsRole = localStorage.getItem('bbsRole') || "Member"; // fallback if bbsRole is null
-
-            const password = passwords[bbsRole] || "No password assigned";
-
             if (navigator.share) {
                 try {
                     const title = document.querySelector('meta[property="og:title"]').content;
