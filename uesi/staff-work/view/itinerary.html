@@ -669,7 +669,7 @@
 
         let itineraryRef = null; // Changed to itineraryRef
         if (safeUserEmail) {
-            itineraryRef = firebase.database().ref(`apps/uesi/staff-work/${safeUserEmail}/userData/Itinerary_Form`); // Path for Itinerary Form
+            itineraryRef = firebase.database().ref(`apps/uesi/staff-work/users/${safeUserEmail}/userData/Itinerary_Form`); // Path for Itinerary Form
         } else {
             console.error("Firebase reference cannot be established without a valid user email.");
         }
