@@ -116,7 +116,7 @@
         }
 
         .staff-info {
-            font-size: 1.05rem;
+            font-size: 1.4rem;
             text-align: center;
             margin-bottom: 1.5rem;
             font-weight: 600;
@@ -342,8 +342,8 @@
 
     <div class="report-container" id="reportContent" style="display: none;">
         <div class="report-header">
-            <h3 style="font-size: 1.2rem; margin-bottom: 0.2rem; color: #000; font-weight: 600;">Union of Evangelical Students of India - <span id="staffState"></span></h3>
-            <h4 class="report-title" id="reportGeneratedTitle">FIELD REPORT - [MONTH] [YEAR]</h4>
+            <h5 style="font-size: 1.2rem; margin-bottom: 0.2rem; color: #000; font-weight: 600;">Union of Evangelical Students of India - <span id="staffState"></span></h5>
+            <h5 class="report-title" id="reportGeneratedTitle">FIELD REPORT - [MONTH] [YEAR]</h5>
             <h2 class="staff-info">NAME: <span id="staffInfoName"></span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span id="staffInfoBase"></span></h2>
         </div>
 
@@ -764,8 +764,8 @@
                 </head>
                 <body>
                     <div class="report-header">
-                        <h3>Union of Evangelical Students of India - ${userState || 'N/A'}</h3>
-                        <h4>FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}</h4>
+                        <h5>Union of Evangelical Students of India - ${userState || 'N/A'}</h5>
+                        <h5>FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}</h5>
                     </div>
                     <h2 class="staff-info">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${userBase || 'N/A'}</h2>
                     ${tableHtml}
@@ -814,8 +814,8 @@
                 </head>
                 <body>
                     <div class="report-header">
-                        <h3>Union of Evangelical Students of India - ${userState || 'N/A'}</h3>
-                        <h4>FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}</h>
+                        <h5>Union of Evangelical Students of India - ${userState || 'N/A'}</h5>
+                        <h5>FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}</h5>
                     </div>
                     <div class="staff-info">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${userBase || 'N/A'}</div>
                     ${tableHtml}
