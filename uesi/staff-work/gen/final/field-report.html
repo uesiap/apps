@@ -615,7 +615,7 @@
                 const headerData = [
                     [`Union of Evangelical Students of India - ${userState}`],
                     [`FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}`],
-                    [`NAME: ${userName}      Base: ${userBase}`],
+                    [`NAME: ${userName}      ${userBase}`],
                     [], // Empty row
                     ['Sl. No', 'Date', 'DAY', 'Zone / Division', 'Purpose'] // Table headers
                 ];
@@ -767,7 +767,7 @@
                         <h3>Union of Evangelical Students of India - ${userState || 'N/A'}</h3>
                         <h4>FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}</h4>
                     </div>
-                    <h2 class="staff-info">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Base: ${userBase || 'N/A'}</h2>
+                    <h2 class="staff-info">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${userBase || 'N/A'}</h2>
                     ${tableHtml}
                 </body>
                 </html>
@@ -817,7 +817,7 @@
                         <h3>Union of Evangelical Students of India - ${userState || 'N/A'}</h3>
                         <h4>FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}</h>
                     </div>
-                    <div class="staff-info">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Base: ${userBase || 'N/A'}</div>
+                    <div class="staff-info">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${userBase || 'N/A'}</div>
                     ${tableHtml}
                 </body>
                 </html>
