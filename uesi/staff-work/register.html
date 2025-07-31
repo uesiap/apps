@@ -594,8 +594,8 @@
                                 openDialog('Error while saving student data: ' + error.message);
                             } else {
                                 // --- IMPORTANT: Set localStorage items on successful registration ---
-                                localStorage.setItem('bbsName', studentData.name || '');
-                                localStorage.setItem('bbsRole', studentData.email || ''); // Store the actual email
+                                localStorage.setItem('bbsName', studentName);
+                                localStorage.setItem('bbsRole', email);
 
                                 document.getElementById('formContainer').style.display = 'none';
                                 document.getElementById('thanksContainer').style.display = 'flex';
