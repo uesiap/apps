@@ -1274,37 +1274,50 @@
 
         // This function will continuously check the state and manage the splash screen
         function checkAndToggleSplashScreen() {
-            const splashScreen = document.getElementById('splashScreen');
-            const bbsRole = localStorage.getItem('bbsRole');
-            const bbsName = localStorage.getItem('bbsName');
-            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const splashScreen = document.getElementById('splashScreen');
+    const bbsRole = localStorage.getItem('bbsRole'); // Should be email
+    const bbsName = localStorage.getItem('bbsName'); // Should be name
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-            const isUserLoggedInAndValid = (bbsRole && bbsName && emailPattern.test(bbsRole));
+    console.log("Checking splash screen visibility:");
+    console.log("  bbsRole:", bbsRole);
+    console.log("  bbsName:", bbsName);
+    console.log("  bbsRole is valid email format:", emailPattern.test(bbsRole));
 
-            if (!isUserLoggedInAndValid) {
-                // If user is NOT logged in or credentials are invalid, show splash screen
-                splashScreen.classList.remove('hidden');
-                // Attach listeners only once
-                if (!splashScreen.dataset.listenersAttached) {
-                    const splashLoginBtn = document.getElementById('splashLoginBtn');
-                    const splashRegisterBtn = document.getElementById('splashRegisterBtn');
+    const isUserLoggedInAndValid = (bbsRole && bbsName && emailPattern.test(bbsRole));
 
-                    splashLoginBtn.addEventListener('click', () => {
-                        splashScreen.classList.add('hidden');
-                        setTimeout(() => redirectToAuth('login'), 500);
-                    });
+    if (!isUserLoggedInAndValid) {
+        console.log("  Splash screen should be VISIBLE (not logged in or invalid credentials)");
+        splashScreen.classList.remove('hidden');
 
-                    splashRegisterBtn.addEventListener('click', () => {
-                        splashScreen.classList.add('hidden');
-                        setTimeout(() => redirectToAuth('register'), 500);
-                    });
-                    splashScreen.dataset.listenersAttached = 'true'; // Mark listeners as attached
-                }
-            } else {
-                // If user IS logged in with valid credentials, hide splash screen
+        if (!splashScreen.dataset.listenersAttached) {
+            const splashLoginBtn = document.getElementById('splashLoginBtn');
+            const splashRegisterBtn = document.getElementById('splashRegisterBtn');
+
+            splashLoginBtn.addEventListener('click', () => {
+                // Do NOT set hasVisited here, as it's no longer used for visibility.
+                // The visibility depends on actual login state from localStorage.
                 splashScreen.classList.add('hidden');
-            }
+                // Ensure redirectToAuth correctly handles the base URL if needed
+                redirectToAuth('login');
+            });
+
+            splashRegisterBtn.addEventListener('click', () => {
+                // Do NOT set hasVisited here
+                splashScreen.classList.add('hidden');
+                // Ensure redirectToAuth correctly handles the base URL if needed
+                redirectToAuth('register');
+            });
+            splashScreen.dataset.listenersAttached = 'true';
         }
+    } else {
+        console.log("  Splash screen should be HIDDEN (logged in and valid credentials)");
+        splashScreen.classList.add('hidden');
+        // Optionally, ensure your main content is visible if it was hidden initially
+        // document.getElementById('mainContentContainer').style.display = 'block';
+    }
+}
+
 
         document.addEventListener("DOMContentLoaded", function () {
             checkAndToggleSplashScreen();
