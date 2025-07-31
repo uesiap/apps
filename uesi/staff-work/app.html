@@ -142,13 +142,15 @@
 
         .app-title-head {
             font-size: 24px;
+            margin-bottom: 20px;
             font-weight: 500;
         }
 
         .app-author {
             font-size: 14px;
             color: #5f6368;
-            margin-top: 4px;
+            margin-top: 10px;
+            margin-bottom: 20px;
         }
 
         .share-button {
@@ -361,6 +363,10 @@
         .menu-button:hover {
             background-color: rgba(0, 0, 0, 0.05);
         }
+
+        button {
+            margin-top: 1rem;
+        }
     </style>
 </head>
 
@@ -426,7 +432,7 @@
             </div>
         </div>
 
-        <div class="app-screenshots">
+        <!-- <div class="app-screenshots">
             <img src="https://i.ibb.co/Ndr3mgHF/shot1.jpg" alt="Home" class="screenshot"
                 onclick="openFullImage(this, 0)">
             <img src="https://i.ibb.co/Gv4WGwCk/shot2.jpg" alt="Menu Items" class="screenshot"
@@ -435,7 +441,7 @@
                 onclick="openFullImage(this, 2)">
             <img src="https://i.ibb.co/hJPfL7GV/shot4.jpg" alt="Generate Report" class="screenshot"
                 onclick="openFullImage(this, 3)">
-        </div>
+        </div> -->
 
         <div id="imageModal" class="modal">
             <span class="nav-arrow prev" onclick="navigateImages(-1)">&#10094;</span>
@@ -469,7 +475,7 @@
                 <li>Email: <strong>mrahul.eu@gmail.com</strong></li>
                 <li>Phone: <strong>+91 9347450441</strong></li>
                 <li>Whatsapp: <a
-                        href="https://wa.me/9347450441?text=Hello%20Rahul,%20I%20need%20some%20assistance%20Regarding%20BBS%20App."
+                        href="https://wa.me/9347450441?text=Hello%20Rahul,%20I%20need%20some%20assistance%20Regarding%20UESI%20Staff%20Work%20App."
                         target="_blank"><strong>Get Help</strong></a></li>
             </ul>
         </div>
@@ -557,7 +563,7 @@
                         });
                     } else {
                         // If deferredPrompt isn't available, just open the app
-                        window.open('https://uesiap.github.io/au-zone/bbs/', '_blank');
+                        window.open('https://uesiap.github.io/apps/uesi/staff-work/', '_blank');
                     }
                 });
             }
@@ -721,31 +727,17 @@
         async function shareContent() {
             const bbsRole = localStorage.getItem('bbsRole') || "Member"; // fallback if bbsRole is null
 
-            // Define passwords
-            const passwords = {
-                "South Boys BBS I/C": "southboysbbs",
-                "South Girls BBS I/C": "southgirlsbbs",
-                "North Boys BBS I/C": "northboysbbs",
-                "North Girls BBS I/C": "northgirlsbbs",
-                "North Girls EBS I/C": "northgirlsebs",
-                "North Womens BBS I/C": "northwomensbbs",
-                "Maharanipet BBS I/C": "maharanipetbbs",
-                "Maharanipet EBS I/C": "maharanipetebs",
-                "BC Hostel BBS I/C": "bchotelbbs"
-            };
-
             const password = passwords[bbsRole] || "No password assigned";
 
             if (navigator.share) {
                 try {
                     const title = document.querySelector('meta[property="og:title"]').content;
                     const description = document.querySelector('meta[property="og:description"]').content;
-                    const url = "https://uesiap.github.io/au-zone/bbs/app";
-                    const urlDesk = "https://uesiap.github.io/au-zone/bbs/laptop";
+                    const url = "https://uesiap.github.io/apps/uesi/staff-work/app";
 
-                    const introMessage = `Hi, Thank you for joining with AU-Zone Committee, as a *${bbsRole}*.\n\n`;
+                    const introMessage = `Hi, Here I'm sharing the UESI Staff Work App.`;
 
-                    const message = `${introMessage}Name: *${title}*\n\nUsage: *${description}*\n\nPassword: *${password}*\n\nWork on Mobile App: \n*${url}*\n\nWork on Laptop: \n*${urlDesk}*`;
+                    const message = `${introMessage}Name: *${title}*\n\nUsage: *${description}*\n\nWork on Mobile App: \n*${url}*`;
 
                     await navigator.share({
                         title: title,
