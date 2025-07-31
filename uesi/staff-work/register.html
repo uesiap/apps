@@ -596,6 +596,11 @@
                                 // --- IMPORTANT: Set localStorage items on successful registration ---
                                 localStorage.setItem('bbsName', studentName);
                                 localStorage.setItem('bbsRole', email);
+                                
+                                console.log('Stored in localStorage:', {
+                                    bbsName: localStorage.getItem('bbsName'),
+                                    bbsRole: localStorage.getItem('bbsRole')
+                                });
 
                                 document.getElementById('formContainer').style.display = 'none';
                                 document.getElementById('thanksContainer').style.display = 'flex';
