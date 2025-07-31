@@ -377,135 +377,133 @@
     </div>
 
     <script>
-        // Retrieve URL Parameters
-        function getUrlParameter(name) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
+    // --- Double Decode URL Parameters ---
+    function getUrlParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const rawValue = urlParams.get(name);
+        try {
+            // Handles cases like %2540 ➜ %40 ➜ @
+            return rawValue ? decodeURIComponent(decodeURIComponent(rawValue)) : null;
+        } catch (e) {
+            // Fallback to single decode if double fails
+            return rawValue ? decodeURIComponent(rawValue) : null;
+        }
+    }
+
+    // --- Populate initial fields from URL and localStorage ---
+    const staffNameInput = document.getElementById('staffName');
+    const staffEmailInput = document.getElementById('staffEmail');
+    const baseInput = document.getElementById('baseInput');
+    const stateInput = document.getElementById('stateInput');
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+
+    const userName = getUrlParameter('name');
+    const userEmail = getUrlParameter('email');
+
+    if (userName) {
+        staffNameInput.value = userName;
+    } else {
+        staffNameInput.value = 'Name not provided';
+        showErrorDialog("You are not logged in, Please login to continue.");
+    }
+
+    if (userEmail) {
+        staffEmailInput.value = userEmail;
+    } else {
+        staffEmailInput.value = 'Email not provided';
+        showErrorDialog("You are not logged in, Please login to continue.");
+    }
+
+    // --- Load Base and State from localStorage ---
+    const savedBase = localStorage.getItem('reportBase');
+    const savedState = localStorage.getItem('reportState');
+
+    if (savedBase) {
+        baseInput.value = savedBase;
+    }
+    if (savedState) {
+        stateInput.value = savedState;
+    }
+
+    // --- Save Base and State to localStorage on change ---
+    baseInput.addEventListener('input', () => {
+        localStorage.setItem('reportBase', baseInput.value);
+    });
+    stateInput.addEventListener('input', () => {
+        localStorage.setItem('reportState', stateInput.value);
+    });
+
+    // --- Populate Month Dropdown ---
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    const currentMonthIndex = new Date().getMonth(); // 0-11
+
+    monthSelect.innerHTML = '<option value="" selected disabled>Select Month</option>';
+    months.forEach((month, index) => {
+        const option = document.createElement("option");
+        option.value = index + 1; // 1-12
+        option.textContent = month;
+        if (index === currentMonthIndex) {
+            option.selected = true;
+        }
+        monthSelect.appendChild(option);
+    });
+
+    // --- Populate Year Dropdown ---
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 2;
+    const endYear = currentYear + 2;
+
+    yearSelect.innerHTML = '<option value="" selected disabled>Select Year</option>';
+    for (let year = startYear; year <= endYear; year++) {
+        const option = document.createElement("option");
+        option.value = year;
+        option.textContent = year;
+        if (year === currentYear) {
+            option.selected = true;
+        }
+        yearSelect.appendChild(option);
+    }
+
+    // --- Show error dialog ---
+    function showErrorDialog(message) {
+        const confirmationMessage = document.getElementById('confirmationMessage');
+        const confirmationDialog = document.getElementById('confirmationDialog');
+
+        confirmationMessage.textContent = message;
+        confirmationDialog.classList.add('active');
+
+        document.getElementById('okButton').onclick = function () {
+            confirmationDialog.classList.remove('active');
+        };
+    }
+
+    // --- Handle Form Submission ---
+    document.getElementById('reportForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        if (!staffNameInput.value.trim() || !staffEmailInput.value.trim() ||
+            !baseInput.value.trim() || !stateInput.value.trim() ||
+            !monthSelect.value || !yearSelect.value) {
+            showErrorDialog("Please fill all required fields.");
+            return;
         }
 
-        // --- Populate initial fields from URL and localStorage ---
-        const staffNameInput = document.getElementById('staffName');
-        const staffEmailInput = document.getElementById('staffEmail');
-        const baseInput = document.getElementById('baseInput'); // Changed to baseInput
-        const stateInput = document.getElementById('stateInput'); // Changed to stateInput
-        const monthSelect = document.getElementById('monthSelect');
-        const yearSelect = document.getElementById('yearSelect');
+        const name = staffNameInput.value.trim();
+        const email = staffEmailInput.value.trim();
+        const base = baseInput.value.trim();
+        const state = stateInput.value.trim();
+        const month = monthSelect.value;
+        const year = yearSelect.value;
 
-        const userName = getUrlParameter('name');
-        const userEmail = getUrlParameter('email');
+        const finalUrl = `/apps/uesi/staff-work/gen/final/field-report?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&base=${encodeURIComponent(base)}&state=${encodeURIComponent(state)}&month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}`;
 
-        if (userName) {
-            staffNameInput.value = userName;
-        } else {
-            staffNameInput.value = 'Name not provided'; // Fallback
-            showErrorDialog("You are not logged in, Please login to continue.");
-        }
-
-        if (userEmail) {
-            staffEmailInput.value = userEmail;
-        } else {
-            staffEmailInput.value = 'Email not provided'; // Fallback
-            showErrorDialog("You are not logged in, Please login to continue.");
-        }
-
-        // Load Base and State from localStorage
-        const savedBase = localStorage.getItem('reportBase');
-        const savedState = localStorage.getItem('reportState');
-
-        if (savedBase) {
-            baseInput.value = savedBase;
-        }
-        if (savedState) {
-            stateInput.value = savedState;
-        }
-
-        // Save Base and State to localStorage on change (using input event for text fields)
-        baseInput.addEventListener('input', () => { // Changed to 'input' event for text fields
-            localStorage.setItem('reportBase', baseInput.value);
-        });
-        stateInput.addEventListener('input', () => { // Changed to 'input' event for text fields
-            localStorage.setItem('reportState', stateInput.value);
-        });
-
-
-        // --- Populate Month Dropdown ---
-        const months = [
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
-        ];
-        const currentMonthIndex = new Date().getMonth(); // 0-11
-
-        // Clear existing options before populating
-        monthSelect.innerHTML = '<option value="" selected disabled>Select Month</option>'; // Add default disabled option
-
-        months.forEach((month, index) => {
-            const option = document.createElement("option");
-            option.value = index + 1; // Month values 1-12
-            option.textContent = month;
-            if (index === currentMonthIndex) {
-                option.selected = true; // Auto-select current month
-            }
-            monthSelect.appendChild(option);
-        });
-
-        // --- Populate Year Dropdown ---
-        const currentYear = new Date().getFullYear();
-        const startYear = currentYear - 2; // e.g., 2023
-        const endYear = currentYear + 2; // e.g., 2027
-
-        // Clear existing options before populating
-        yearSelect.innerHTML = '<option value="" selected disabled>Select Year</option>'; // Add default disabled option
-
-        for (let year = startYear; year <= endYear; year++) {
-            const option = document.createElement("option");
-            option.value = year;
-            option.textContent = year;
-            if (year === currentYear) {
-                option.selected = true; // Auto-select current year
-            }
-            yearSelect.appendChild(option);
-        }
-
-        // --- Function to show error messages in the dialog ---
-        function showErrorDialog(message) {
-            const confirmationMessage = document.getElementById('confirmationMessage');
-            const confirmationDialog = document.getElementById('confirmationDialog');
-
-            confirmationMessage.textContent = message;
-            confirmationDialog.classList.add('active');
-
-            document.getElementById('okButton').onclick = function () {
-                confirmationDialog.classList.remove('active');
-            };
-        }
-
-        // --- Form submission with validation and redirection ---
-        document.getElementById('reportForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            // Validate required fields (now using baseInput and stateInput)
-            if (!staffNameInput.value.trim() || !staffEmailInput.value.trim() ||
-                !baseInput.value.trim() || !stateInput.value.trim() || // Validate text inputs
-                !monthSelect.value || !yearSelect.value) {
-                showErrorDialog("Please fill all required fields.");
-                return;
-            }
-
-            // Collect all data
-            const name = staffNameInput.value.trim();
-            const email = staffEmailInput.value.trim();
-            const base = baseInput.value.trim(); // Get value from input
-            const state = stateInput.value.trim(); // Get value from input
-            const month = monthSelect.value;
-            const year = yearSelect.value;  
-
-            // Construct target URL with parameters
-            const finalUrl = `/apps/uesi/staff-work/gen/final/field-report?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&base=${encodeURIComponent(base)}&state=${encodeURIComponent(state)}&month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}`;
-
-            // Redirect
-            window.location.href = finalUrl;
-        });
-    </script>
+        window.location.href = finalUrl;
+    });
+</script>
 </body>
 
 </html>
