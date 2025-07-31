@@ -1528,7 +1528,7 @@
 
                 dates.forEach(date => {
                     const data = {
-                        day: new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }), // Auto-derive day, ensure timezone safety
+                        day: new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' }), // Auto-derive day, ensure timezone safety
                         purpose,
                         zone
                     };
