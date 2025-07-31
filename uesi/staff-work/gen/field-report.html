@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        (function () {
+            // Keys to retain in localStorage (added 'reportBase' and 'reportState')
+            const keysToRetain = ["bbsRole", "bbsName", "reportBase", "reportState"];
+
+            // Retrieve the values of the keys to retain
+            const valuesToRetain = {};
+            keysToRetain.forEach((key) => {
+                const value = localStorage.getItem(key);
+                if (value !== null) {
+                    valuesToRetain[key] = value;
+                }
+            });
+
+            // Clear all keys in localStorage except the specified keys
+            Object.keys(localStorage).forEach((key) => {
+                if (!keysToRetain.includes(key)) {
+                    localStorage.removeItem(key);
+                }
+            });
+
+            // Restore the retained key-value pairs
+            Object.keys(valuesToRetain).forEach((key) => {
+                localStorage.setItem(key, valuesToRetain[key]);
+            });
+
+            console.log("LocalStorage cleared except for:", keysToRetain);
+
+            // Clear sessionStorage
+            sessionStorage.clear();
+            console.log("SessionStorage cleared.");
+
+            // Clear IndexedDB data
+            const clearIndexedDB = () => {
+                if (!window.indexedDB) {
+                    console.warn("IndexedDB is not supported by this browser.");
+                    return;
+                }
+                indexedDB.databases().then((databases) => {
+                    databases.forEach((db) => {
+                        indexedDB.deleteDatabase(db.name);
+                        console.log(`Deleted IndexedDB: ${db.name}`);
+                    });
+                }).catch((error) => {
+                    console.error("Error clearing IndexedDB:", error);
+                });
+            };
+
+            // Clear browser cache
+            const clearCache = () => {
+                if ("caches" in window) {
+                    caches.keys().then((cacheNames) => {
+                        cacheNames.forEach((cacheName) => {
+                            caches.delete(cacheName);
+                            console.log(`Deleted Cache: ${cacheName}`);
+                        });
+                    }).catch((error) => {
+                        console.error("Error clearing cache:", error);
+                    });
+                } else {
+                    console.warn("Cache API is not supported by this browser.");
+                }
+            };
+
+            // Execute cleanup functions
+            clearIndexedDB();
+            clearCache();
+
+            console.log(`All data cleared except for ${keysToRetain.join(", ")} in localStorage.`);
+        })();
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Field Report</title>
+    <meta property="og:site_name" content="UESI Staff Work">
+    <meta property="og:title" content="Generate Field Report">
+    <meta property="og:description" content="Generate Field Report for UESI Staff Work.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #075E54;
+            /* Consistent with index.html */
+            --primary-dark: #054a43;
+            /* Consistent with index.html */
+            --text-light: #ffffff;
+            /* Consistent with index.html */
+            --text-dark: #333333;
+            /* Consistent with index.html */
+            --text-gray: #666666;
+            /* Consistent with index.html */
+            --bg-light: #f8f9fa;
+            /* Consistent with index.html */
+            --bg-white: #ffffff;
+            /* Consistent with index.html */
+            --border-light: #eeeeee;
+            /* Consistent with index.html */
+            --shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            /* Consistent with index.html */
+            --transition: all 0.3s ease;
+            /* Consistent with index.html */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding-top: 5rem;
+            /* Space for fixed action bar */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            touch-action: pan-x pan-y;
+        }
+
+        /* App Bar */
+        .action-bar {
+            background: var(--primary-color);
+            color: var(--text-light);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .app-title {
+            font-size: 1.65rem;
+            font-weight: 600;
+            color: var(--text-light);
+            letter-spacing: 0.025rem;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 2.25rem;
+            cursor: pointer;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+            margin-right: 1rem;
+        }
+
+        .menu-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background-color: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            /* Space from footer */
+        }
+
+        .card-header {
+            color: var(--text-dark);
+            border-bottom: 0;
+            border-radius: 8px 8px 0 0;
+            padding: 1rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(7, 94, 84, 0.5);
+            outline: none;
+        }
+
+        /* Button Styling */
+        .btn-custom {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Horizontal rule styles */
+        hr {
+            border: none;
+            border-top: 2px dotted #ccc;
+            margin: 1.5rem 0;
+        }
+
+        /* Confirmation Dialog (re-using from other pages) */
+        .confirmation-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            background: #FFFFFF;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 1002;
+            width: 360px;
+            max-width: 90%;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .confirmation-dialog.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .confirmation-icon {
+            font-size: 3rem;
+            color: #D32F2F;
+            /* Error red */
+            margin-bottom: 1rem;
+        }
+
+        .confirmation-message {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .confirmation-dialog button {
+            width: 100%;
+            padding: 0.95rem;
+            background: #D32F2F;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+
+        .confirmation-dialog button:hover {
+            background: #B71C1C;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="action-bar">
+        <div style="display: flex; align-items: center;">
+            <button class="menu-button" id="menuButton" onclick="history.back()">
+                <i class="fas fa-arrow-left" style="color: white;"></i>
+            </button>
+            <span class="app-title" style="color: white;">Generate Report</span>
+        </div>
+    </div><br><br>
+    <div class="container mt-0">
+        <div class="card-header" id="cardHeader">
+            Generate Field Report
+        </div>
+        <hr>
+        <div class="card-body">
+            <form id="reportForm">
+                <div class="form-group">
+                    <label for="staffName" class="form-label">Staff Name:</label>
+                    <input type="text" disabled class="form-control" id="staffName"
+                        placeholder="Name from previous page" required>
+                </div>
+                <div class="form-group">
+                    <label for="staffEmail" class="form-label">Staff Email:</label>
+                    <input type="email" disabled class="form-control" id="staffEmail"
+                        placeholder="Email from previous page" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="baseInput" class="form-label">Base *</label>
+                    <input type="text" id="baseInput" class="form-control"
+                        placeholder="Enter your Base (e.g., Visakhapatnam)" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="stateInput" class="form-label">State *</label>
+                    <input type="text" id="stateInput" class="form-control"
+                        placeholder="Enter your State (e.g., Andhra Pradesh)" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="monthSelect" class="form-label">Month *</label>
+                    <select id="monthSelect" class="form-control" required>
+                        </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="yearSelect" class="form-label">Year *</label>
+                    <select id="yearSelect" class="form-control" required>
+                        </select>
+                </div>
+
+                <button type="submit" class="btn-custom">Generate Report</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="confirmation-dialog" id="confirmationDialog">
+        <div class="confirmation-icon">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="confirmation-message" id="confirmationMessage">
+            Error message
+        </div>
+        <button id="okButton">OK</button>
+    </div>
+
+    <script>
+        // Retrieve URL Parameters
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // --- Populate initial fields from URL and localStorage ---
+        const staffNameInput = document.getElementById('staffName');
+        const staffEmailInput = document.getElementById('staffEmail');
+        const baseInput = document.getElementById('baseInput'); // Changed to baseInput
+        const stateInput = document.getElementById('stateInput'); // Changed to stateInput
+        const monthSelect = document.getElementById('monthSelect');
+        const yearSelect = document.getElementById('yearSelect');
+
+        const userName = getUrlParameter('name');
+        const userEmail = getUrlParameter('email');
+
+        if (userName) {
+            staffNameInput.value = userName;
+        } else {
+            staffNameInput.value = 'Name not provided'; // Fallback
+            showErrorDialog("You are not logged in, Please login to continue.");
+        }
+
+        if (userEmail) {
+            staffEmailInput.value = userEmail;
+        } else {
+            staffEmailInput.value = 'Email not provided'; // Fallback
+            showErrorDialog("You are not logged in, Please login to continue.");
+        }
+
+        // Load Base and State from localStorage
+        const savedBase = localStorage.getItem('reportBase');
+        const savedState = localStorage.getItem('reportState');
+
+        if (savedBase) {
+            baseInput.value = savedBase;
+        }
+        if (savedState) {
+            stateInput.value = savedState;
+        }
+
+        // Save Base and State to localStorage on change (using input event for text fields)
+        baseInput.addEventListener('input', () => { // Changed to 'input' event for text fields
+            localStorage.setItem('reportBase', baseInput.value);
+        });
+        stateInput.addEventListener('input', () => { // Changed to 'input' event for text fields
+            localStorage.setItem('reportState', stateInput.value);
+        });
+
+
+        // --- Populate Month Dropdown ---
+        const months = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        const currentMonthIndex = new Date().getMonth(); // 0-11
+
+        // Clear existing options before populating
+        monthSelect.innerHTML = '<option value="" selected disabled>Select Month</option>'; // Add default disabled option
+
+        months.forEach((month, index) => {
+            const option = document.createElement("option");
+            option.value = index + 1; // Month values 1-12
+            option.textContent = month;
+            if (index === currentMonthIndex) {
+                option.selected = true; // Auto-select current month
+            }
+            monthSelect.appendChild(option);
+        });
+
+        // --- Populate Year Dropdown ---
+        const currentYear = new Date().getFullYear();
+        const startYear = currentYear - 2; // e.g., 2023
+        const endYear = currentYear + 2; // e.g., 2027
+
+        // Clear existing options before populating
+        yearSelect.innerHTML = '<option value="" selected disabled>Select Year</option>'; // Add default disabled option
+
+        for (let year = startYear; year <= endYear; year++) {
+            const option = document.createElement("option");
+            option.value = year;
+            option.textContent = year;
+            if (year === currentYear) {
+                option.selected = true; // Auto-select current year
+            }
+            yearSelect.appendChild(option);
+        }
+
+        // --- Function to show error messages in the dialog ---
+        function showErrorDialog(message) {
+            const confirmationMessage = document.getElementById('confirmationMessage');
+            const confirmationDialog = document.getElementById('confirmationDialog');
+
+            confirmationMessage.textContent = message;
+            confirmationDialog.classList.add('active');
+
+            document.getElementById('okButton').onclick = function () {
+                confirmationDialog.classList.remove('active');
+            };
+        }
+
+        // --- Form submission with validation and redirection ---
+        document.getElementById('reportForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Validate required fields (now using baseInput and stateInput)
+            if (!staffNameInput.value.trim() || !staffEmailInput.value.trim() ||
+                !baseInput.value.trim() || !stateInput.value.trim() || // Validate text inputs
+                !monthSelect.value || !yearSelect.value) {
+                showErrorDialog("Please fill all required fields.");
+                return;
+            }
+
+            // Collect all data
+            const name = staffNameInput.value.trim();
+            const email = staffEmailInput.value.trim();
+            const base = baseInput.value.trim(); // Get value from input
+            const state = stateInput.value.trim(); // Get value from input
+            const month = monthSelect.value;
+            const year = yearSelect.value;  
+
+            // Construct target URL with parameters
+            const finalUrl = `/apps/uesi/staff-work/gen/final/field-report?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&base=${encodeURIComponent(base)}&state=${encodeURIComponent(state)}&month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}`;
+
+            // Redirect
+            window.location.href = finalUrl;
+        });
+    </script>
+</body>
+
+</html>
