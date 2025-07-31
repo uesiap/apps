@@ -1,0 +1,30 @@
+{
+  "name": "Uesi Staff Work App",
+  "short_name": "UESI Staff",
+  "start_url": "/apps/uesi/staff-work/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff",
+  "theme_color": "#075E54",
+  "icons": [
+    {
+      "src": "/vidhyardhi-geethavali/Icon192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/vidhyardhi-geethavali/Icon512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ],
+  "splash_pages": null,
+  "screens": [
+    {
+      "src": "/vidhyardhi-geethavali/uesisongsmain.jpg",
+      "sizes": "640x1136",
+      "type": "image/jpeg",
+      "orientation": "portrait"
+    }
+  ]
+}
