@@ -885,6 +885,7 @@
             /* Matches your app's primary color */
             justify-content: center;
             align-items: center;
+            display: flex;
             z-index: 2000;
             /* Ensure it's on top of everything */
             flex-direction: column;
@@ -906,6 +907,7 @@
             padding: 20px;
             max-width: 350px;
             width: 90%;
+            display: flex;
             flex-direction: column;
             align-items: center;
         }
@@ -1273,60 +1275,46 @@
 
         // This function will continuously check the state and manage the splash screen
         function checkAndToggleSplashScreen() {
-        const splashScreen = document.getElementById('splashScreen');
-        const splashScreenContent = document.querySelector('.splash-screen-content'); // Get content div
-        const bbsRole = localStorage.getItem('bbsRole');
-        const bbsName = localStorage.getItem('bbsName');
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        const isUserLoggedInAndValid = (bbsRole && bbsName && emailPattern.test(bbsRole));
-
-        if (!isUserLoggedInAndValid) {
-            console.log(`[${new Date().toLocaleTimeString()}] Splash screen should be VISIBLE (not logged in or invalid credentials). bbsRole: ${bbsRole}, bbsName: ${bbsName}, isValidEmail: ${emailPattern.test(bbsRole)}`);
-            splashScreen.style.display = 'flex'; // Make the overlay visible
-            splashScreen.classList.remove('hidden'); // Ensure transitions apply
-            splashScreenContent.style.display = 'flex'; [cite_start]// Make the content visible [cite: 1]
-
-            if (!splashScreen.dataset.listenersAttached) {
-                const splashLoginBtn = document.getElementById('splashLoginBtn');
-                const splashRegisterBtn = document.getElementById('splashRegisterBtn');
-
-                splashLoginBtn.addEventListener('click', () => {
-                    splashScreen.classList.add('hidden');
-                    splashScreenContent.style.display = 'none'; // Hide content immediately on click
-                    setTimeout(() => redirectToAuth('login'), 500);
-                });
-
-                splashRegisterBtn.addEventListener('click', () => {
-                    splashScreen.classList.add('hidden');
-                    splashScreenContent.style.display = 'none'; // Hide content immediately on click
-                    setTimeout(() => redirectToAuth('register'), 500);
-                });
-                splashScreen.dataset.listenersAttached = 'true';
-            }
-        } else {
-            console.log(`[${new Date().toLocaleTimeString()}] Splash screen should be HIDDEN (logged in and valid credentials).`);
-            splashScreen.classList.add('hidden'); // Start fade-out animation
-            // After animation, set display: none;
-            splashScreen.addEventListener('transitionend', function handler() {
-                splashScreen.style.display = 'none';
-                [cite_start]splashScreenContent.style.display = 'none'; // Also hide content div [cite: 1]
-                splashScreen.removeEventListener('transitionend', handler);
-            }, { once: true });
-        }
-    }
-
+            const splashScreen = document.getElementById('splashScreen');
+            const bbsRole = localStorage.getItem('bbsRole'); // Should be email
+            const bbsName = localStorage.getItem('bbsName'); // Should be name
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            console.log("Checking splash screen visibility:");
+            console.log("  bbsRole:", bbsRole);
+            console.log("  bbsName:", bbsName);
+            console.log("  bbsRole is valid email format:", emailPattern.test(bbsRole));
+            const isUserLoggedInAndValid = (bbsRole && bbsName && emailPattern.test(bbsRole));
+            if (!isUserLoggedInAndValid) {
+                console.log("  Splash screen should be VISIBLE (not logged in or invalid credentials)");
+                splashScreen.classList.remove('hidden');
+                if (!splashScreen.dataset.listenersAttached) {
+                    const splashLoginBtn = document.getElementById('splashLoginBtn');
+                    const splashRegisterBtn = document.getElementById('splashRegisterBtn');
+                    splashLoginBtn.addEventListener('click', () => {
+                        splashScreen.classList.add('hidden');
+                        redirectToAuth('login');
+                    });
+                    splashRegisterBtn.addEventListener('click', () => {
+                        // Do NOT set hasVisited here
+                        splashScreen.classList.add('hidden');
+                        // Ensure redirectToAuth correctly handles the base URL if needed
+                        redirectToAuth('register');
+                    });
+                    splashScreen.dataset.listenersAttached = 'true';
+                }
+            } else {
+                console.log("  Splash screen should be HIDDEN (logged in and valid credentials)");
+                splashScreen.classList.add('hidden');
+            }
+        }
 
         document.addEventListener("DOMContentLoaded", function () {
             checkAndToggleSplashScreen();
 
             // Set up continuous checking every 500ms
-            setInterval(checkAndToggleSplashScreen, 500);
+            setInterval(checkAndToggleSplashScreen, 2000);
 
         });
-
-
-
 
         function showTabs(format, event = null) {
             const form1 = document.getElementById('form1');
