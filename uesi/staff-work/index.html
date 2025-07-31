@@ -1528,7 +1528,7 @@
                         zone
                     };
                     // Changed dbRef.push(data) to dbRef.child(date).set(data)
-                    const path = `apps/uesi/staff-work/${safeEmail}/userData/${typePath}/${date}`;
+                    const path = `apps/uesi/staff-work/users/${safeEmail}/userData/${typePath}/${date}`;
                     const dbRef = firebase.database().ref(path);
 
                     // Using .set() will overwrite any existing data at this specific date path
