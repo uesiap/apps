@@ -674,7 +674,7 @@
         // Determine the base path dynamically using the safeUserEmail
         let fieldReportRef = null;
         if (safeUserEmail) {
-            fieldReportRef = firebase.database().ref(`apps/uesi/staff-work/${safeUserEmail}/userData/Field_Report`);
+            fieldReportRef = firebase.database().ref(`apps/uesi/staff-work/users/${safeUserEmail}/userData/Field_Report`);
         } else {
             console.error("Firebase reference cannot be established without a valid user email.");
         }
