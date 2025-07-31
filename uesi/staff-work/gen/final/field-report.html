@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,8 +9,7 @@
     <meta property="og:description" content="Generate Field Report for UESI Staff Work.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #075E54;
@@ -110,7 +108,7 @@
         }
 
         .report-header .report-title {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 700;
             color: var(--primary-color);
             margin-bottom: 0.5rem;
@@ -119,47 +117,68 @@
 
         .staff-info {
             font-size: 1.05rem;
-            text-align: center; /* Centered as per new example*/
+            text-align: center;
             margin-bottom: 1.5rem;
             font-weight: 600;
             color: #000;
         }
-        /* No span-specific color here to match provided example */
+
+        .table-scroll-wrapper {
+            overflow-x: auto;
+            width: 100%;
+            margin-top: 1.5rem;
+            -webkit-overflow-scrolling: touch;
+        }
 
         .report-table {
             width: 100%;
+            min-width: 700px;
             border-collapse: collapse;
-            margin: 20px auto; /* Centered and matching example */
-            font-size: 0.9em; /* Adjust to match example more closely */
+            margin: 0 auto;
+            font-size: 0.9em;
         }
 
         .report-table th,
         .report-table td {
-            border: 1px solid #444; /* Darker border matching example */
+            border: 1px solid #444;
             padding: 8px;
-            text-align: center; /* Default to center as per example */
+            text-align: center;
             vertical-align: top;
             word-wrap: break-word;
         }
 
         .report-table th {
             background-color: #f2f2f2;
-            font-weight: bold; /* Bold as per example */
+            font-weight: bold;
         }
 
-        /* Adjusted widths for displayed table to match PDF proportions */
-        .report-table colgroup col:nth-child(1) { width: 8%; } /* Sl. No */
-        .report-table colgroup col:nth-child(2) { width: 12%; } /* Date */
-        .report-table colgroup col:nth-child(3) { width: 12%; } /* DAY */
-        .report-table colgroup col:nth-child(4) { width: 18%; } /* Zone/Division */
-        .report-table colgroup col:nth-child(5) { width: 50%; } /* Purpose */
-
+        /* Left align specific columns */
+        .report-table td:nth-child(4),
+        .report-table td:nth-child(5) {
+            text-align: left;
+        }
 
         .no-data-message {
             text-align: center;
             color: var(--text-gray);
             font-style: italic;
             margin-top: 20px;
+        }
+
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-size: 1.2rem;
         }
 
         .loader {
@@ -169,17 +188,11 @@
             width: 50px;
             height: 50px;
             animation: spin 1s linear infinite;
-            margin-top: 50px;
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .export-button-container {
@@ -329,28 +342,27 @@
 
     <div class="report-container" id="reportContent" style="display: none;">
         <div class="report-header">
-            <p style="font-size: 1.2rem; margin-bottom: 0.2rem; color: #000; font-weight: 600;">Union of Evangelical
-                Students of India - <span id="staffState"></span></p>
-            <h1 class="report-title" id="reportGeneratedTitle">FIELD REPORT - [MONTH] [YEAR]</h1>
-            <h2 class="staff-info">Name: <span id="staffInfoName"></span> &nbsp;&nbsp;&nbsp; <span id="staffInfoBase"></span></h2>
+            <h3 style="font-size: 1.2rem; margin-bottom: 0.2rem; color: #000; font-weight: 600;">Union of Evangelical Students of India - <span id="staffState"></span></h3>
+            <h4 class="report-title" id="reportGeneratedTitle">FIELD REPORT - [MONTH] [YEAR]</h4>
+            <h2 class="staff-info">NAME: <span id="staffInfoName"></span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span id="staffInfoBase"></span></h2>
         </div>
-        <table class="report-table" id="fieldReportTable">
-            <colgroup>
-                <col style="width: 8%;"> <col style="width: 12%;"> <col style="width: 12%;"> <col style="width: 18%;"> <col style="width: 50%;"> </colgroup>
-            <thead>
-                <tr>
-                    <th>Sl. No</th>
-                    <th>Date</th>
-                    <th>DAY</th>
-                    <th>Zone / Division</th>
-                    <th>Purpose</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        <p class="no-data-message" id="noDataMessage" style="display: none;">No report data found for the selected
-            period.</p>
+
+        <div class="table-scroll-wrapper">
+            <table class="report-table" id="fieldReportTable">
+                <thead>
+                    <tr>
+                        <th>Sl. No</th>
+                        <th>Date</th>
+                        <th>DAY</th>
+                        <th>Zone / Division</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <p class="no-data-message" id="noDataMessage" style="display: none;">No report data found for the selected period.</p>
     </div>
 
     <div class="export-button-container">
@@ -359,36 +371,41 @@
         </button>
     </div>
 
+    <div id="exportLoadingOverlay" class="loader-overlay" style="display: none;">
+        <div class="loader"></div>
+        <p style="margin-top: 15px;">Generating document...</p>
+    </div>
+
     <div class="loader" id="loader"></div>
 
     <div class="export-dialog-overlay" id="exportDialogOverlay">
         <div class="export-dialog-content">
             <h3>Export Report As:</h3>
             <div class="export-options-grid">
-                <button class="export-option-btn excel-option" id="exportExcelBtn">
-                    <i class="fas fa-file-excel"></i> Excel (CSV)
-                </button>
                 <button class="export-option-btn pdf-option" id="exportPdfBtn">
                     <i class="fas fa-file-pdf"></i> PDF
                 </button>
+                <button class="export-option-btn excel-option" id="exportExcelBtn">
+                    <i class="fas fa-file-excel"></i> Excel
+                </button>
                 <button class="export-option-btn doc-option" id="exportDocBtn">
-                    <i class="fas fa-file-word"></i> Word (HTML)
+                    <i class="fas fa-file-word"></i> Word
                 </button>
             </div>
             <button class="export-dialog-close" id="closeExportDialogBtn">Close</button>
         </div>
     </div>
 
-
+    <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
-        // Firebase Config (consistent with your other apps)
+        // Firebase Config
         var firebaseConfig = {
             apiKey: "0AzyPiDT3wSi6WAuNX7YzbyJcvUgV0nyoxMwahn0",
             authDomain: "uesi-ap-default-rtdb.firebaseio.com",
@@ -398,151 +415,102 @@
         firebase.initializeApp(firebaseConfig);
         var database = firebase.database();
 
-        // --- Get URL Parameters ---
+        // Get URL Parameters
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(param);
         }
 
-        const userName = getQueryParam('name');
-        const userEmail = getQueryParam('email');
-        const userBase = getQueryParam('base');
-        const userState = getQueryParam('state');
-        const selectedMonthNum = getQueryParam('month');
-        const selectedYear = getQueryParam('year');
+        const userName = getQueryParam('name') || '';
+        const userEmail = getQueryParam('email') || 'sample@test.com';
+        const userBase = getQueryParam('base') || '';
+        const userState = getQueryParam('state') || '';
+        const selectedMonthNum = getQueryParam('month') || '';
+        const selectedYear = getQueryParam('year') || '';
 
         // Display basic staff info
-        document.getElementById('staffInfoName').textContent = userName || 'N/A';
-        document.getElementById('staffInfoBase').textContent = userBase || 'N/A';
-        document.getElementById('staffState').textContent = userState || 'N/A';
+        document.getElementById('staffInfoName').textContent = userName;
+        document.getElementById('staffInfoBase').textContent = userBase;
+        document.getElementById('staffState').textContent = userState;
 
-        // --- Set Report Title ---
+        // Set Report Title
         const monthNames = [
             "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
         ];
         const monthName = monthNames[parseInt(selectedMonthNum) - 1];
-
         if (monthName && selectedYear) {
             document.getElementById('reportGeneratedTitle').textContent = `FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}`;
-        } else {
-            document.getElementById('reportGeneratedTitle').textContent = `FIELD REPORT`;
         }
 
-        // --- Fetch Data from Firebase ---
-        let fieldReportRef = null;
-        let safeUserEmail = null;
         let reportDataForExport = [];
 
-        if (userEmail) {
-            safeUserEmail = userEmail.replace(/\./g, '_');
-            fieldReportRef = database.ref(`apps/uesi/staff-work/users/${safeUserEmail}/userData/Field_Report`);
-        } else {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('noDataMessage').textContent = 'Error: User email not provided. Cannot fetch report.';
-            document.getElementById('noDataMessage').style.display = 'block';
-            document.getElementById('reportContent').style.display = 'block';
-            console.error("User email missing from URL.");
-        }
+        // Sample data for demonstration
+        const sampleData = [
+        ];
 
+        // Populate table with sample data
+        function populateTable() {
+            const tableBody = document.getElementById('fieldReportTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            let serialNo = 1;
 
-        if (fieldReportRef && selectedYear && selectedMonthNum) {
-            document.getElementById('loader').style.display = 'block';
-            document.getElementById('exportReportBtn').style.display = 'none';
+            sampleData.forEach((data, index) => {
+                const row = tableBody.insertRow();
+                const dateObj = new Date(data.date + 'T12:00:00');
+                const formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
 
-            fieldReportRef.orderByKey().startAt(`${selectedYear}-${String(selectedMonthNum).padStart(2, '0')}-01`).endAt(`${selectedYear}-${String(selectedMonthNum).padStart(2, '0')}-31`)
-                .once('value', function (snapshot) {
-                    document.getElementById('loader').style.display = 'none';
-                    const tableBody = document.getElementById('fieldReportTable').getElementsByTagName('tbody')[0];
-                    tableBody.innerHTML = '';
+                let displayZone = data.zone;
+                let displayPurpose = data.purpose;
 
-                    let serialNo = 1;
-                    const rawData = [];
-
-                    snapshot.forEach(function (dateSnapshot) {
-                        const dateKey = dateSnapshot.key;
-                        const dateData = dateSnapshot.val();
-
-                        if (dateData && typeof dateData === 'object') {
-                            rawData.push({ id: dateKey, date: dateKey, ...dateData });
-                        }
-                    });
-
-                    rawData.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-                    if (rawData.length === 0) {
-                        document.getElementById('noDataMessage').style.display = 'block';
-                        document.getElementById('reportContent').style.display = 'block';
-                        return;
+                // Hide repeated zone/purpose for consecutive days (except special purposes)
+                if (index > 0 && !data.purpose.toLowerCase().includes('day off')) {
+                    const prevData = sampleData[index - 1];
+                    if (data.zone === prevData.zone && data.purpose === prevData.purpose) {
+                        displayZone = '';
+                        displayPurpose = '';
                     }
+                }
 
-                    let previousEntry = null;
-                    rawData.forEach(function (data) {
-                        const row = tableBody.insertRow();
-                        const dateObj = new Date(data.date + 'T12:00:00');
-                        const formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+                row.insertCell(0).textContent = serialNo++;
+                row.insertCell(1).textContent = formattedDate;
+                row.insertCell(2).textContent = data.day;
+                row.insertCell(3).textContent = displayZone;
+                row.insertCell(4).textContent = displayPurpose;
 
-                        let currentPurpose = data.purpose || '';
-                        let currentZone = data.zone || '';
-                        let currentDay = data.day || '';
-
-                        let displayZone = currentZone;
-                        let displayPurpose = currentPurpose;
-
-                        const specialPurposeKeywords = ['day off', 'preparation', 'holidays'];
-                        const isSpecialPurpose = specialPurposeKeywords.some(keyword => currentPurpose.toLowerCase().includes(keyword.toLowerCase()));
-
-                        if (previousEntry && !isSpecialPurpose) {
-                            const prevDateObj = new Date(previousEntry.date + 'T12:00:00');
-                            const daysDiff = (dateObj - prevDateObj) / (1000 * 60 * 60 * 24);
-
-                            if (daysDiff === 1 && currentZone === previousEntry.zone && currentPurpose === previousEntry.purpose) {
-                                displayZone = '';
-                                displayPurpose = '';
-                            }
-                        }
-
-                        row.insertCell(0).textContent = serialNo++;
-                        row.insertCell(1).textContent = formattedDate;
-                        row.insertCell(2).textContent = currentDay;
-                        row.insertCell(3).textContent = displayZone;
-                        row.insertCell(4).textContent = displayPurpose;
-
-                        reportDataForExport.push({
-                            "Sl. No": serialNo - 1,
-                            "Date": formattedDate,
-                            "DAY": currentDay,
-                            "Zone / Division": displayZone,
-                            "Purpose": displayPurpose
-                        });
-
-                        previousEntry = data;
-                    });
-
-                    document.getElementById('reportContent').style.display = 'block';
-                    document.getElementById('exportReportBtn').style.display = 'block';
-                })
-                .catch(function (error) {
-                    document.getElementById('loader').style.display = 'none';
-                    document.getElementById('noDataMessage').textContent = `Error fetching data: ${error.message}`;
-                    document.getElementById('noDataMessage').style.display = 'block';
-                    document.getElementById('reportContent').style.display = 'block';
-                    console.error("Firebase data fetch error:", error);
+                reportDataForExport.push({
+                    "Sl. No": serialNo - 1,
+                    "Date": formattedDate,
+                    "DAY": data.day,
+                    "Zone / Division": displayZone,
+                    "Purpose": displayPurpose
                 });
-        } else if (!fieldReportRef) {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('noDataMessage').textContent = 'Error: Cannot establish Firebase connection without email.';
-            document.getElementById('noDataMessage').style.display = 'block';
+            });
+
             document.getElementById('reportContent').style.display = 'block';
+            document.getElementById('exportReportBtn').style.display = 'block';
+            document.getElementById('loader').style.display = 'none';
         }
 
-        // --- Export / Share Logic ---
+        // Initialize with sample data
+        populateTable();
+
+        // Export Dialog Logic
         const exportDialogOverlay = document.getElementById('exportDialogOverlay');
         const exportReportBtn = document.getElementById('exportReportBtn');
         const closeExportDialogBtn = document.getElementById('closeExportDialogBtn');
-        const exportExcelBtn = document.getElementById('exportExcelBtn');
         const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const exportExcelBtn = document.getElementById('exportExcelBtn');
         const exportDocBtn = document.getElementById('exportDocBtn');
+        const exportLoadingOverlay = document.getElementById('exportLoadingOverlay');
+
+        function showExportLoading() {
+            exportLoadingOverlay.style.display = 'flex';
+        }
+
+        function hideExportLoading() {
+            exportLoadingOverlay.style.display = 'none';
+        }
 
         exportReportBtn.addEventListener('click', () => {
             exportDialogOverlay.classList.add('active');
@@ -558,180 +526,395 @@
             }
         });
 
-        exportExcelBtn.addEventListener('click', () => {
-            exportAsCsv(reportDataForExport, `${userName}_Field_Report_${monthName}_${selectedYear}.csv`);
-            exportDialogOverlay.classList.remove('active');
-        });
-
+        // PDF Export
         exportPdfBtn.addEventListener('click', () => {
             exportDialogOverlay.classList.remove('active');
-            
-            // For PDF, we want to capture the main report-container div
-            // because it contains the header and table with the CSS styles applied.
-            const contentToCapture = document.getElementById('reportContent'); 
-            
-            // Temporarily adjust some styles for capture if needed, or rely on existing CSS
-            // Example: contentToCapture.style.width = '794px'; // A4 width for better rendering if not already set by max-width
-
-            html2canvas(contentToCapture, { scale: 2, logging: false, useCORS: true }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'mm', 'a4'); // 'p' for portrait, 'mm' units, 'a4' size
-                const imgWidth = 210; // A4 width in mm
-                const pageHeight = 297; // A4 height in mm
-                const imgHeight = canvas.height * imgWidth / canvas.width;
-                let heightLeft = imgHeight;
-                let position = 0;
-
-                doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-
-                while (heightLeft >= 0) {
-                    position = heightLeft - imgHeight;
-                    doc.addPage();
-                    doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-                }
-                
-                doc.save(`${userName}_Field_Report_${monthName}_${selectedYear}.pdf`);
-                
-            }).catch(error => {
-                console.error("Error generating PDF:", error);
-                alert("Failed to generate PDF. Please try again.");
-            });
+            generatePDF();
         });
 
+        // Excel Export
+        exportExcelBtn.addEventListener('click', () => {
+            exportDialogOverlay.classList.remove('active');
+            generateExcel();
+        });
+
+        // Word Export
         exportDocBtn.addEventListener('click', () => {
             exportDialogOverlay.classList.remove('active');
+            generateWord();
+        });
+
+        function generatePDF() {
+            showExportLoading();
             
-            // Get the entire report content div, which contains the header and the main table
-            const contentToExport = document.getElementById('reportContent');
-
-            // Create a clone to manipulate styles without affecting the visible page
-            const clonedContent = contentToExport.cloneNode(true);
-
-            // Apply inline styles to the cloned content to ensure consistent rendering in Word
-            clonedContent.style.cssText = `
-                font-family: Arial, sans-serif;
-                color: #000;
-                width: 794px; /* A4 width for consistency */
-                font-size: 14px;
-                line-height: 1.4;
+            const pdfHtmlContent = generatePdfHtmlContent(reportDataForExport, userName, userBase, userState, monthName, selectedYear);
+            const tempDiv = document.createElement('div');
+            tempDiv.style.cssText = `
+                position: absolute;
+                left: -9999px;
+                top: -9999px;
+                display: block !important;
+                width: 794px;
+                background-color: #fff;
                 padding: 20px;
                 box-sizing: border-box;
-                background-color: #fff;
+                font-family: 'Poppins', sans-serif;
+                color: #000;
+                line-height: 1.4;
             `;
+            tempDiv.innerHTML = pdfHtmlContent;
+            document.body.appendChild(tempDiv);
 
-            // Adjust header styles in clone
-            const headerP = clonedContent.querySelector('.report-header p');
-            if (headerP) headerP.style.cssText = `margin: 0; font-size: 14px; font-weight: bold; text-align: center;`;
-            
-            const headerH1 = clonedContent.querySelector('.report-header h1');
-            if (headerH1) headerH1.style.cssText = `margin: 5px 0 10px; font-size: 16px; font-weight: bold; text-transform: uppercase; text-align: center; color: #075E54;`;
+            setTimeout(() => {
+                html2canvas(tempDiv, {
+                    scale: 2,
+                    logging: false,
+                    useCORS: true,
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF('p', 'mm', 'a4');
+                    const imgWidth = 210;
+                    const pageHeight = 297;
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    let heightLeft = imgHeight;
+                    let position = 0;
 
-            // Adjust staff info styles in clone
-            const staffInfoH4 = clonedContent.querySelector('h4.staff-info');
-            if (staffInfoH4) staffInfoH4.style.cssText = `text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 14px;`;
-            
-            // Get the table and apply inline styles directly
-            const table = clonedContent.querySelector('.report-table');
-            if (table) {
-                table.style.cssText = `width: 100%; border-collapse: collapse; margin: 20px auto; font-size: 13px; font-family: Arial, sans-serif; table-layout: fixed;`;
-                
-                // Set column widths in the cloned table's colgroup
-                let colgroupHtml = '<colgroup>';
-                const colWidths = {
-                    "Sl. No": "8%",
-                    "Date": "12%",
-                    "DAY": "12%",
-                    "Zone / Division": "18%",
-                    "Purpose": "50%"
-                };
-                Object.values(colWidths).forEach(width => {
-                    colgroupHtml += `<col style="width:${width};">`;
-                });
-                colgroupHtml += '</colgroup>';
-                table.insertAdjacentHTML('afterbegin', colgroupHtml);
+                    doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
 
-                table.querySelectorAll('th').forEach(th => {
-                    th.style.cssText = `border: 1px solid #444; padding: 8px; text-align: center; background-color: #f2f2f2; font-weight: bold; white-space: nowrap;`;
-                });
-                table.querySelectorAll('td').forEach(td => {
-                    td.style.cssText = `border: 1px solid #444; padding: 8px; vertical-align: top; word-wrap: break-word;`;
-                    // Specific alignment for columns
-                    const headerText = td.closest('table').querySelector('th:nth-child(' + (td.cellIndex + 1) + ')').textContent.trim();
-                    if (headerText === 'Sl. No' || headerText === 'Date' || headerText === 'DAY') {
-                        td.style.textAlign = 'center';
-                    } else {
-                        td.style.textAlign = 'left';
+                    while (heightLeft > 0) {
+                        position = heightLeft - imgHeight;
+                        doc.addPage();
+                        doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
                     }
-                });
-            }
 
-            const fullHtml = `
+                    doc.save(`${userName}_Field_Report_${monthName}_${selectedYear}.pdf`);
+                    document.body.removeChild(tempDiv);
+                    hideExportLoading();
+                }).catch(error => {
+                    console.error("Error generating PDF:", error);
+                    alert("Failed to generate PDF. Please try again.");
+                    if (tempDiv.parentNode) {
+                        document.body.removeChild(tempDiv);
+                    }
+                    hideExportLoading();
+                });
+            }, 100);
+        }
+
+        function generateExcel() {
+            showExportLoading();
+
+            try {
+                // Create workbook and worksheet
+                const wb = XLSX.utils.book_new();
+                
+                // Create header data
+                const headerData = [
+                    [`Union of Evangelical Students of India - ${userState}`],
+                    [`FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}`],
+                    [`NAME: ${userName}      Base: ${userBase}`],
+                    [], // Empty row
+                    ['Sl. No', 'Date', 'DAY', 'Zone / Division', 'Purpose'] // Table headers
+                ];
+
+                // Add report data
+                const tableData = reportDataForExport.map(row => [
+                    row["Sl. No"],
+                    row["Date"],
+                    row["DAY"],
+                    row["Zone / Division"],
+                    row["Purpose"]
+                ]);
+
+                // Combine all data
+                const wsData = [...headerData, ...tableData];
+                
+                // Create worksheet
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+                // Set column widths
+                ws['!cols'] = [
+                    { wch: 8 },  // Sl. No
+                    { wch: 12 }, // Date
+                    { wch: 12 }, // DAY
+                    { wch: 25 }, // Zone / Division
+                    { wch: 40 }  // Purpose
+                ];
+
+                // Style the headers
+                const range = XLSX.utils.decode_range(ws['!ref']);
+                
+                // Center align all cells
+                for (let R = range.s.r; R <= range.e.r; ++R) {
+                    for (let C = range.s.c; C <= range.e.c; ++C) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                        if (!ws[cellAddress]) continue;
+                        
+                        if (!ws[cellAddress].s) ws[cellAddress].s = {};
+                        ws[cellAddress].s.alignment = { 
+                            horizontal: R < 4 || C < 3 ? 'center' : (C >= 3 ? 'left' : 'center'),
+                            vertical: 'center'
+                        };
+                        
+                        // Bold headers
+                        if (R === 4) {
+                            ws[cellAddress].s.font = { bold: true };
+                        }
+                    }
+                }
+
+                // Add worksheet to workbook
+                XLSX.utils.book_append_sheet(wb, ws, 'Field Report');
+
+                // Generate Excel file
+                XLSX.writeFile(wb, `${userName}_Field_Report_${monthName}_${selectedYear}.xlsx`);
+                
+                hideExportLoading();
+            } catch (error) {
+                console.error("Error generating Excel:", error);
+                alert("Failed to generate Excel file. Please try again.");
+                hideExportLoading();
+            }
+        }
+
+        function generateWord() {
+            showExportLoading();
+
+            try {
+                // Generate HTML content for Word
+                const wordHtmlContent = generateWordHtmlContent(reportDataForExport, userName, userBase, userState, monthName, selectedYear);
+                
+                // Create a Blob with the HTML content
+                const blob = new Blob([wordHtmlContent], {
+                    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                });
+
+                // Create download link
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${userName}_Field_Report_${monthName}_${selectedYear}.doc`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                hideExportLoading();
+            } catch (error) {
+                console.error("Error generating Word document:", error);
+                alert("Failed to generate Word document. Please try again.");
+                hideExportLoading();
+            }
+        }
+
+        function generatePdfHtmlContent(data, userName, userBase, userState, monthName, selectedYear) {
+            let tableHtml = '<table border="1" style="width:100%; border-collapse: collapse; margin: 20px auto; font-family: Arial, sans-serif;"><thead><tr>';
+            const headers = ["Sl. No", "Date", "DAY", "Zone / Division", "Purpose"];
+            const colWidths = {
+                "Sl. No": "8%",
+                "Date": "12%",
+                "DAY": "12%",
+                "Zone / Division": "18%",
+                "Purpose": "50%"
+            };
+
+            headers.forEach(header => {
+                tableHtml += `<th style="background-color:#f2f2f2; padding:8px; text-align:center; font-weight:bold; border:1px solid #444; white-space: nowrap; width:${colWidths[header] || 'auto'};">${header}</th>`;
+            });
+
+            tableHtml += '</tr></thead><tbody>';
+
+            data.forEach(row => {
+                tableHtml += '<tr>';
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Sl. No"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Date"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["DAY"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Zone / Division"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Purpose"]}</td>`;
+                tableHtml += '</tr>';
+            });
+
+            tableHtml += '</tbody></table>';
+
+            return `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <meta charset="utf-8">
                     <title>${userName} Field Report - ${monthName} ${selectedYear}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; }
+                        h1, h2, p { margin: 0; padding: 0; }
+                        .report-header { text-align: center; margin-bottom: 10px; }
+                        .report-header p { font-size: 14px; font-weight: bold; text-align: center; }
+                        .report-header h1 { font-size: 18px; font-weight: bold; text-transform: uppercase; text-align: center; color: #075E54; }
+                        .staff-info { font-size: 14px; text-align: center; font-weight: bold; margin-bottom: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px auto; table-layout: fixed; }
+                        th, td { border: 1px solid #444; padding: 8px; vertical-align: top; font-size: 13px; word-wrap: break-word; text-align: center; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                        td:nth-child(1) { width: 8%; }
+                        td:nth-child(2) { width: 12%; white-space: nowrap; }
+                        td:nth-child(3) { width: 12%; white-space: nowrap; }
+                        td:nth-child(4) { width: 18%; }
+                        td:nth-child(5) { width: 50%; }
+                    </style>
                 </head>
                 <body>
-                    ${clonedContent.innerHTML}
+                    <div class="report-header">
+                        <h3>Union of Evangelical Students of India - ${userState || 'N/A'}</h3>
+                        <h4>FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}</h4>
+                    </div>
+                    <h2 class="staff-info">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Base: ${userBase || 'N/A'}</h2>
+                    ${tableHtml}
                 </body>
                 </html>
             `;
+        }
 
-            const blob = new Blob([fullHtml], { type: 'application/msword;charset=utf-8;' });
-            const link = document.createElement('a');
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        });
+        function generateWordHtmlContent(data, userName, userBase, userState, monthName, selectedYear) {
+            let tableHtml = '<table border="1" style="width:100%; border-collapse: collapse; margin: 20px auto;"><thead><tr>';
+            const headers = ["Sl. No", "Date", "DAY", "Zone / Division", "Purpose"];
 
-
-        function exportAsCsv(data, filename) {
-            if (!data || data.length === 0) {
-                alert('No data to export!');
-                return;
-            }
-
-            let csvContent = "";
-            csvContent += "\uFEFF";
-
-            const headers = Object.keys(data[0]);
-            csvContent += headers.join(",") + "\r\n";
-
-            data.forEach(row => {
-                const values = headers.map(header => {
-                    let value = row[header] === null || row[header] === undefined ? '' : String(row[header]);
-                    value = value.replace(/"/g, '""');
-                    if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
-                        value = `"${value}"`;
-                    }
-                    return value;
-                });
-                csvContent += values.join(",") + "\r\n";
+            headers.forEach(header => {
+                tableHtml += `<th style="background-color:#f2f2f2; padding:8px; text-align:center; font-weight:bold; border:1px solid #444;">${header}</th>`;
             });
 
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+            tableHtml += '</tr></thead><tbody>';
+
+            data.forEach(row => {
+                tableHtml += '<tr>';
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Sl. No"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Date"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["DAY"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Zone / Division"]}</td>`;
+                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Purpose"]}</td>`;
+                tableHtml += '</tr>';
+            });
+
+            tableHtml += '</tbody></table>';
+
+            return `
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>${userName} Field Report - ${monthName} ${selectedYear}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; color: #000; }
+                        .report-header { text-align: center; margin-bottom: 20px; }
+                        .report-header p { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+                        .report-header h1 { font-size: 20px; font-weight: bold; color: #075E54; margin-bottom: 10px; }
+                        .staff-info { font-size: 16px; text-align: center; font-weight: bold; margin-bottom: 30px; }
+                        table { width: 100%; border-collapse: collapse; }
+                        th, td { border: 1px solid #444; padding: 10px; text-align: center; font-size: 14px; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="report-header">
+                        <h3>Union of Evangelical Students of India - ${userState || 'N/A'}</h3>
+                        <h4>FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}</h>
+                    </div>
+                    <div class="staff-info">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Base: ${userBase || 'N/A'}</div>
+                    ${tableHtml}
+                </body>
+                </html>
+            `;
+        }
+
+        // Firebase data fetching (if needed)
+        if (userEmail && userEmail !== 'sample@test.com') {
+            const safeUserEmail = userEmail.replace(/\./g, '_');
+            const fieldReportRef = database.ref(`apps/uesi/staff-work/users/${safeUserEmail}/userData/Field_Report`);
+
+            if (fieldReportRef && selectedYear && selectedMonthNum) {
+                document.getElementById('loader').style.display = 'block';
+                document.getElementById('exportReportBtn').style.display = 'none';
+
+                fieldReportRef.orderByKey()
+                    .startAt(`${selectedYear}-${String(selectedMonthNum).padStart(2, '0')}-01`)
+                    .endAt(`${selectedYear}-${String(selectedMonthNum).padStart(2, '0')}-31`)
+                    .once('value', function (snapshot) {
+                        document.getElementById('loader').style.display = 'none';
+                        const tableBody = document.getElementById('fieldReportTable').getElementsByTagName('tbody')[0];
+                        tableBody.innerHTML = '';
+                        reportDataForExport = []; // Reset export data
+                        let serialNo = 1;
+                        const rawData = [];
+
+                        snapshot.forEach(function (dateSnapshot) {
+                            const dateKey = dateSnapshot.key;
+                            const dateData = dateSnapshot.val();
+                            if (dateData && typeof dateData === 'object') {
+                                rawData.push({ id: dateKey, date: dateKey, ...dateData });
+                            }
+                        });
+
+                        rawData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                        if (rawData.length === 0) {
+                            document.getElementById('noDataMessage').style.display = 'block';
+                            document.getElementById('reportContent').style.display = 'block';
+                            return;
+                        }
+
+                        let previousEntry = null;
+                        rawData.forEach(function (data) {
+                            const row = tableBody.insertRow();
+                            const dateObj = new Date(data.date + 'T12:00:00');
+                            const formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+
+                            let currentPurpose = data.purpose || '';
+                            let currentZone = data.zone || '';
+                            let currentDay = data.day || '';
+                            let displayZone = currentZone;
+                            let displayPurpose = currentPurpose;
+
+                            const specialPurposeKeywords = ['day off', 'preparation', 'holidays'];
+                            const isSpecialPurpose = specialPurposeKeywords.some(keyword => 
+                                currentPurpose.toLowerCase().includes(keyword.toLowerCase())
+                            );
+
+                            if (previousEntry && !isSpecialPurpose) {
+                                const prevDateObj = new Date(previousEntry.date + 'T12:00:00');
+                                const daysDiff = (dateObj - prevDateObj) / (1000 * 60 * 60 * 24);
+                                if (daysDiff === 1 && currentZone === previousEntry.zone && currentPurpose === previousEntry.purpose) {
+                                    displayZone = '';
+                                    displayPurpose = '';
+                                }
+                            }
+
+                            row.insertCell(0).textContent = serialNo++;
+                            row.insertCell(1).textContent = formattedDate;
+                            row.insertCell(2).textContent = currentDay;
+                            row.insertCell(3).textContent = displayZone;
+                            row.insertCell(4).textContent = displayPurpose;
+
+                            reportDataForExport.push({
+                                "Sl. No": serialNo - 1,
+                                "Date": formattedDate,
+                                "DAY": currentDay,
+                                "Zone / Division": displayZone,
+                                "Purpose": displayPurpose
+                            });
+
+                            previousEntry = data;
+                        });
+
+                        document.getElementById('reportContent').style.display = 'block';
+                        document.getElementById('exportReportBtn').style.display = 'block';
+                    })
+                    .catch(function (error) {
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('noDataMessage').textContent = `Error fetching data: ${error.message}`;
+                        document.getElementById('noDataMessage').style.display = 'block';
+                        document.getElementById('reportContent').style.display = 'block';
+                        console.error("Firebase data fetch error:", error);
+                    });
             }
         }
     </script>
 </body>
-
 </html>
