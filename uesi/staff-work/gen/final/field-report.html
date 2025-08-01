@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,8 @@
     <meta property="og:description" content="Generate Field Report for UESI Staff Work.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --primary-color: #075E54;
@@ -27,6 +29,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Poppins', sans-serif;
+            /* Changed font-family to Times New Roman */
         }
 
         body {
@@ -36,6 +39,7 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
+            justify-content: flex-start;
             align-items: center;
         }
 
@@ -91,71 +95,94 @@
             max-width: 800px;
             width: 100%;
             margin-top: 6rem;
-            font-size: 0.95rem;
-        }
-
-        .report-header {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .report-header p {
-            font-size: 1.2rem;
-            margin-bottom: 0.2rem;
-            color: #000;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .report-header .report-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-            text-align: center;
-        }
-
-        .staff-info {
-            font-size: 1.4rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-            color: #000;
+            font-size: 0.95em;
+            /* Use em or rem for scalability */
         }
 
         .table-scroll-wrapper {
             overflow-x: auto;
             width: 100%;
-            margin-top: 1.5rem;
+            margin-top: 0;
             -webkit-overflow-scrolling: touch;
         }
 
         .report-table {
             width: 100%;
             min-width: 700px;
+            /* Ensures table doesn't shrink too much */
             border-collapse: collapse;
             margin: 0 auto;
-            font-size: 0.9em;
+            font-size: 1em;
+            /* Ensure table font size inherits or is explicitly set */
         }
 
         .report-table th,
         .report-table td {
             border: 1px solid #444;
             padding: 8px;
+            /* Default padding for table cells */
             text-align: center;
             vertical-align: top;
             word-wrap: break-word;
         }
 
-        .report-table th {
-            background-color: #f2f2f2;
+        /* Styles for the main report headers within the table */
+        .report-table thead tr.report-main-header td {
             font-weight: bold;
+            /* Changed to bold for Times New Roman */
+            color: #000;
+            text-align: center;
+            padding: 8px 10px;
+            /* Increased padding */
+            font-size: 1.25em;
+            /* Increased font size */
+            border: 1px solid #444;
+            /* Ensure borders */
         }
 
-        /* Left align specific columns */
+        .report-table thead tr.report-title-row td {
+            font-size: 1.8em;
+            /* Increased font size */
+            font-weight: bold;
+            /* Changed to bold for Times New Roman */
+            color: var(--primary-color);
+            text-align: center;
+            padding: 8px 10px;
+            /* Increased padding */
+            border: 1px solid #444;
+        }
+
+        .report-table thead tr.staff-info-row td {
+            font-size: 1.4em;
+            /* Increased font size */
+            font-weight: bold;
+            /* Changed to bold for Times New Roman */
+            color: #000;
+            text-align: center;
+            padding: 8px 10px;
+            /* Increased padding */
+            border: 1px solid #444;
+        }
+
+        /* Style for the actual table headers (Sl. No, Date, etc.) */
+        .report-table thead tr:last-child th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            padding: 8px;
+            font-size: 1em;
+            /* Relative to table font size */
+        }
+
+        /* Centered align Zone / Division and Purpose columns for display */
         .report-table td:nth-child(4),
         .report-table td:nth-child(5) {
-            text-align: left;
+            text-align: center;
+            /* Changed from left to center */
+        }
+
+        /* Added for rowspan cells in the display table */
+        .report-table td[rowspan] {
+            vertical-align: middle;
         }
 
         .no-data-message {
@@ -191,8 +218,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .export-button-container {
@@ -341,15 +373,20 @@
     </div>
 
     <div class="report-container" id="reportContent" style="display: none;">
-        <div class="report-header">
-            <h5 style="font-size: 1.2rem; margin-bottom: 0.2rem; color: #000; font-weight: 600;">Union of Evangelical Students of India - <span id="staffState"></span></h5>
-            <h5 class="report-title" id="reportGeneratedTitle">FIELD REPORT - [MONTH] [YEAR]</h5>
-            <h2 class="staff-info">NAME: <span id="staffInfoName"></span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span id="staffInfoBase"></span></h2>
-        </div>
-
         <div class="table-scroll-wrapper">
             <table class="report-table" id="fieldReportTable">
                 <thead>
+                    <tr class="report-main-header">
+                        <td colspan="5">Union of Evangelical Students of India - <span id="staffState"></span></td>
+                    </tr>
+                    <tr class="report-title-row">
+                        <td colspan="5" id="reportGeneratedTitle">FIELD REPORT - [MONTH] [YEAR]</td>
+                    </tr>
+                    <tr class="staff-info-row">
+                        <td colspan="5">NAME: <span id="staffInfoName"></span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <span id="staffInfoBase"></span>
+                        </td>
+                    </tr>
                     <tr>
                         <th>Sl. No</th>
                         <th>Date</th>
@@ -362,7 +399,8 @@
             </table>
         </div>
 
-        <p class="no-data-message" id="noDataMessage" style="display: none;">No report data found for the selected period.</p>
+        <p class="no-data-message" id="noDataMessage" style="display: none;">No report data found for the selected
+            period.</p>
     </div>
 
     <div class="export-button-container">
@@ -396,7 +434,6 @@
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -418,7 +455,8 @@
         // Get URL Parameters
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
+            // Decode URI component to handle %20 and other encoded characters
+            return decodeURIComponent(urlParams.get(param) || '');
         }
 
         const userName = getQueryParam('name') || '';
@@ -443,64 +481,122 @@
             document.getElementById('reportGeneratedTitle').textContent = `FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}`;
         }
 
-        let reportDataForExport = [];
+        // This array will store the structured data for export, including rowspan info
+        let processedTableDataForExport = [];
 
-        // Sample data for demonstration
-        const sampleData = [
-        ];
-
-        // Populate table with sample data
-        function populateTable() {
-            const tableBody = document.getElementById('fieldReportTable').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = '';
-            let serialNo = 1;
-
-            sampleData.forEach((data, index) => {
-                const row = tableBody.insertRow();
-                const dateObj = new Date(data.date + 'T12:00:00');
-                const formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
-
-                let displayZone = data.zone;
-                let displayPurpose = data.purpose;
-
-                // Hide repeated zone/purpose for consecutive days (except special purposes)
-                if (index > 0 && !data.purpose.toLowerCase().includes('day off')) {
-                    const prevData = sampleData[index - 1];
-                    if (data.zone === prevData.zone && data.purpose === prevData.purpose) {
-                        displayZone = '';
-                        displayPurpose = '';
-                    }
-                }
-
-                row.insertCell(0).textContent = serialNo++;
-                row.insertCell(1).textContent = formattedDate;
-                row.insertCell(2).textContent = data.day;
-                row.insertCell(3).textContent = displayZone;
-                row.insertCell(4).textContent = displayPurpose;
-
-                reportDataForExport.push({
-                    "Sl. No": serialNo - 1,
-                    "Date": formattedDate,
-                    "DAY": data.day,
-                    "Zone / Division": displayZone,
-                    "Purpose": displayPurpose
-                });
-            });
-
-            document.getElementById('reportContent').style.display = 'block';
-            document.getElementById('exportReportBtn').style.display = 'block';
-            document.getElementById('loader').style.display = 'none';
+        // Helper functions
+        function isSpecialPurpose(purpose) {
+            const specialKeywords = ['day off', 'preparation', 'holidays', 'leave', 'sick'];
+            return specialKeywords.some(keyword =>
+                purpose.toLowerCase().includes(keyword.toLowerCase())
+            );
         }
 
-        // Initialize with sample data
-        populateTable();
+        function isConsecutiveDay(date1, date2) {
+            const d1 = new Date(date1 + 'T12:00:00'); // Add time to avoid timezone issues
+            const d2 = new Date(date2 + 'T12:00:00');
+            const timeDiff = d2.getTime() - d1.getTime();
+            const dayDiff = timeDiff / (1000 * 3600 * 24);
+            return dayDiff === 1;
+        }
+
+        /**
+         * Processes raw data to identify groups for rowspan and populate the HTML table.
+         * Also prepares data for export with explicit rowspan information.
+         */
+        function processAndPopulateTable(rawData) {
+            const tableBody = document.getElementById('fieldReportTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = ''; // Clear existing content
+            processedTableDataForExport = []; // Reset export data
+
+            if (rawData.length === 0) {
+                document.getElementById('noDataMessage').style.display = 'block';
+                return;
+            }
+
+            let serialNo = 1;
+            let i = 0;
+            while (i < rawData.length) {
+                const startData = rawData[i];
+                let groupCount = 1;
+                let j = i + 1;
+
+                // Check for consecutive identical entries to group
+                // Conditions: not a special purpose, same zone, same purpose, consecutive day
+                while (j < rawData.length &&
+                    !isSpecialPurpose(startData.purpose) &&
+                    startData.zone === rawData[j].zone &&
+                    startData.purpose === rawData[j].purpose &&
+                    isConsecutiveDay(rawData[j - 1].date, rawData[j].date)) {
+                    groupCount++;
+                    j++;
+                }
+
+                // --- HTML Table Generation (with rowspan) ---
+                const row = tableBody.insertRow();
+                const formattedDate = new Date(startData.date + 'T12:00:00');
+                row.insertCell(0).textContent = serialNo++;
+                row.insertCell(1).textContent = `${String(formattedDate.getDate()).padStart(2, '0')}/${String(formattedDate.getMonth() + 1).padStart(2, '0')}/${formattedDate.getFullYear()}`;
+                row.insertCell(2).textContent = startData.day;
+
+                const zoneCell = row.insertCell(3);
+                zoneCell.textContent = startData.zone;
+                zoneCell.rowSpan = groupCount;
+                zoneCell.style.verticalAlign = 'middle';
+                zoneCell.style.textAlign = 'center'; // Centered
+
+                const purposeCell = row.insertCell(4);
+                purposeCell.textContent = startData.purpose;
+                purposeCell.rowSpan = groupCount;
+                purposeCell.style.verticalAlign = 'middle';
+                purposeCell.style.textAlign = 'center'; // Centered
+
+                // Populate subsequent rows for the group (only Sl. No, Date, Day)
+                for (let k = 1; k < groupCount; k++) {
+                    const subsequentRowData = rawData[i + k];
+                    const subsequentRow = tableBody.insertRow();
+                    const subFormattedDate = new Date(subsequentRowData.date + 'T12:00:00');
+                    subsequentRow.insertCell(0).textContent = serialNo++;
+                    subsequentRow.insertCell(1).textContent = `${String(subFormattedDate.getDate()).padStart(2, '0')}/${String(subFormattedDate.getMonth() + 1).padStart(2, '0')}/${subFormattedDate.getFullYear()}`;
+                    subsequentRow.insertCell(2).textContent = subsequentRowData.day;
+                }
+
+                // --- Prepare data for export (also with rowspan info) ---
+                // We store the data in a way that allows reconstruction of the merged table structure
+                processedTableDataForExport.push({
+                    type: 'firstInGroup',
+                    slNoStart: serialNo - groupCount, // Starting Sl. No for this group
+                    count: groupCount,
+                    date: startData.date,
+                    day: startData.day,
+                    zone: startData.zone,
+                    purpose: startData.purpose
+                });
+
+                for (let k = 1; k < groupCount; k++) {
+                    const currentItem = rawData[i + k];
+                    processedTableDataForExport.push({
+                        type: 'subsequentInGroup',
+                        slNo: serialNo - groupCount + k, // Individual Sl. No
+                        date: currentItem.date,
+                        day: currentItem.day
+                    });
+                }
+
+                i = j; // Move to the next un-grouped item
+            }
+            document.getElementById('noDataMessage').style.display = 'none'; // Hide if data is populated
+            document.getElementById('reportContent').style.display = 'block';
+            document.getElementById('exportReportBtn').style.display = 'block';
+        }
+
 
         // Export Dialog Logic
         const exportDialogOverlay = document.getElementById('exportDialogOverlay');
         const exportReportBtn = document.getElementById('exportReportBtn');
         const closeExportDialogBtn = document.getElementById('closeExportDialogBtn');
         const exportPdfBtn = document.getElementById('exportPdfBtn');
-        const exportExcelBtn = document.getElementById('exportExcelBtn');
+        const exportExcelBtn = document.getElementById('exportExcelBtn'); // Corrected var name
         const exportDocBtn = document.getElementById('exportDocBtn');
         const exportLoadingOverlay = document.getElementById('exportLoadingOverlay');
 
@@ -526,65 +622,70 @@
             }
         });
 
-        // PDF Export
+        // Export functions
         exportPdfBtn.addEventListener('click', () => {
             exportDialogOverlay.classList.remove('active');
             generatePDF();
         });
 
-        // Excel Export
         exportExcelBtn.addEventListener('click', () => {
             exportDialogOverlay.classList.remove('active');
             generateExcel();
         });
 
-        // Word Export
         exportDocBtn.addEventListener('click', () => {
             exportDialogOverlay.classList.remove('active');
             generateWord();
         });
 
+        // --- PDF Export (using generated HTML with rowspan) ---
         function generatePDF() {
             showExportLoading();
-            
-            const pdfHtmlContent = generatePdfHtmlContent(reportDataForExport, userName, userBase, userState, monthName, selectedYear);
+
+            // Generate HTML content specifically for PDF, including rowspan
+            const pdfHtmlContent = generateExportHtmlContent(processedTableDataForExport, userName, userBase, userState, monthName, selectedYear, 'pdf');
             const tempDiv = document.createElement('div');
             tempDiv.style.cssText = `
                 position: absolute;
                 left: -9999px;
                 top: -9999px;
                 display: block !important;
-                width: 794px;
+                /* Adjust width for PDF if necessary to fit content, a bit less than A4 print width */
+                width: 760px; /* Adjusted from 794px, gives some padding */
                 background-color: #fff;
-                padding: 20px;
+                padding: 10mm; /* Use mm for consistent print size */
                 box-sizing: border-box;
-                font-family: 'Poppins', sans-serif;
+                font-family: 'Times New Roman', Times, serif; /* Apply Times New Roman for PDF */
                 color: #000;
-                line-height: 1.4;
+                line-height: 1.2; /* Tighter line height */
             `;
             tempDiv.innerHTML = pdfHtmlContent;
             document.body.appendChild(tempDiv);
 
             setTimeout(() => {
                 html2canvas(tempDiv, {
-                    scale: 2,
+                    scale: 2, // Keep scale high for better resolution
                     logging: false,
                     useCORS: true,
+                    windowWidth: tempDiv.scrollWidth,
+                    windowHeight: tempDiv.scrollHeight
                 }).then(canvas => {
                     const imgData = canvas.toDataURL('image/png');
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF('p', 'mm', 'a4');
-                    const imgWidth = 210;
-                    const pageHeight = 297;
-                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    const imgWidth = 210; // A4 width in mm
+                    const pageHeight = 297; // A4 height in mm
+                    const imgHeight = canvas.height * imgWidth / canvas.width; // Calculate image height to maintain aspect ratio
                     let heightLeft = imgHeight;
                     let position = 0;
 
+                    // Add image to PDF
                     doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                     heightLeft -= pageHeight;
 
+                    // If content exceeds one page, add more pages
                     while (heightLeft > 0) {
-                        position = heightLeft - imgHeight;
+                        position = heightLeft - pageHeight;
                         doc.addPage();
                         doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                         heightLeft -= pageHeight;
@@ -604,74 +705,157 @@
             }, 100);
         }
 
+        // --- Excel Export (with actual cell merging) ---
         function generateExcel() {
             showExportLoading();
 
             try {
-                // Create workbook and worksheet
                 const wb = XLSX.utils.book_new();
-                
-                // Create header data
-                const headerData = [
-                    [`Union of Evangelical Students of India - ${userState}`],
-                    [`FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}`],
-                    [`NAME: ${userName}      ${userBase}`],
-                    [], // Empty row
-                    ['Sl. No', 'Date', 'DAY', 'Zone / Division', 'Purpose'] // Table headers
-                ];
+                const ws_data = [];
+                const merges = [];
+                let currentRowIndex = 0; // Tracks the current row index in ws_data
 
-                // Add report data
-                const tableData = reportDataForExport.map(row => [
-                    row["Sl. No"],
-                    row["Date"],
-                    row["DAY"],
-                    row["Zone / Division"],
-                    row["Purpose"]
-                ]);
+                // Add main header rows with colspan and styles for Excel
+                ws_data.push([`Union of Evangelical Students of India - ${userState}`]);
+                merges.push({ s: { r: currentRowIndex, c: 0 }, e: { r: currentRowIndex, c: 4 } }); // Merge across 5 columns
+                currentRowIndex++;
 
-                // Combine all data
-                const wsData = [...headerData, ...tableData];
-                
-                // Create worksheet
-                const ws = XLSX.utils.aoa_to_sheet(wsData);
+                ws_data.push([`FIELD REPORT - ${monthName ? monthName.toUpperCase() : ''} ${selectedYear}`]);
+                merges.push({ s: { r: currentRowIndex, c: 0 }, e: { r: currentRowIndex, c: 4 } });
+                currentRowIndex++;
 
-                // Set column widths
+                ws_data.push([`NAME: ${userName}      ${userBase}`]);
+                merges.push({ s: { r: currentRowIndex, c: 0 }, e: { r: currentRowIndex, c: 4 } });
+                currentRowIndex++;
+
+                ws_data.push([]); // Empty row as separator
+                currentRowIndex++;
+
+                // Add table headers
+                ws_data.push(['Sl. No', 'Date', 'DAY', 'Zone / Division', 'Purpose']);
+                const tableHeaderRowIndex = currentRowIndex; // Store index of actual table headers
+                currentRowIndex++;
+
+                // Populate table data with merges
+                processedTableDataForExport.forEach(item => {
+                    const rowData = [];
+                    if (item.type === 'firstInGroup') {
+                        rowData.push(item.slNoStart);
+                        const formattedDate = new Date(item.date + 'T12:00:00');
+                        rowData.push(`${String(formattedDate.getDate()).padStart(2, '0')}/${String(formattedDate.getMonth() + 1).padStart(2, '0')}/${formattedDate.getFullYear()}`);
+                        rowData.push(item.day);
+                        rowData.push(item.zone);
+                        rowData.push(item.purpose);
+
+                        // Add merge info for Zone and Purpose columns
+                        if (item.count > 1) {
+                            merges.push({ s: { r: currentRowIndex, c: 3 }, e: { r: currentRowIndex + item.count - 1, c: 3 } }); // Zone column
+                            merges.push({ s: { r: currentRowIndex, c: 4 }, e: { r: currentRowIndex + item.count - 1, c: 4 } }); // Purpose column
+                        }
+                    } else { // subsequentInGroup
+                        rowData.push(item.slNo);
+                        const formattedDate = new Date(item.date + 'T12:00:00');
+                        rowData.push(`${String(formattedDate.getDate()).padStart(2, '0')}/${String(formattedDate.getMonth() + 1).padStart(2, '0')}/${formattedDate.getFullYear()}`);
+                        rowData.push(item.day);
+                        // Zone and Purpose columns are left empty for subsequent rows in a merge block
+                        rowData.push('');
+                        rowData.push('');
+                    }
+                    ws_data.push(rowData);
+                    currentRowIndex++;
+                });
+
+                const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+                // Apply merges
+                if (merges.length > 0) {
+                    ws['!merges'] = merges;
+                }
+
+                // Set column widths based on your specific request (converted to Excel's wch)
+                // 8% for Sl.No, 12% for Date, 12% for Day, 18% for Zone/Division, 50% for Purpose
                 ws['!cols'] = [
-                    { wch: 8 },  // Sl. No
-                    { wch: 12 }, // Date
-                    { wch: 12 }, // DAY
-                    { wch: 25 }, // Zone / Division
-                    { wch: 40 }  // Purpose
+                    { wch: 6 },  // Sl. No (approx 8%)
+                    { wch: 9 }, // Date (approx 12%)
+                    { wch: 9 }, // DAY (approx 12%)
+                    { wch: 14 }, // Zone / Division (approx 18%)
+                    { wch: 38 }  // Purpose (approx 50%)
                 ];
 
-                // Style the headers
+
+                // Apply styles (bold headers, alignment, font sizes, borders)
                 const range = XLSX.utils.decode_range(ws['!ref']);
-                
-                // Center align all cells
                 for (let R = range.s.r; R <= range.e.r; ++R) {
                     for (let C = range.s.c; C <= range.e.c; ++C) {
                         const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
                         if (!ws[cellAddress]) continue;
-                        
+
                         if (!ws[cellAddress].s) ws[cellAddress].s = {};
-                        ws[cellAddress].s.alignment = { 
-                            horizontal: R < 4 || C < 3 ? 'center' : (C >= 3 ? 'left' : 'center'),
-                            vertical: 'center'
-                        };
-                        
-                        // Bold headers
-                        if (R === 4) {
-                            ws[cellAddress].s.font = { bold: true };
+
+                        // Apply Times New Roman font to all cells
+                        ws[cellAddress].s.font = { name: 'Times New Roman' };
+
+                        // Main Report Headers (rows 0, 1, 2)
+                        if (R >= 0 && R <= 2) {
+                            // Increase font size slightly for these headers in Excel
+                            ws[cellAddress].s.font.bold = true;
+                            ws[cellAddress].s.font.sz = R === 1 ? 18 : 15; // Report title larger, others slightly larger
+                            ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'center' };
+                            ws[cellAddress].s.border = {
+                                top: { style: "thin", color: { rgb: "444444" } },
+                                bottom: { style: "thin", color: { rgb: "444444" } },
+                                left: { style: "thin", color: { rgb: "444444" } },
+                                right: { style: "thin", color: { rgb: "444444" } }
+                            };
+                            if (R === 1) ws[cellAddress].s.font.color = { rgb: "075E54" }; // Apply primary color to main title
+                        }
+                        // Table Headers (row `tableHeaderRowIndex`)
+                        else if (R === tableHeaderRowIndex) {
+                            ws[cellAddress].s.font.bold = true;
+                            ws[cellAddress].s.font.sz = 12; // Adjusted table header font size
+                            ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'center' };
+                            ws[cellAddress].s.fill = { fgColor: { rgb: "F2F2F2" } }; // Light gray background
+                            ws[cellAddress].s.border = {
+                                top: { style: "thin", color: { rgb: "444444" } },
+                                bottom: { style: "thin", color: { rgb: "444444" } },
+                                left: { style: "thin", color: { rgb: "444444" } },
+                                right: { style: "thin", color: { rgb: "444444" } }
+                            };
+                        }
+                        // Table Data Rows
+                        else if (R > tableHeaderRowIndex) {
+                            ws[cellAddress].s.font.sz = 10; // Adjusted table data font size
+                            ws[cellAddress].s.border = {
+                                top: { style: "thin", color: { rgb: "444444" } },
+                                bottom: { style: "thin", color: { rgb: "444444" } },
+                                left: { style: "thin", color: { rgb: "444444" } },
+                                right: { style: "thin", color: { rgb: "444444" } }
+                            };
+
+                            // Alignment for data cells
+                            if (C >= 0 && C <= 2) { // Sl. No, Date, Day
+                                ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'top' };
+                            } else if (C >= 3 && C <= 4) { // Zone / Division, Purpose
+                                ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'top' }; // Changed to center
+                            }
                         }
                     }
                 }
 
-                // Add worksheet to workbook
-                XLSX.utils.book_append_sheet(wb, ws, 'Field Report');
+                // Adjust vertical alignment for the *first cell* of merged blocks for Zone/Purpose
+                merges.forEach(merge => {
+                    // Only apply if it's a merge on columns 3 or 4 and it's a data row
+                    if ((merge.s.c === 3 || merge.s.c === 4) && merge.s.r > tableHeaderRowIndex) {
+                        const firstCellAddress = XLSX.utils.encode_cell({ r: merge.s.r, c: merge.s.c });
+                        if (ws[firstCellAddress] && ws[firstCellAddress].s) {
+                            ws[firstCellAddress].s.alignment.vertical = 'center';
+                        }
+                    }
+                });
 
-                // Generate Excel file
+                XLSX.utils.book_append_sheet(wb, ws, 'Field Report');
                 XLSX.writeFile(wb, `${userName}_Field_Report_${monthName}_${selectedYear}.xlsx`);
-                
+
                 hideExportLoading();
             } catch (error) {
                 console.error("Error generating Excel:", error);
@@ -680,19 +864,18 @@
             }
         }
 
+        // --- Word Export (using generated HTML with rowspan) ---
         function generateWord() {
             showExportLoading();
 
             try {
-                // Generate HTML content for Word
-                const wordHtmlContent = generateWordHtmlContent(reportDataForExport, userName, userBase, userState, monthName, selectedYear);
-                
-                // Create a Blob with the HTML content
+                // Generate HTML content specifically for Word, including rowspan
+                const wordHtmlContent = generateExportHtmlContent(processedTableDataForExport, userName, userBase, userState, monthName, selectedYear, 'word');
+
                 const blob = new Blob([wordHtmlContent], {
                     type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
                 });
 
-                // Create download link
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -710,10 +893,20 @@
             }
         }
 
-        function generatePdfHtmlContent(data, userName, userBase, userState, monthName, selectedYear) {
-            let tableHtml = '<table border="1" style="width:100%; border-collapse: collapse; margin: 20px auto; font-family: Arial, sans-serif;"><thead><tr>';
-            const headers = ["Sl. No", "Date", "DAY", "Zone / Division", "Purpose"];
-            const colWidths = {
+        /**
+         * Generates the HTML content for PDF/Word exports, respecting rowspan.
+         * Includes specific styles to fit content on one page for PDF.
+         * @param {Array} data - The processed data from processAndPopulateTable.
+         * @param {string} userName
+         * @param {string} userBase
+         * @param {string} userState
+         * @param {string} monthName
+         * @param {string} selectedYear
+         * @param {string} formatType - 'pdf' or 'word' to apply format-specific styles
+         * @returns {string} The HTML string for the document.
+         */
+        function generateExportHtmlContent(data, userName, userBase, userState, monthName, selectedYear, formatType) {
+            const specifiedColWidths = {
                 "Sl. No": "8%",
                 "Date": "12%",
                 "DAY": "12%",
@@ -721,110 +914,138 @@
                 "Purpose": "50%"
             };
 
-            headers.forEach(header => {
-                tableHtml += `<th style="background-color:#f2f2f2; padding:8px; text-align:center; font-weight:bold; border:1px solid #444; white-space: nowrap; width:${colWidths[header] || 'auto'};">${header}</th>`;
-            });
+            let tableHtml = `
+        <table border="1" style="width:100%; border-collapse: collapse; margin: 15px auto; table-layout: fixed;">
+            <colgroup>
+                <col style="width: ${specifiedColWidths["Sl. No"]};">
+                <col style="width: ${specifiedColWidths["Date"]};">
+                <col style="width: ${specifiedColWidths["DAY"]};">
+                <col style="width: ${specifiedColWidths["Zone / Division"]};">
+                <col style="width: ${specifiedColWidths["Purpose"]};">
+            </colgroup>
+            <thead>
+                <tr class="export-report-main-header">
+                    <td colspan="5">Union of Evangelical Students of India - ${userState || 'N/A'}</td>
+                </tr>
+                <tr class="export-report-title-row">
+                    <td colspan="5">FIELD REPORT - ${monthName ? monthName.toUpperCase() : ''} ${selectedYear}</td>
+                </tr>
+                <tr class="export-staff-info-row">
+                    <td colspan="5">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${userBase || 'N/A'}</td>
+                </tr>
+                <tr>`;
 
-            tableHtml += '</tr></thead><tbody>';
-
-            data.forEach(row => {
-                tableHtml += '<tr>';
-                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Sl. No"]}</td>`;
-                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Date"]}</td>`;
-                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["DAY"]}</td>`;
-                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Zone / Division"]}</td>`;
-                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Purpose"]}</td>`;
-                tableHtml += '</tr>';
-            });
-
-            tableHtml += '</tbody></table>';
-
-            return `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="utf-8">
-                    <title>${userName} Field Report - ${monthName} ${selectedYear}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; }
-                        h1, h2, p { margin: 0; padding: 0; }
-                        .report-header { text-align: center; margin-bottom: 10px; }
-                        .report-header p { font-size: 14px; font-weight: bold; text-align: center; }
-                        .report-header h1 { font-size: 18px; font-weight: bold; text-transform: uppercase; text-align: center; color: #075E54; }
-                        .staff-info { font-size: 14px; text-align: center; font-weight: bold; margin-bottom: 20px; }
-                        table { width: 100%; border-collapse: collapse; margin: 20px auto; table-layout: fixed; }
-                        th, td { border: 1px solid #444; padding: 8px; vertical-align: top; font-size: 13px; word-wrap: break-word; text-align: center; }
-                        th { background-color: #f2f2f2; font-weight: bold; }
-                        td:nth-child(1) { width: 8%; }
-                        td:nth-child(2) { width: 12%; white-space: nowrap; }
-                        td:nth-child(3) { width: 12%; white-space: nowrap; }
-                        td:nth-child(4) { width: 18%; }
-                        td:nth-child(5) { width: 50%; }
-                    </style>
-                </head>
-                <body>
-                    <div class="report-header">
-                        <h5>Union of Evangelical Students of India - ${userState || 'N/A'}</h5>
-                        <h5>FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}</h5>
-                    </div>
-                    <h2 class="staff-info">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${userBase || 'N/A'}</h2>
-                    ${tableHtml}
-                </body>
-                </html>
-            `;
-        }
-
-        function generateWordHtmlContent(data, userName, userBase, userState, monthName, selectedYear) {
-            let tableHtml = '<table border="1" style="width:100%; border-collapse: collapse; margin: 20px auto;"><thead><tr>';
             const headers = ["Sl. No", "Date", "DAY", "Zone / Division", "Purpose"];
 
+            let headerFontSize = formatType === 'pdf' ? '11px' : '13px';
+            let headerStyles = `
+        background-color:#f2f2f2;
+        padding:${formatType === 'pdf' ? '5px' : '6px'};
+        text-align:center;
+        font-weight:bold;
+        border:1px solid #444;
+        white-space: nowrap;
+        font-size:${headerFontSize};
+    `;
+
             headers.forEach(header => {
-                tableHtml += `<th style="background-color:#f2f2f2; padding:8px; text-align:center; font-weight:bold; border:1px solid #444;">${header}</th>`;
+                tableHtml += `<th style="${headerStyles} width:${specifiedColWidths[header]}">${header}</th>`;
             });
 
-            tableHtml += '</tr></thead><tbody>';
+            tableHtml += `</tr></thead><tbody>`;
 
-            data.forEach(row => {
+            const cellFontSize = formatType === 'pdf' ? '10px' : '12px';
+            const cellPadding = formatType === 'pdf' ? '4px' : '5px';
+            const cellStyles = `
+        padding:${cellPadding};
+        border:1px solid #444;
+        word-wrap: break-word;
+        font-size:${cellFontSize};
+        text-align:center;
+    `;
+
+            data.forEach(item => {
                 tableHtml += '<tr>';
-                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Sl. No"]}</td>`;
-                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Date"]}</td>`;
-                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["DAY"]}</td>`;
-                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Zone / Division"]}</td>`;
-                tableHtml += `<td style="padding:8px; border:1px solid #444; text-align:center;">${row["Purpose"]}</td>`;
+                const formattedDate = new Date(item.date + 'T12:00:00');
+                const dateStr = `${String(formattedDate.getDate()).padStart(2, '0')}/${String(formattedDate.getMonth() + 1).padStart(2, '0')}/${formattedDate.getFullYear()}`;
+
+                tableHtml += `<td style="${cellStyles} width:${specifiedColWidths["Sl. No"]};">${item.type === 'firstInGroup' ? item.slNoStart : item.slNo}</td>`;
+                tableHtml += `<td style="${cellStyles} white-space:nowrap; width:${specifiedColWidths["Date"]};">${dateStr}</td>`;
+                tableHtml += `<td style="${cellStyles} white-space:nowrap; width:${specifiedColWidths["DAY"]};">${item.day}</td>`;
+
+                if (item.type === 'firstInGroup') {
+                    tableHtml += `<td rowspan="${item.count}" style="${cellStyles} vertical-align:middle; width:${specifiedColWidths["Zone / Division"]};">${item.zone}</td>`;
+                    tableHtml += `<td rowspan="${item.count}" style="${cellStyles} vertical-align:middle; width:${specifiedColWidths["Purpose"]};">${item.purpose}</td>`;
+                }
+
                 tableHtml += '</tr>';
             });
 
             tableHtml += '</tbody></table>';
 
+            const dynamicStyles = `
+        <style>
+            body {
+                font-family: 'Times New Roman', Times, serif;
+                margin: 0;
+                padding: 0;
+                color: #000;
+            }
+            .export-report-main-header td,
+            .export-report-title-row td,
+            .export-staff-info-row td {
+                font-weight: bold;
+                text-align: center;
+                padding: ${formatType === 'pdf' ? '5px' : '8px'} 10px;
+                border: 1px solid #444;
+                font-family: 'Times New Roman', Times, serif;
+            }
+            .export-report-title-row td {
+                color: #075E54;
+                font-size: ${formatType === 'pdf' ? '15px' : '20px'};
+            }
+            .export-report-main-header td {
+                font-size: ${formatType === 'pdf' ? '12px' : '15px'};
+            }
+            .export-staff-info-row td {
+                font-size: ${formatType === 'pdf' ? '12px' : '15px'};
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 15px auto;
+                table-layout: fixed;
+            }
+            th, td {
+                font-family: 'Times New Roman', Times, serif;
+                vertical-align: top;
+            }
+            td[rowspan] {
+                vertical-align: middle !important;
+                text-align: center !important;
+            }
+            @page {
+                margin: 10mm;
+            }
+        </style>
+    `;
+
             return `
-                <html>
-                <head>
-                    <meta charset="utf-8">
-                    <title>${userName} Field Report - ${monthName} ${selectedYear}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; color: #000; }
-                        .report-header { text-align: center; margin-bottom: 20px; }
-                        .report-header p { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
-                        .report-header h1 { font-size: 20px; font-weight: bold; color: #075E54; margin-bottom: 10px; }
-                        .staff-info { font-size: 16px; text-align: center; font-weight: bold; margin-bottom: 30px; }
-                        table { width: 100%; border-collapse: collapse; }
-                        th, td { border: 1px solid #444; padding: 10px; text-align: center; font-size: 14px; }
-                        th { background-color: #f2f2f2; font-weight: bold; }
-                    </style>
-                </head>
-                <body>
-                    <div class="report-header">
-                        <h5>Union of Evangelical Students of India - ${userState || 'N/A'}</h5>
-                        <h5>FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}</h5>
-                    </div>
-                    <div class="staff-info">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${userBase || 'N/A'}</div>
-                    ${tableHtml}
-                </body>
-                </html>
-            `;
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>${userName} Field Report - ${monthName} ${selectedYear}</title>
+            ${dynamicStyles}
+        </head>
+        <body>
+            ${tableHtml}
+        </body>
+        </html>
+    `;
         }
 
-        // Firebase data fetching (if needed)
+        // Firebase data fetching with improved row merging logic
         if (userEmail && userEmail !== 'sample@test.com') {
             const safeUserEmail = userEmail.replace(/\./g, '_');
             const fieldReportRef = database.ref(`apps/uesi/staff-work/users/${safeUserEmail}/userData/Field_Report`);
@@ -838,73 +1059,33 @@
                     .endAt(`${selectedYear}-${String(selectedMonthNum).padStart(2, '0')}-31`)
                     .once('value', function (snapshot) {
                         document.getElementById('loader').style.display = 'none';
-                        const tableBody = document.getElementById('fieldReportTable').getElementsByTagName('tbody')[0];
-                        tableBody.innerHTML = '';
-                        reportDataForExport = []; // Reset export data
-                        let serialNo = 1;
-                        const rawData = [];
 
+                        const rawData = [];
                         snapshot.forEach(function (dateSnapshot) {
                             const dateKey = dateSnapshot.key;
                             const dateData = dateSnapshot.val();
                             if (dateData && typeof dateData === 'object') {
-                                rawData.push({ id: dateKey, date: dateKey, ...dateData });
+                                rawData.push({
+                                    date: dateKey,
+                                    zone: dateData.zone || '',
+                                    purpose: dateData.purpose || '',
+                                    day: dateData.day || ''
+                                });
                             }
                         });
 
+                        // Sort by date to ensure correct grouping
                         rawData.sort((a, b) => new Date(a.date) - new Date(b.date));
 
                         if (rawData.length === 0) {
                             document.getElementById('noDataMessage').style.display = 'block';
                             document.getElementById('reportContent').style.display = 'block';
+                            document.getElementById('exportReportBtn').style.display = 'none';
                             return;
                         }
 
-                        let previousEntry = null;
-                        rawData.forEach(function (data) {
-                            const row = tableBody.insertRow();
-                            const dateObj = new Date(data.date + 'T12:00:00');
-                            const formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
-
-                            let currentPurpose = data.purpose || '';
-                            let currentZone = data.zone || '';
-                            let currentDay = data.day || '';
-                            let displayZone = currentZone;
-                            let displayPurpose = currentPurpose;
-
-                            const specialPurposeKeywords = ['day off', 'preparation', 'holidays'];
-                            const isSpecialPurpose = specialPurposeKeywords.some(keyword => 
-                                currentPurpose.toLowerCase().includes(keyword.toLowerCase())
-                            );
-
-                            if (previousEntry && !isSpecialPurpose) {
-                                const prevDateObj = new Date(previousEntry.date + 'T12:00:00');
-                                const daysDiff = (dateObj - prevDateObj) / (1000 * 60 * 60 * 24);
-                                if (daysDiff === 1 && currentZone === previousEntry.zone && currentPurpose === previousEntry.purpose) {
-                                    displayZone = '';
-                                    displayPurpose = '';
-                                }
-                            }
-
-                            row.insertCell(0).textContent = serialNo++;
-                            row.insertCell(1).textContent = formattedDate;
-                            row.insertCell(2).textContent = currentDay;
-                            row.insertCell(3).textContent = displayZone;
-                            row.insertCell(4).textContent = displayPurpose;
-
-                            reportDataForExport.push({
-                                "Sl. No": serialNo - 1,
-                                "Date": formattedDate,
-                                "DAY": currentDay,
-                                "Zone / Division": displayZone,
-                                "Purpose": displayPurpose
-                            });
-
-                            previousEntry = data;
-                        });
-
-                        document.getElementById('reportContent').style.display = 'block';
-                        document.getElementById('exportReportBtn').style.display = 'block';
+                        // Use the new function to process and populate both display table and export data
+                        processAndPopulateTable(rawData);
                     })
                     .catch(function (error) {
                         document.getElementById('loader').style.display = 'none';
@@ -917,4 +1098,5 @@
         }
     </script>
 </body>
+
 </html>
