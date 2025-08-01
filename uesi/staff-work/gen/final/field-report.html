@@ -390,7 +390,7 @@
                     <tr>
                         <th>Sl. No</th>
                         <th>Date</th>
-                        <th>DAY</th>
+                        <th>Day</th>
                         <th>Zone / Division</th>
                         <th>Purpose</th>
                     </tr>
@@ -732,7 +732,7 @@
                 currentRowIndex++;
 
                 // Add table headers
-                ws_data.push(['Sl. No', 'Date', 'DAY', 'Zone / Division', 'Purpose']);
+                ws_data.push(['Sl. No', 'Date', 'Day', 'Zone / Division', 'Purpose']);
                 const tableHeaderRowIndex = currentRowIndex; // Store index of actual table headers
                 currentRowIndex++;
 
@@ -909,7 +909,7 @@
             const specifiedColWidths = {
                 "Sl. No": "8%",
                 "Date": "12%",
-                "DAY": "12%",
+                "Day": "12%",
                 "Zone / Division": "18%",
                 "Purpose": "50%"
             };
@@ -919,7 +919,7 @@
             <colgroup>
                 <col style="width: ${specifiedColWidths["Sl. No"]};">
                 <col style="width: ${specifiedColWidths["Date"]};">
-                <col style="width: ${specifiedColWidths["DAY"]};">
+                <col style="width: ${specifiedColWidths["Day"]};">
                 <col style="width: ${specifiedColWidths["Zone / Division"]};">
                 <col style="width: ${specifiedColWidths["Purpose"]};">
             </colgroup>
@@ -935,7 +935,7 @@
                 </tr>
                 <tr>`;
 
-            const headers = ["Sl. No", "Date", "DAY", "Zone / Division", "Purpose"];
+            const headers = ["Sl. No", "Date", "Day", "Zone / Division", "Purpose"];
 
             let headerFontSize = formatType === 'pdf' ? '11px' : '13px';
             let headerStyles = `
@@ -971,7 +971,7 @@
 
                 tableHtml += `<td style="${cellStyles} width:${specifiedColWidths["Sl. No"]};">${item.type === 'firstInGroup' ? item.slNoStart : item.slNo}</td>`;
                 tableHtml += `<td style="${cellStyles} white-space:nowrap; width:${specifiedColWidths["Date"]};">${dateStr}</td>`;
-                tableHtml += `<td style="${cellStyles} white-space:nowrap; width:${specifiedColWidths["DAY"]};">${item.day}</td>`;
+                tableHtml += `<td style="${cellStyles} white-space:nowrap; width:${specifiedColWidths["Day"]};">${item.day}</td>`;
 
                 if (item.type === 'firstInGroup') {
                     tableHtml += `<td rowspan="${item.count}" style="${cellStyles} vertical-align:middle; width:${specifiedColWidths["Zone / Division"]};">${item.zone}</td>`;
