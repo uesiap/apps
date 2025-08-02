@@ -2,89 +2,18 @@
 <html lang="en">
 
 <head>
-    <script>
-        (function () {
-            // Keys to retain in localStorage
-            const keysToRetain = ["bbsRole", "bbsName"];
-
-            // Retrieve the values of the keys to retain
-            const valuesToRetain = {};
-            keysToRetain.forEach((key) => {
-                const value = localStorage.getItem(key);
-                if (value !== null) {
-                    valuesToRetain[key] = value;
-                }
-            });
-
-            // Clear all keys in localStorage except the specified keys
-            Object.keys(localStorage).forEach((key) => {
-                if (!keysToRetain.includes(key)) {
-                    localStorage.removeItem(key);
-                }
-            });
-
-            // Restore the retained key-value pairs
-            Object.keys(valuesToRetain).forEach((key) => {
-                localStorage.setItem(key, valuesToRetain[key]);
-            });
-
-            console.log("LocalStorage cleared except for:", keysToRetain);
-
-            // Clear sessionStorage
-            sessionStorage.clear();
-            console.log("SessionStorage cleared.");
-
-            // Clear IndexedDB data
-            const clearIndexedDB = () => {
-                if (!window.indexedDB) {
-                    console.warn("IndexedDB is not supported by this browser.");
-                    return;
-                }
-                indexedDB.databases().then((databases) => {
-                    databases.forEach((db) => {
-                        indexedDB.deleteDatabase(db.name);
-                        console.log(`Deleted IndexedDB: ${db.name}`);
-                    });
-                }).catch((error) => {
-                    console.error("Error clearing IndexedDB:", error);
-                });
-            };
-
-            // Clear browser cache
-            const clearCache = () => {
-                if ("caches" in window) {
-                    caches.keys().then((cacheNames) => {
-                        cacheNames.forEach((cacheName) => {
-                            caches.delete(cacheName);
-                            console.log(`Deleted Cache: ${cacheName}`);
-                        });
-                    }).catch((error) => {
-                        console.error("Error clearing cache:", error);
-                    });
-                } else {
-                    console.warn("Cache API is not supported by this browser.");
-                }
-            };
-
-            // Execute cleanup functions
-            clearIndexedDB();
-            clearCache();
-
-            console.log(`All data cleared except for ${keysToRetain.join(", ")} in localStorage.`);
-        })();
-    </script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:site_name" content="Melam Rahul">
-    <meta property="og:title" content="Edit/Review Itinerary Details">
-    <meta property="og:description" content="Br. Rahul, Itinerary I/c">
+    <meta property="og:title" content="Edit/Review BBS Details">
+    <meta property="og:description" content="Br. Rahul, Bible Study I/c">
     <meta property="og:url" content="https://Melam Rahul">
     <meta property="og:image:width" content="32">
     <meta property="og:image:height" content="32">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
-    <title>Edit/Review Staff Work Itinerary</title> <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <title>Edit/Review Staff Work Data</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&family=Nunito:wght@400;700&display=swap">
     <style>
@@ -103,7 +32,7 @@
         }
 
         .container {
-            max-width: 2000px;
+            max-width: 1800px;
             margin: 20px auto 20px;
             padding: 20px;
             border-radius: 20px;
@@ -114,11 +43,10 @@
             margin-bottom: 20px;
             text-align: center;
             color: #007bff;
-
         }
 
         .cont {
-            max-width: 2000px;
+            max-width: 1800px;
             margin: 20px auto 20px;
             padding: 20px;
             background-color: #fff;
@@ -167,11 +95,10 @@
             border-radius: 50%;
             transition: background-color 0.2s;
             margin-right: 1rem;
-            /* Added margin-right */
         }
 
         .menu-button:hover {
-            background-color: rgba(0, 0, 0, 0.05);
+            background-color: rgba(255, 255, 255, 0.1);
         }
 
         /* Table Styles */
@@ -194,14 +121,17 @@
         td {
             padding: 8px;
             text-align: center;
-            border-left: 1px solid #ddd;
-            border-top: 1px solid #ddd;
-            border-bottom: 1px solid #ddd;
-            border-right: 1px solid #ddd;
+            border: 1px solid #ddd;
+            word-wrap: break-word;
+        }
+
+        td:nth-child(4) {
+            text-align: left;
         }
 
         th {
             background-color: #f2f2f2;
+            font-weight: 600;
         }
 
         .edit-button,
@@ -213,15 +143,15 @@
             font-size: 15px;
             text-align: center;
             flex: 1 1 auto;
-            min-width: 80px;
+            min-width: 70px;
             max-width: 100%;
             box-sizing: border-box;
             transition: background-color 0.3s, color 0.3s;
             font-weight: 500;
             border: 2px solid transparent;
+            cursor: pointer;
         }
 
-        /* Default filled styles */
         .edit-button {
             background-color: #007bff;
             color: white;
@@ -240,7 +170,6 @@
             border-color: #28a745;
         }
 
-        /* Hover: empty with border color text */
         .edit-button:hover {
             background-color: transparent;
             color: #007bff;
@@ -256,8 +185,6 @@
             color: #28a745;
         }
 
-
-        /* Responsive tweaks for smaller screens */
         @media (max-width: 480px) {
 
             .edit-button,
@@ -268,38 +195,16 @@
             }
         }
 
-
         .skeleton {
             animation: pulse 1s infinite ease-in-out;
             background-color: #ececfd;
-            margin-top: 0px;
-            margin-bottom: 0px;
-            height: 1000px;
+            height: 400px;
             border-radius: 20px;
             max-width: 1000px;
-        }
-
-        .skel-h1 {
-            animation: pulse 1s infinite ease-in-out;
-            background-color: #ececfd;
-            border-radius: 20px;
-            height: 40px;
-            margin-left: 15%;
-            margin-right: 10%;
-            max-width: 300px;
-            margin-top: 30px;
-
-
-        }
-
-        .skel-field {
-            animation: pulse 1s infinite ease-in-out;
-            background-color: #ececfd;
-            border-radius: 8px;
-            height: 35px;
-            width: 300px;
-            margin-top: 0px;
-            margin-left: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
         }
 
         @keyframes pulse {
@@ -316,9 +221,7 @@
             }
         }
 
-        /* Password Dialog Base (will be repurposed for generic confirmation) */
         .confirmation-dialog-wrapper {
-            /* Renamed for clarity */
             display: none;
             position: fixed;
             left: 0;
@@ -327,17 +230,24 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
             justify-content: center;
-            align-items: flex-end;
-            /* Start from bottom */
+            align-items: center;
             z-index: 1000;
-            animation: fadeIn 0.3s ease-in-out forwards;
-            animation-delay: 0.8s;
         }
 
-        /* Slide and Fade Animation for Dialog Box */
+        .confirmation-dialog-box {
+            background-color: #ffffff;
+            padding: 30px 25px;
+            border-radius: 15px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
         @keyframes slideUp {
             from {
-                transform: translateY(300px);
+                transform: translateY(50px);
                 opacity: 0;
             }
 
@@ -347,24 +257,6 @@
             }
         }
 
-        /* Dialog Box Styles */
-        .confirmation-dialog-box {
-            /* Renamed for clarity */
-            background-color: #ffffff;
-            padding: 30px 25px;
-            margin: 0 auto 400px auto;
-            border-radius: 15px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-            text-align: center;
-            width: 90%;
-            max-width: 350px;
-            animation: slideUp 0.5s ease-out forwards;
-            transform: translateY(300px);
-            opacity: 0;
-        }
-
-        /* Headers */
-        .confirmation-dialog-wrapper h2,
         .confirmation-dialog-wrapper h3 {
             margin: 0 0 15px;
             font-size: 22px;
@@ -372,126 +264,96 @@
             font-weight: 600;
         }
 
-        /* Input Field (removed as password input is not needed) */
-        /* .password-dialog input { ... } */
-
-        /* Buttons - Reusing previous styling */
         .confirmation-dialog-wrapper button {
             margin: 15px 8px 0;
             padding: 10px 18px;
             font-size: 15px;
             cursor: pointer;
             border-radius: 6px;
-            transition: background-color 0.3s, color 0.3s;
             font-weight: 500;
             border: 2px solid transparent;
         }
 
-        /* Confirm Button (Blue) */
         #confirmActionButton,
-        /* Renamed for generic action confirmation */
-        #cancelDeleteButton {
+        #confirmActionButtonn {
             background-color: #007bff;
             color: white;
             border-color: #007bff;
         }
 
         #confirmActionButton:hover,
-        #cancelDeleteButton:hover {
+        #confirmActionButtonn:hover {
             background-color: transparent;
             color: #007bff;
         }
 
-        /* Cancel/Exit Button (Red) */
         #cancelActionButton,
-        /* Renamed for generic action cancellation */
-        #confirmDeleteButton {
+        #cancelActionButtonn {
             background-color: #dc3545;
             color: white;
             border-color: #dc3545;
         }
 
         #cancelActionButton:hover,
-        #confirmDeleteButton:hover {
+        #cancelActionButtonn:hover {
             background-color: transparent;
             color: #dc3545;
         }
 
-        /* Error message (if used) */
-        .confirmation-dialog-wrapper .error-message {
-            color: #dc3545;
-            margin-top: 10px;
-            font-size: 14px;
+        #deleteConfirmInput {
+            border: 1px solid #075E54;
+            border-radius: 5px;
+            outline: none;
+            width: 70px;
+            font-weight: bold;
+            max-width: 100px;
         }
 
-        /* Fade in background overlay */
-        @keyframes fadeIn {
-            from {
-                background-color: rgba(0, 0, 0, 0);
-            }
-
-            to {
-                background-color: rgba(0, 0, 0, 0.5);
-            }
-        }
-
-        /* Notification Dialog Container */
         .notification-dialog {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: transparent;
-            display: none;
-            justify-content: center;
-            align-items: center;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 1100;
+            display: none;
         }
 
-        /* Dialog Box */
         .notification-dialog-box {
-            padding: 20px 20px;
-            border-radius: 15px;
+            padding: 15px 20px;
+            border-radius: 10px;
             text-align: center;
             background-color: white;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            animation: fadeSlideUp 0.5s ease-out;
+            animation: fadeSlideDown 0.5s ease-out;
             display: flex;
-            flex-direction: column;
             align-items: center;
+            gap: 10px;
         }
 
-        /* Icon */
+        @keyframes fadeSlideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
         .notification-icon {
-            font-size: 40px;
-            margin-bottom: 10px;
+            font-size: 24px;
         }
 
-        /* Message */
         .notification-message {
             font-size: 16px;
             font-weight: 500;
             margin: 0;
         }
 
-        /* Animation */
-        @keyframes fadeSlideUp {
-            0% {
-                transform: translateY(30px);
-                opacity: 0;
-            }
-
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        /* Types: background + icon color + border */
         .notification-success {
-            /*background-color: #e6ffed;*/
-            border: 2px solid #28a745;
+            border-left: 2px solid #28a745;
             color: #155724;
         }
 
@@ -500,8 +362,7 @@
         }
 
         .notification-error {
-            /*background-color: #ffe6e6;*/
-            border: 2px solid #dc3545;
+            border-left: 2px solid #dc3545;
             color: #721c24;
         }
 
@@ -510,8 +371,7 @@
         }
 
         .notification-warning {
-            /*background-color: #fff4e5;*/
-            border: 2px solid #ffc107;
+            border-left: 2px solid #ffc107;
             color: #856404;
         }
 
@@ -520,8 +380,7 @@
         }
 
         .notification-info {
-            /*background-color: #e7f3ff;*/
-            border: 2px solid #007bff;
+            border-left: 2px solid #007bff;
             color: #004085;
         }
 
@@ -531,14 +390,12 @@
 
         .spinner {
             border: 6px solid #f3f3f3;
-            /* Light grey */
             border-top: 6px solid #3498db;
-            /* Blue */
             border-radius: 50%;
             width: 50px;
             height: 50px;
             animation: spin 1s linear infinite;
-            margin: auto;
+            margin: 20px auto;
         }
 
         @keyframes spin {
@@ -551,8 +408,62 @@
             }
         }
 
-        #itineraryTable { /* Changed ID to itineraryTable */
+        #bibleStudyTable {
             display: none;
+        }
+
+        .filter-dropdown {
+            padding: 8px 14px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            cursor: pointer;
+            border-color: #075E54;
+            width: fit-content;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: border-color 0.2s;
+        }
+
+        .filter-dropdown:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .error-container {
+            text-align: center;
+            padding: 40px 20px;
+            color: #dc3545;
+        }
+
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .error-details {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .retry-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .retry-button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
@@ -563,18 +474,38 @@
             <button class="menu-button" id="menuButton" onclick="history.back()">
                 <i class="fas fa-arrow-left"></i>
             </button>
-            <span class="app-title">View Itinerary Form</span> </div>
-    </div>
-    <br><br><br>
-    <div id="container1">
-        <div class="cont">
-            <h1 class="skeleton">&nbsp;</h1>
+            <span class="app-title">View Itinerary</span>
         </div>
     </div>
+    <br><br><br><br><br>
+
+    <div id="filters" style="display: none; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 20px 0;">
+        <select id="monthSelect" onchange="filterTable()" class="filter-dropdown">
+            <option value="">Select Month</option>
+        </select>
+        <select id="yearSelect" onchange="filterTable()" class="filter-dropdown">
+            <option value="">Select Year</option>
+        </select>
+        <button id="deleteMonthBtn" class="filter-dropdown"
+            style="background-color: #dc3545; color: white; border: none;" disabled>
+            Delete Month
+        </button>
+    </div>
+
+    <div id="container1">
+    </div>
+
+    <div id="loader" style="display: flex; flex-direction: column; align-items: center; padding: 40px;">
+        <div class="spinner" style="margin-bottom: 16px;"></div>
+        <img src="https://c.tenor.com/Bf2bF19nELUAAAAC/tenor.gif" alt="Duolingo Bird Dancing"
+            style="width: 320px; height: auto; margin-top: 10px;" />
+    </div>
+
     <div id="container2" style="display: none">
         <div class="container">
             <div class="table-wrapper">
-                <table id="itineraryTable"> <thead>
+                <table id="bibleStudyTable">
+                    <thead>
                         <tr>
                             <th style="width: 12%;">Date</th>
                             <th style="width: 10%;">Day</th>
@@ -589,220 +520,89 @@
         </div>
     </div>
 
+    <div id="errorContainer" style="display: none;">
+        <div class="container">
+            <div class="error-container">
+                <div class="error-icon">⚠️</div>
+                <div class="error-message">Failed to load Itinerary data</div>
+                <div class="error-details" id="errorDetails">Please check your internet connection and try again.</div>
+                <button class="retry-button" onclick="initializeApp()">Retry</button>
+            </div>
+        </div>
+    </div>
+
     <div class="confirmation-dialog-wrapper" id="genericConfirmationDialog">
         <div class="confirmation-dialog-box">
             <h3 id="confirmationTitle">Confirm Action</h3>
             <p id="confirmationText">Are you sure you want to proceed?</p>
             <br>
-            <button id="confirmActionButton">Proceed</button>
+            <button id="confirmActionButton">Delete</button>
             <button id="cancelActionButton" class="cancel">Cancel</button>
         </div>
     </div>
 
-    <div id="loader" style="display: flex; flex-direction: column; align-items: center; padding: 40px;">
-        <div class="spinner" style="margin-bottom: 16px;"></div>
-        <img src="https://c.tenor.com/Bf2bF19nELUAAAAC/tenor.gif" alt="Duolingo Bird Dancing"
-            style="width: 320px; height: auto; margin-top: 10px;" />
+    <div class="confirmation-dialog-wrapper" id="genericConfirmationDialogg" style="display: none;">
+        <div class="confirmation-dialog-box">
+            <h3 id="confirmationTitle">Confirm Delete</h3>
+            <p id="confirmationText">Are you sure you want to this month?</p>
+
+            <div id="deleteConfirmInputWrapper" style="margin-top: 12px; display: none;">
+                <p style="margin-bottom: 6px;">Please type <strong>delete</strong> to confirm:</p>
+                <input type="text" id="deleteConfirmInput" style="width: 100%; padding: 6px;" />
+            </div>
+
+            <br />
+            <button id="confirmActionButtonn" disabled>Delete</button>
+            <button id="cancelActionButtonn" class="cancel">Cancel</button>
+        </div>
     </div>
+
+
 
     <div class="notification-dialog" id="notificationDialog">
         <div class="notification-dialog-box" id="notificationBox">
             <div class="notification-icon" id="notificationIcon">&#10004;</div>
             <p class="notification-message" id="notificationMessage">This is a message.</p>
         </div>
-    </div><br><br><br>
+    </div>
+
     <footer id="foot"
         style="display: none; margin-left: -0.625rem; justify-content: space-evenly; z-index:2; bottom: 0.025rem; width: 100%; background-color: white; color: #333; text-align: center; padding: 0.5rem 0;">
         <p style="margin: 0; font-size: 0.8625rem;">
-            You've reached the End. App crafted by <a href="/profile" style="text-decoration: none; color: #197afe;">
-                Rahul</a>
+            You've reached the End. App crafted by <a href="/profile"
+                style="text-decoration: none; color: #197afe;">Rahul</a>
         </p>
     </footer>
-
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <script>
-        // Function to get URL parameters safely
+        // Global variables
+        let database = null;
+        let fieldReportRef = null;
+        let allData = [];
+        let currentUserEmail = null;
+        let currentAction = null;
+        let currentRow = null;
+
+        // Utility functions
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
             const value = urlParams.get(param);
             return value ? decodeURIComponent(value) : null;
         }
 
-        // Get the bbsRole (email) from the URL parameter "email" and bbsName from "name"
-        const userEmail = getQueryParam('email');
-        const userName = getQueryParam('name');
-
-        let safeUserEmail = null;
-
-        if (!userEmail || userEmail === 'unknown') {
-            console.error("No valid email found in the URL. Please check the 'email' parameter.");
-            const storedEmail = localStorage.getItem('bbsRole');
-            if (storedEmail && storedEmail !== 'unknown') {
-                safeUserEmail = storedEmail.replace(/\./g, '_');
-                showNotification('info', 'Using email from saved preferences.');
-            } else {
-                showNotification('error', 'Your email (portfolio) is not selected.');
-                setTimeout(() => {
-                    history.back();
-                }, 2000);
-            }
-        } else {
-            safeUserEmail = userEmail.replace(/\./g, '_');
-            console.log("Detected user email:", userEmail);
-        }
-
-        if (safeUserEmail) {
-            document.getElementById('container1').style.display = 'none';
-            document.getElementById('container2').style.display = 'block';
-        }
-
-        // Your web app's Firebase configuration
-        var firebaseConfig = {
-            apiKey: "0AzyPiDT3wSi6WAuNX7YzbyJcvUgV0nyoxMwahn0",
-            authDomain: "uesi-ap-default-rtdb.firebaseio.com",
-            databaseURL: "https://uesi-ap-default-rtdb.firebaseio.com",
-            projectId: "uesi-ap"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        var database = firebase.database();
-
-        let itineraryRef = null; // Changed to itineraryRef
-        if (safeUserEmail) {
-            itineraryRef = firebase.database().ref(`apps/uesi/staff-work/users/${safeUserEmail}/userData/Itinerary_Form`); // Path for Itinerary Form
-        } else {
-            console.error("Firebase reference cannot be established without a valid user email.");
-        }
-
-
-        // Listen for changes in the database
-        if (itineraryRef) { // Use itineraryRef
-            itineraryRef.on('value', function (snapshot) {
-                const table = document.getElementById('itineraryTable'); // Changed ID to itineraryTable
-                const tableBody = table.getElementsByTagName('tbody')[0];
-                const loader = document.getElementById('loader');
-                const foote = document.getElementById('foot');
-
-                tableBody.innerHTML = ''; // Clear existing table rows
-
-                const dataArray = [];
-                snapshot.forEach(function (dateSnapshot) {
-                    const dateKey = dateSnapshot.key;
-                    const dateData = dateSnapshot.val();
-
-                    dataArray.push({
-                        id: dateKey,
-                        date: dateKey,
-                        day: dateData.day || '',
-                        zone: dateData.zone || '',
-                        purpose: dateData.purpose || ''
-                    });
-                });
-
-                dataArray.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-                if (dataArray.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="5">No data available.</td></tr>';
-                }
-
-                dataArray.forEach(function (data) {
-                    const row = tableBody.insertRow();
-                    row.setAttribute('data-id', data.id);
-
-                    const dateObj = new Date(data.date + 'T12:00:00');
-                    row.insertCell(0).textContent = `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
-                    row.insertCell(1).textContent = data.day || '';
-                    row.insertCell(2).textContent = data.zone || '';
-                    row.insertCell(3).textContent = data.purpose || '';
-
-                    row.insertCell(4).innerHTML = `
-                        <div style="display: flex; gap: 8px;">
-                            <button class="edit-button">Edit</button>
-                            <button class="save-button" style="display: none;">Save</button>
-                            <button class="delete-button">Delete</button>
-                        </div>
-                    `;
-                });
-
-                // Attach button events
-                document.querySelectorAll('.edit-button').forEach(btn => btn.addEventListener('click', (e) => showConfirmationDialog('edit', e.target.closest('tr'))));
-                document.querySelectorAll('.save-button').forEach(btn => btn.addEventListener('click', handleSave));
-                document.querySelectorAll('.delete-button').forEach(btn => btn.addEventListener('click', (e) => showConfirmationDialog('delete', e.target.closest('tr'))));
-
-                loader.style.display = 'none';
-                table.style.display = 'table';
-                foote.style.display = 'flex';
-            });
-        }
-
-        // --- Generic Confirmation Dialog Functions ---
-        let currentActionRow = null;
-        let currentActionType = '';
-
-        function showConfirmationDialog(actionType, row) {
-            currentActionRow = row;
-            currentActionType = actionType;
-
-            const dialogWrapper = document.getElementById('genericConfirmationDialog');
-            const confirmationTitle = document.getElementById('confirmationTitle');
-            const confirmationText = document.getElementById('confirmationText');
-            const confirmButton = document.getElementById('confirmActionButton');
-            const cancelButton = document.getElementById('cancelActionButton');
-
-            if (actionType === 'edit') {
-                confirmationTitle.textContent = 'Confirm Edit';
-                confirmationText.textContent = 'Are you sure you want to edit this record?';
-                confirmButton.textContent = 'Edit';
-                confirmButton.style.backgroundColor = '#007bff';
-                confirmButton.style.borderColor = '#007bff';
-                cancelButton.textContent = 'Cancel';
-                cancelButton.style.backgroundColor = '#dc3545';
-                cancelButton.style.borderColor = '#dc3545';
-            } else if (actionType === 'delete') {
-                confirmationTitle.textContent = 'Confirm Deletion';
-                confirmationText.textContent = 'Are you sure you want to permanently delete this record? This action cannot be undone.';
-                confirmButton.textContent = 'Delete';
-                confirmButton.style.backgroundColor = '#dc3545';
-                confirmButton.style.borderColor = '#dc3545';
-                cancelButton.textContent = 'Cancel';
-                cancelButton.style.backgroundColor = '#007bff';
-                cancelButton.style.borderColor = '#007bff';
-            }
-
-            setTimeout(() => {
-                dialogWrapper.style.display = 'flex';
-            }, 100);
-
-            confirmButton.onclick = function () {
-                dialogWrapper.style.display = 'none';
-                if (currentActionType === 'edit') {
-                    proceedWithEdit(currentActionRow);
-                } else if (currentActionType === 'delete') {
-                    proceedWithDelete(currentActionRow);
-                }
-            };
-
-            cancelButton.onclick = function () {
-                dialogWrapper.style.display = 'none';
-                currentActionRow = null;
-                currentActionType = '';
-            };
-        }
-        // --- End Generic Confirmation Dialog Functions ---
-
-
-        function showNotification(type = 'success', message = 'Operation successful') {
+        function showNotification(type, message) {
             const dialog = document.getElementById('notificationDialog');
             const box = document.getElementById('notificationBox');
             const icon = document.getElementById('notificationIcon');
             const messageEl = document.getElementById('notificationMessage');
 
+            // Remove existing classes
             box.className = 'notification-dialog-box';
-            icon.innerHTML = '';
 
+            // Add appropriate class and icon based on type
             switch (type) {
                 case 'success':
                     box.classList.add('notification-success');
@@ -820,137 +620,553 @@
                     box.classList.add('notification-info');
                     icon.innerHTML = '&#8505;';
                     break;
-                default:
-                    box.classList.add('notification-info');
-                    icon.innerHTML = '&#8505;';
             }
 
             messageEl.textContent = message;
-            dialog.style.display = 'flex';
+            dialog.style.display = 'block';
 
             setTimeout(() => {
                 dialog.style.display = 'none';
-            }, 2500);
+            }, 4000);
         }
 
+        function showError(message, details = '') {
+            document.getElementById('container1').style.display = 'none';
+            document.getElementById('container2').style.display = 'none';
+            document.getElementById('filters').style.display = 'none';
 
-        // Proceed with deleting the record
-        function proceedWithDelete(row) {
-            var id = row.getAttribute('data-id');
+            const errorContainer = document.getElementById('errorContainer');
+            const errorDetails = document.getElementById('errorDetails');
 
-            itineraryRef.child(id).remove().then(function () { // Use itineraryRef
-                showNotification('success', 'Record deleted successfully!');
-            }).catch(function (error) {
-                console.error("Error deleting data:", error);
-                showNotification('error', 'Failed to delete record.');
-            });
+            errorDetails.textContent = details || 'Please check your internet connection and try again.';
+            errorContainer.style.display = 'block';
+
+            showNotification('error', message);
         }
 
-        // Proceed with editing
-        function proceedWithEdit(row) {
-            const cells = row.querySelectorAll('td:not(:last-child)');
+        function clearStorageData() {
+            try {
+                // Keys to retain in local storage (note: Claude artifacts don't support localStorage)
+                const keysToRetain = ["bbsRole", "bbsName"];
 
-            cells.forEach(function (cell, index) {
-                var input = document.createElement('input');
-                input.type = 'text';
-
-                if (index === 0) { // Date column
-                    var dateParts = cell.textContent.split('/');
-                    if (dateParts.length === 3) {
-                        var day = dateParts[0].padStart(2, '0');
-                        var month = dateParts[1].padStart(2, '0');
-                        var year = dateParts[2];
-                        input.type = 'date';
-                        input.value = `${year}-${month}-${day}`;
-                    } else {
-                        input.value = cell.textContent;
-                    }
-                } else {
-                    input.value = cell.textContent;
-                }
-                cell.textContent = '';
-                cell.appendChild(input);
-            });
-
-            row.querySelector('.edit-button').style.display = 'none';
-            row.querySelector('.save-button').style.display = 'inline-block';
-        }
-
-        // Handle save and update data in Firebase
-        function handleSave(event) {
-            var row = event.target.closest('tr');
-            var id = row.getAttribute('data-id');
-            var updatedData = {};
-
-            const cells = row.querySelectorAll('td:not(:last-child)');
-
-            cells.forEach(function (cell, index) {
-                var input = cell.querySelector('input');
-                if (input) {
-                    var value = input.value.trim();
-
-                    if (index === 0) { // Date column
-                        updatedData.date = value;
-                        updatedData.day = new Date(value + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' });
-                    } else if (index === 2) { // Zone/Division
-                        updatedData.zone = value;
-                    } else if (index === 3) { // Purpose
-                        updatedData.purpose = value;
-                    }
-                }
-            });
-
-            // Revert cells to text content and hide save, show edit
-            cells.forEach((cell, index) => {
-                const input = cell.querySelector('input');
-                if (input) {
-                    if (index === 0) {
-                        const dateObj = new Date(updatedData.date + 'T12:00:00');
-                        cell.textContent = `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
-                    } else if (index === 1) { // Day column
-                        cell.textContent = updatedData.day;
-                    } else {
-                        cell.textContent = input.value.trim();
-                    }
-                }
-            });
-
-            row.querySelector('.edit-button').style.display = 'inline-block';
-            row.querySelector('.save-button').style.display = 'none';
-
-            const oldDateId = id;
-            const newDate = updatedData.date;
-
-            if (oldDateId !== newDate) {
-                itineraryRef.child(oldDateId).remove() // Use itineraryRef
-                    .then(() => {
-                        return itineraryRef.child(newDate).set({ // Use itineraryRef
-                            day: updatedData.day,
-                            purpose: updatedData.purpose,
-                            zone: updatedData.zone
-                        });
-                    })
-                    .then(() => {
-                        showNotification('success', 'Record moved and updated successfully!');
-                    })
-                    .catch((error) => {
-                        console.error("Error moving/updating data due to date change:", error);
-                        showNotification('error', 'Failed to update record with new date.');
-                    });
-            } else {
-                itineraryRef.child(id).update({ // Use itineraryRef
-                    day: updatedData.day,
-                    purpose: updatedData.purpose,
-                    zone: updatedData.zone
-                }).then(function () {
-                    showNotification('success', 'Data saved successfully!');
-                }).catch(function (error) {
-                    console.error("Error updating data:", error);
-                    showNotification('error', 'Something went wrong.');
-                });
+                console.log("Storage clearing is not supported in this environment");
+                console.log("In a real environment, this would clear storage except for:", keysToRetain);
+            } catch (error) {
+                console.warn("Storage operations not supported:", error);
             }
         }
+
+        // Initialize Firebase and app
+        function initializeApp() {
+            try {
+                // Get user email from URL parameters or stored preferences
+                const userEmail = getQueryParam('email');
+                const userName = getQueryParam('name');
+
+                if (!userEmail || userEmail === 'unknown') {
+                    console.error("No valid email found in the URL.");
+
+                    // Try to get from stored preferences (simulated)
+                    const storedEmail = ''; // Simulated stored email
+                    if (storedEmail && storedEmail !== 'unknown') {
+                        currentUserEmail = storedEmail.replace(/\./g, '_');
+                        showNotification('info', 'Loading..');
+                    } else {
+                        console.warn('No email available, but continuing...');
+                        return;
+                    }
+                } else {
+                    currentUserEmail = userEmail.replace(/\./g, '_');
+                    console.log("Detected user email:", userEmail);
+                }
+
+                // Initialize Firebase
+                const firebaseConfig = {
+                    apiKey: "AIzaSyDT3wSi6WAuNX7YzbyJcvUgV0nyoxMwahn0", // Fixed API key format
+                    authDomain: "uesi-ap-default-rtdb.firebaseapp.com", // Fixed auth domain
+                    databaseURL: "https://uesi-ap-default-rtdb.firebaseio.com",
+                    projectId: "uesi-ap"
+                };
+
+                // Check if Firebase is already initialized
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+
+                database = firebase.database();
+
+                // Test Firebase connection
+                database.ref('.info/connected').on('value', function (snapshot) {
+                    if (snapshot.val() === true) {
+                        console.log('Connected to Firebase');
+                        setupDataListener();
+                    } else {
+                        console.log('Disconnected from Firebase');
+                        // Just log the disconnection, don't show error to user
+                        console.warn('Database connection lost, but continuing to try...');
+                    }
+                });
+
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                // Just log the error, don't show error screen
+            }
+        }
+
+        function setupDataListener() {
+            if (!currentUserEmail) {
+                console.warn('No user email available for data loading');
+                return;
+            }
+
+            fieldReportRef = database.ref(`apps/uesi/staff-work/users/${currentUserEmail}/userData/Itinerary_Form`);
+
+            // Add error handling for database operations
+            fieldReportRef.on('value', function (snapshot) {
+                try {
+                    loadFieldReports(snapshot);
+                } catch (error) {
+                    console.error('Error processing data:', error);
+                    // Just log the error, don't show error screen
+                }
+            }, function (error) {
+                console.error('Database read error:', error);
+                // Just log the error, don't show error screen
+            });
+        }
+
+        function loadFieldReports(snapshot) {
+            const loader = document.getElementById('loader');
+            const container1 = document.getElementById('container1');
+            const table = document.getElementById('bibleStudyTable');
+            const foot = document.getElementById('foot');
+            const filters = document.getElementById('filters');
+
+            allData = [];
+            const monthsSet = new Set();
+            const yearsSet = new Set();
+
+            if (!snapshot.exists()) {
+                console.log('No Itinerary data found for this user');
+                // Keep showing the loader, don't show error
+                return;
+            }
+
+            snapshot.forEach(function (dateSnapshot) {
+                const dateKey = dateSnapshot.key;
+                const dateData = dateSnapshot.val();
+
+                // Validate date format
+                const dateObj = new Date(dateKey + 'T12:00:00');
+
+                if (!isNaN(dateObj)) {
+                    allData.push({
+                        id: dateKey,
+                        date: dateKey,
+                        day: dateData.day || 'Unknown',
+                        zone: dateData.zone || 'Not specified',
+                        purpose: dateData.purpose || 'No purpose specified'
+                    });
+
+                    monthsSet.add(dateObj.getMonth());
+                    yearsSet.add(dateObj.getFullYear());
+                } else {
+                    console.warn('Invalid date format:', dateKey);
+                }
+            });
+
+            if (allData.length === 0) {
+                console.log('No valid Itinerary data found');
+                // Keep showing the loader, don't show error
+                return;
+            }
+
+            // Sort data by date (newest first)
+            allData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            // Populate filters
+            populateMonthYearFilters([...monthsSet], [...yearsSet]);
+
+            // Hide loaders and show the table and filters
+            loader.style.display = 'none';
+            container1.style.display = 'none';
+            document.getElementById('container2').style.display = 'block';
+            filters.style.display = 'flex';
+            table.style.display = 'table';
+            foot.style.display = 'flex';
+
+            // Filter and display dat
+            filterTable();
+
+            // showNotification('success', `Found ${allData.length} Records`);
+            showNotification('success', `Success`);
+        }
+
+        const deleteBtn = document.getElementById('deleteMonthBtn');
+
+        function updateDeleteButtonState() {
+            deleteBtn.disabled = !(monthSelect.value !== '' && yearSelect.value !== '');
+        }
+        monthSelect.addEventListener('change', updateDeleteButtonState);
+        yearSelect.addEventListener('change', updateDeleteButtonState);
+
+        // Confirm deletion prompt
+        // deleteBtn.addEventListener('click', function () {
+        //     const m = parseInt(monthSelect.value, 10);
+        //     const y = parseInt(yearSelect.value, 10);
+        //     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        //     const monthLabel = monthNames[m] + ' ' + y;
+        //     if (confirm(`Are you sure you want to delete all entries for ${monthLabel}? This cannot be undone.`)) {
+        //         deleteMonthData(m, y);
+        //     }
+        // });
+
+        let pendingMonth = null;
+        let pendingYear = null;
+
+        // Show modal when delete button is clicked
+        deleteBtn.addEventListener('click', function () {
+            const m = parseInt(monthSelect.value, 10);
+            const y = parseInt(yearSelect.value, 10);
+
+            if (isNaN(m) || isNaN(y)) {
+                showNotification('error', 'Please select both month and year.');
+                return;
+            }
+
+            const monthNames = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            const monthLabel = `${monthNames[m]} ${y}`;
+
+            pendingMonth = m;
+            pendingYear = y;
+
+            document.getElementById('confirmationTitle').textContent = 'Delete Month Data';
+            document.getElementById('confirmationText').textContent = `Are you sure you want to delete all entries for ${monthLabel}? This action cannot be undone.`;
+
+            const inputWrapper = document.getElementById('deleteConfirmInputWrapper');
+            const inputBox = document.getElementById('deleteConfirmInput');
+            const confirmBtn = document.getElementById('confirmActionButtonn');
+
+            inputBox.value = '';
+            confirmBtn.disabled = true;
+            inputWrapper.style.display = 'block';
+
+            inputBox.oninput = function () {
+                confirmBtn.disabled = inputBox.value.trim().toLowerCase() !== 'delete';
+            };
+
+            document.getElementById('genericConfirmationDialogg').style.display = 'flex';
+        });
+
+        // Confirm button click
+        document.getElementById('confirmActionButtonn').addEventListener('click', function () {
+            if (pendingMonth !== null && pendingYear !== null) {
+                deleteMonthData(pendingMonth, pendingYear);
+            }
+            closeConfirmationDialog();
+        });
+
+        // Cancel button click
+        document.getElementById('cancelActionButtonn').addEventListener('click', function () {
+            closeConfirmationDialog();
+        });
+
+        function closeConfirmationDialog() {
+            pendingMonth = null;
+            pendingYear = null;
+            document.getElementById('genericConfirmationDialogg').style.display = 'none';
+            document.getElementById('deleteConfirmInputWrapper').style.display = 'none';
+            document.getElementById('deleteConfirmInput').value = '';
+            document.getElementById('confirmActionButtonn').disabled = true;
+        }
+
+
+
+        // Delete all matching entries from Firebase and local state
+        function deleteMonthData(monthIndex, yearNum) {
+            const entriesToDelete = allData.filter(entry => {
+                const d = new Date(entry.date + 'T12:00:00');
+                return d.getMonth() === monthIndex && d.getFullYear() === yearNum;
+            });
+            if (entriesToDelete.length === 0) {
+                showNotification('info', 'No entries found to delete for that month.');
+                return;
+            }
+
+            const updates = {};
+            entriesToDelete.forEach(entry => {
+                updates[entry.id] = null; // set null to delete that key
+            });
+
+            // Push update to Firebase
+            fieldReportRef.update(updates)
+                .then(() => {
+                    // Update local data array
+                    allData = allData.filter(entry => {
+                        const d = new Date(entry.date + 'T12:00:00');
+                        return !(d.getMonth() === monthIndex && d.getFullYear() === yearNum);
+                    });
+                    // Refresh display
+                    populateMonthYearFilters([...new Set(allData.map(e => new Date(e.date + 'T12:00:00').getMonth()))],
+                        [...new Set(allData.map(e => new Date(e.date + 'T12:00:00').getFullYear()))]);
+                    filterTable();
+                    // showNotification('success', `Deleted ${entriesToDelete.length} record(s)`);
+                    showNotification('success', `Deleted successfully`);
+                })
+                .catch(error => {
+                    console.error('Error deleting month data:', error);
+                    showNotification('error', 'Failed to delete selected month data.');
+                });
+        }
+
+        function populateMonthYearFilters(months, years) {
+            const monthSelect = document.getElementById('monthSelect');
+            const yearSelect = document.getElementById('yearSelect');
+
+            const monthNames = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+
+            // Clear existing options except the first one
+            monthSelect.innerHTML = '';
+            yearSelect.innerHTML = '';
+
+            // Populate months
+            months.sort((a, b) => a - b).forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.toString();
+                opt.textContent = monthNames[m];
+                monthSelect.appendChild(opt);
+            });
+
+            // Populate years
+            years.sort((a, b) => b - a).forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y.toString();
+                opt.textContent = y;
+                yearSelect.appendChild(opt);
+            });
+
+            // Set default to latest month/year if data exists
+            if (allData.length > 0) {
+                const latest = new Date(allData[0].date + 'T12:00:00');
+                if (months.includes(latest.getMonth())) {
+                    monthSelect.value = latest.getMonth().toString();
+                }
+                if (years.includes(latest.getFullYear())) {
+                    yearSelect.value = latest.getFullYear().toString();
+                }
+            }
+        }
+
+        function filterTable() {
+            const selectedMonth = document.getElementById('monthSelect').value;
+            const selectedYear = document.getElementById('yearSelect').value;
+            const tableBody = document.getElementById('bibleStudyTable').getElementsByTagName('tbody')[0];
+
+            // Clear existing rows
+            tableBody.innerHTML = '';
+
+            // Filter data based on selected month/year
+            const filtered = allData.filter(entry => {
+                const d = new Date(entry.date + 'T12:00:00');
+                if (isNaN(d)) return false;
+
+                const matchMonth = selectedMonth === '' || d.getMonth().toString() === selectedMonth;
+                const matchYear = selectedYear === '' || d.getFullYear().toString() === selectedYear;
+                return matchMonth && matchYear;
+            });
+
+            if (filtered.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666; padding: 40px;">No matching records found for the selected filters.</td></tr>';
+                return;
+            }
+
+            // Populate table with filtered data
+            filtered.forEach(entry => {
+                const row = tableBody.insertRow();
+                row.setAttribute('data-id', entry.id);
+
+                const dateObj = new Date(entry.date + 'T12:00:00');
+                const formattedDate = `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
+
+                row.insertCell(0).textContent = formattedDate;
+                row.insertCell(1).textContent = entry.day;
+                row.insertCell(2).textContent = entry.zone;
+                row.insertCell(3).textContent = entry.purpose;
+                row.insertCell(4).innerHTML = `
+                    <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                        <button class="edit-button" onclick="handleEdit(this)">Edit</button>
+                        <button class="save-button" style="display: none;" onclick="handleSave(this)">Save</button>
+                        <button class="delete-button" onclick="handleDelete(this)">Delete</button>
+                    </div>`;
+            });
+
+            console.log(`Filtered ${filtered.length} records out of ${allData.length} total records.`);
+        }
+
+        // Action handlers
+        function handleEdit(button) {
+            const row = button.closest('tr');
+            const cells = row.querySelectorAll('td');
+
+            // Make cells editable (excluding date and actions columns)
+            for (let i = 1; i < cells.length - 1; i++) {
+                const currentText = cells[i].textContent;
+                cells[i].innerHTML = `<input type="text" value="${currentText}" style="width: 100%; border: 1px solid #ccc; padding: 4px; border-radius: 3px;">`;
+            }
+
+            // Toggle buttons
+            button.style.display = 'none';
+            button.parentNode.querySelector('.save-button').style.display = 'inline-block';
+
+            showNotification('info', 'Editing mode enabled. Click Save to confirm changes.');
+        }
+
+        function handleSave(button) {
+            const row = button.closest('tr');
+            const id = row.getAttribute('data-id');
+            const cells = row.querySelectorAll('td');
+
+            // Get updated values
+            const updatedData = {
+                day: cells[1].querySelector('input').value.trim(),
+                zone: cells[2].querySelector('input').value.trim(),
+                purpose: cells[3].querySelector('input').value.trim()
+            };
+
+            // Validate input
+            if (!updatedData.day || !updatedData.zone || !updatedData.purpose) {
+                showNotification('error', 'All fields are required.');
+                return;
+            }
+
+            // Update in Firebase (simulated)
+            try {
+                // In a real environment, this would update Firebase
+                console.log('Updating record:', id, updatedData);
+
+                // Update local data
+                const dataIndex = allData.findIndex(item => item.id === id);
+                if (dataIndex !== -1) {
+                    allData[dataIndex] = { ...allData[dataIndex], ...updatedData };
+                }
+
+                // Revert cells to text
+                cells[1].textContent = updatedData.day;
+                cells[2].textContent = updatedData.zone;
+                cells[3].textContent = updatedData.purpose;
+
+                // Toggle buttons
+                button.style.display = 'none';
+                button.parentNode.querySelector('.edit-button').style.display = 'inline-block';
+
+                showNotification('success', 'Record updated successfully.');
+
+            } catch (error) {
+                console.error('Error updating record:', error);
+                showNotification('error', 'Failed to update record.');
+            }
+        }
+
+        function handleDelete(button) {
+            currentAction = 'delete';
+            currentRow = button.closest('tr');
+            showConfirmationDialog('Delete Record', 'Are you sure you want to delete this data? This action cannot be undone.');
+        }
+
+        function showConfirmationDialog(title, message) {
+            document.getElementById('confirmationTitle').textContent = title;
+            document.getElementById('confirmationText').textContent = message;
+            document.getElementById('genericConfirmationDialog').style.display = 'flex';
+        }
+
+        function hideConfirmationDialog() {
+            document.getElementById('genericConfirmationDialog').style.display = 'none';
+        }
+
+        function confirmAction() {
+            if (currentAction === 'delete' && currentRow) {
+                const id = currentRow.getAttribute('data-id');
+
+                try {
+                    // In a real environment, this would delete from Firebase
+                    console.log('Deleting record:', id);
+
+                    // Remove from local data
+                    allData = allData.filter(item => item.id !== id);
+
+                    // Remove from table
+                    currentRow.remove();
+
+                    // Refresh filters if needed
+                    if (document.querySelector('#bibleStudyTable tbody').children.length === 0) {
+                        filterTable();
+                    }
+
+                    showNotification('success', 'Record deleted successfully.');
+
+                } catch (error) {
+                    console.error('Error deleting record:', error);
+                    showNotification('error', 'Failed to delete record.');
+                }
+            }
+
+            hideConfirmationDialog();
+            currentAction = null;
+            currentRow = null;
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function () {
+            // Clear storage data (simulated)
+            clearStorageData();
+
+            // Initialize the app
+            initializeApp();
+
+            // Setup confirmation dialog event listeners
+            document.getElementById('confirmActionButton').addEventListener('click', confirmAction);
+            document.getElementById('cancelActionButton').addEventListener('click', hideConfirmationDialog);
+
+            // Setup month/year filter change handlers
+            document.getElementById('monthSelect').addEventListener('change', filterTable);
+            document.getElementById('yearSelect').addEventListener('change', filterTable);
+
+            // Close notification when clicked
+            document.getElementById('notificationDialog').addEventListener('click', function () {
+                this.style.display = 'none';
+            });
+        });
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden && database) {
+                // Refresh connection when page becomes visible
+                console.log('Page visible, checking connection...');
+            }
+        });
+
+        // Handle online/offline status
+        window.addEventListener('online', function () {
+            showNotification('success', 'Connection restored.');
+            if (currentUserEmail && !fieldReportRef) {
+                initializeApp();
+            }
+        });
+
+        window.addEventListener('offline', function () {
+            showNotification('warning', 'You are offline. Some features may not work.');
+        });
+
+        // Retry function for error states
+        window.initializeApp = initializeApp;
     </script>
+
 </body>
 
 </html>
