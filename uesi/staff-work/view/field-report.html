@@ -653,7 +653,7 @@
                     var value = input.value.trim();
                     if (index === 0) {
                         updatedData.date = value;
-                        updatedData.day = new Date(value + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' });
+                        updatedData.day = new Date(value + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
                     } else if (index === 2) {
                         updatedData.zone = value;
                     } else if (index === 3) {
