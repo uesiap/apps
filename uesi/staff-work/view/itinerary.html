@@ -953,15 +953,28 @@
 
             // Set default to latest month/year if data exists
             const currentDate = new Date();
-            const currentMonth = currentDate.getMonth();
-            const currentYear = currentDate.getFullYear();
+            let nextMonth = currentDate.getMonth() + 1;
+            let year = currentDate.getFullYear();
             
-            if (months.includes(currentMonth)) {
-                monthSelect.value = currentMonth.toString();
+            if (nextMonth > 11) {
+                nextMonth = 0;
+                year += 1;
             }
-            if (years.includes(currentYear)) {
-                yearSelect.value = currentYear.toString();
+            
+            if (months.includes(nextMonth)) {
+                monthSelect.value = nextMonth.toString();
+            } else if (months.includes(currentDate.getMonth())) {
+                // fallback to current month if next not available
+                monthSelect.value = currentDate.getMonth().toString();
             }
+            
+            if (years.includes(year)) {
+                yearSelect.value = year.toString();
+            } else if (years.includes(currentDate.getFullYear())) {
+                // fallback to current year if next not available
+                yearSelect.value = currentDate.getFullYear().toString();
+            }
+
         }
 
         function filterTable() {
