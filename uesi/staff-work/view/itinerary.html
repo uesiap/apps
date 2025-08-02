@@ -782,7 +782,7 @@
             }
 
             // Sort data by date (newest first)
-            allData.sort((a, b) => new Date(b.date) - new Date(a.date));
+            allData.sort((a, b) => new Date(a.date) - new Date(b.date));
 
             // Populate filters
             populateMonthYearFilters([...monthsSet], [...yearsSet]);
