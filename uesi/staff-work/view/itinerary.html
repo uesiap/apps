@@ -925,37 +925,13 @@
         function populateMonthYearFilters(months, years) {
             const monthSelect = document.getElementById('monthSelect');
             const yearSelect = document.getElementById('yearSelect');
-
+        
             const monthNames = [
                 "January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December"
             ];
-
-            // Clear existing options
-            monthSelect.innerHTML = '<option value="">Select Month</option>';
-            yearSelect.innerHTML = '<option value="">Select Year</option>';
-
-            // Sort for consistent dropdown order
-            months.sort((a, b) => a - b);
-            years.sort((a, b) => b - a);
-
-            // Populate months
-            months.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m.toString();
-                opt.textContent = monthNames[m];
-                monthSelect.appendChild(opt);
-            });
-
-            // Populate years
-            years.forEach(y => {
-                const opt = document.createElement('option');
-                opt.value = y.toString();
-                opt.textContent = y;
-                yearSelect.appendChild(opt);
-            });
-
-            // Default to next month if data exists
+        
+            // Determine next month and year
             const today = new Date();
             let nextMonth = today.getMonth() + 1;
             let nextYear = today.getFullYear();
@@ -963,16 +939,42 @@
                 nextMonth = 0;
                 nextYear += 1;
             }
-
-            const nextMonthExists = months.includes(nextMonth) && years.includes(nextYear);
-            const fallbackMonth = today.getMonth();
-            const fallbackYear = today.getFullYear();
-
-            // Apply default selection
-            monthSelect.value = nextMonthExists ? nextMonth.toString() : (months.includes(fallbackMonth) ? fallbackMonth.toString() : '');
-            yearSelect.value = nextMonthExists ? nextYear.toString() : (years.includes(fallbackYear) ? fallbackYear.toString() : '');
-
-            // Trigger filter
+        
+            // Ensure next month/year are included in dropdowns
+            if (!months.includes(nextMonth)) {
+                months.push(nextMonth);
+            }
+            if (!years.includes(nextYear)) {
+                years.push(nextYear);
+            }
+        
+            // Sort for consistent dropdown order
+            months.sort((a, b) => a - b);
+            years.sort((a, b) => b - a);
+        
+            // Clear and populate months
+            monthSelect.innerHTML = '<option value="">Select Month</option>';
+            months.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.toString();
+                opt.textContent = monthNames[m];
+                monthSelect.appendChild(opt);
+            });
+        
+            // Clear and populate years
+            yearSelect.innerHTML = '<option value="">Select Year</option>';
+            years.forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y.toString();
+                opt.textContent = y;
+                yearSelect.appendChild(opt);
+            });
+        
+            // Set selected values to next month/year
+            monthSelect.value = nextMonth.toString();
+            yearSelect.value = nextYear.toString();
+        
+            // Trigger table filter
             filterTable();
         }
 
