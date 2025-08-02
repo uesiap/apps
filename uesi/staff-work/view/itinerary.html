@@ -479,10 +479,12 @@
     </div>
     <br><br><br><br><br>
 
-    <div id="filters" style="display: none; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 15px 0;">
+    <div id="filters" style="display: none; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 20px 0;">
         <select id="monthSelect" onchange="filterTable()" class="filter-dropdown">
+            <option value="">Select Month</option>
         </select>
         <select id="yearSelect" onchange="filterTable()" class="filter-dropdown">
+            <option value="">Select Year</option>
         </select>
         <button id="deleteMonthBtn" class="filter-dropdown"
             style="background-color: white; color: #dc3545; border: 1.5px solid #dc3545;">
@@ -745,7 +747,7 @@
             const yearsSet = new Set();
 
             if (!snapshot.exists()) {
-                console.log('No Itinerary data found for this user');
+                console.log('No Itinerary Data found for this user');
                 // Keep showing the loader, don't show error
                 return;
             }
@@ -797,7 +799,7 @@
             filterTable();
 
             // showNotification('success', `Found ${allData.length} Records`);
-            //showNotification('success', `Success`);
+            // showNotification('success', `Success`);
         }
 
         const deleteBtn = document.getElementById('deleteMonthBtn');
@@ -923,59 +925,43 @@
         function populateMonthYearFilters(months, years) {
             const monthSelect = document.getElementById('monthSelect');
             const yearSelect = document.getElementById('yearSelect');
-        
+
             const monthNames = [
                 "January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December"
             ];
-        
-            // Determine next month and year
-            const today = new Date();
-            let nextMonth = today.getMonth() + 1; // e.g., if today is August (7), nextMonth = 8 (September)
-            let nextYear = today.getFullYear();
-        
-            if (nextMonth > 11) {
-                nextMonth = 0;
-                nextYear += 1;
-            }
-        
-            // Always include next month and year even if they don’t exist in dataset
-            if (!months.includes(nextMonth)) {
-                months.push(nextMonth);
-            }
-            if (!years.includes(nextYear)) {
-                years.push(nextYear);
-            }
-        
-            // Sort dropdown values
-            months.sort((a, b) => a - b);
-            years.sort((a, b) => b - a);
-        
-            // Populate months dropdown
-            monthSelect.innerHTML = '<option value="">Select Month</option>';
-            months.forEach(m => {
-                const option = document.createElement('option');
-                option.value = m.toString();
-                option.textContent = monthNames[m];
-                monthSelect.appendChild(option);
+
+            // Clear existing options except the first one
+            monthSelect.innerHTML = '';
+            yearSelect.innerHTML = '';
+
+            // Populate months
+            months.sort((a, b) => a - b).forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.toString();
+                opt.textContent = monthNames[m];
+                monthSelect.appendChild(opt);
             });
-        
-            // Populate years dropdown
-            yearSelect.innerHTML = '<option value="">Select Year</option>';
-            years.forEach(y => {
-                const option = document.createElement('option');
-                option.value = y.toString();
-                option.textContent = y;
-                yearSelect.appendChild(option);
+
+            // Populate years
+            years.sort((a, b) => b - a).forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y.toString();
+                opt.textContent = y;
+                yearSelect.appendChild(opt);
             });
-        
-            // ✅ Set the selected values to next month and year
-            monthSelect.value = nextMonth.toString();
-            yearSelect.value = nextYear.toString();
-        
-            // Trigger UI updates
-            updateDeleteButtonState();
-            filterTable();
+
+            // Set default to latest month/year if data exists
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth();
+            const currentYear = currentDate.getFullYear();
+            
+            if (months.includes(currentMonth)) {
+                monthSelect.value = currentMonth.toString();
+            }
+            if (years.includes(currentYear)) {
+                yearSelect.value = currentYear.toString();
+            }
         }
 
         function filterTable() {
