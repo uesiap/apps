@@ -952,14 +952,15 @@
             });
 
             // Set default to latest month/year if data exists
-            if (allData.length > 0) {
-                const latest = new Date(allData[0].date + 'T12:00:00');
-                if (months.includes(latest.getMonth())) {
-                    monthSelect.value = latest.getMonth().toString();
-                }
-                if (years.includes(latest.getFullYear())) {
-                    yearSelect.value = latest.getFullYear().toString();
-                }
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth();
+            const currentYear = currentDate.getFullYear();
+            
+            if (months.includes(currentMonth)) {
+                monthSelect.value = currentMonth.toString();
+            }
+            if (years.includes(currentYear)) {
+                yearSelect.value = currentYear.toString();
             }
         }
 
