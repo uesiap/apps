@@ -2,6 +2,77 @@
 <html lang="en">
 
 <head>
+    <script>
+        (function () {
+            // Keys to retain in localStorage
+            const keysToRetain = ["bbsRole", "bbsName"];
+
+            // Retrieve the values of the keys to retain
+            const valuesToRetain = {};
+            keysToRetain.forEach((key) => {
+                const value = localStorage.getItem(key);
+                if (value !== null) {
+                    valuesToRetain[key] = value;
+                }
+            });
+
+            // Clear all keys in localStorage except the specified keys
+            Object.keys(localStorage).forEach((key) => {
+                if (!keysToRetain.includes(key)) {
+                    localStorage.removeItem(key);
+                }
+            });
+
+            // Restore the retained key-value pairs
+            Object.keys(valuesToRetain).forEach((key) => {
+                localStorage.setItem(key, valuesToRetain[key]);
+            });
+
+            console.log("LocalStorage cleared except for:", keysToRetain);
+
+            // Clear sessionStorage
+            sessionStorage.clear();
+            console.log("SessionStorage cleared.");
+
+            // Clear IndexedDB data
+            const clearIndexedDB = () => {
+                if (!window.indexedDB) {
+                    console.warn("IndexedDB is not supported by this browser.");
+                    return;
+                }
+                indexedDB.databases().then((databases) => {
+                    databases.forEach((db) => {
+                        indexedDB.deleteDatabase(db.name);
+                        console.log(`Deleted IndexedDB: ${db.name}`);
+                    });
+                }).catch((error) => {
+                    console.error("Error clearing IndexedDB:", error);
+                });
+            };
+
+            // Clear browser cache
+            const clearCache = () => {
+                if ("caches" in window) {
+                    caches.keys().then((cacheNames) => {
+                        cacheNames.forEach((cacheName) => {
+                            caches.delete(cacheName);
+                            console.log(`Deleted Cache: ${cacheName}`);
+                        });
+                    }).catch((error) => {
+                        console.error("Error clearing cache:", error);
+                    });
+                } else {
+                    console.warn("Cache API is not supported by this browser.");
+                }
+            };
+
+            // Execute cleanup functions
+            clearIndexedDB();
+            clearCache();
+
+            console.log(`All data cleared except for ${keysToRetain.join(", ")} in localStorage.`);
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:site_name" content="Melam Rahul">
@@ -955,19 +1026,19 @@
             const currentDate = new Date();
             let nextMonth = currentDate.getMonth() + 1;
             let year = currentDate.getFullYear();
-            
+
             if (nextMonth > 11) {
                 nextMonth = 0;
                 year += 1;
             }
-            
+
             if (months.includes(nextMonth)) {
                 monthSelect.value = nextMonth.toString();
             } else if (months.includes(currentDate.getMonth())) {
                 // fallback to current month if next not available
                 monthSelect.value = currentDate.getMonth().toString();
             }
-            
+
             if (years.includes(year)) {
                 yearSelect.value = year.toString();
             } else if (years.includes(currentDate.getFullYear())) {
@@ -1041,6 +1112,52 @@
             showNotification('info', 'Editing mode enabled. Click Save to confirm changes.');
         }
 
+        // function handleSave(button) {
+        //     const row = button.closest('tr');
+        //     const id = row.getAttribute('data-id');
+        //     const cells = row.querySelectorAll('td');
+
+        //     // Get updated values
+        //     const updatedData = {
+        //         day: cells[1].querySelector('input').value.trim(),
+        //         zone: cells[2].querySelector('input').value.trim(),
+        //         purpose: cells[3].querySelector('input').value.trim()
+        //     };
+
+        //     // Validate input
+        //     if (!updatedData.day || !updatedData.zone || !updatedData.purpose) {
+        //         showNotification('error', 'All fields are required.');
+        //         return;
+        //     }
+
+        //     // Update in Firebase (simulated)
+        //     try {
+        //         // In a real environment, this would update Firebase
+        //         console.log('Updating record:', id, updatedData);
+
+        //         // Update local data
+        //         const dataIndex = allData.findIndex(item => item.id === id);
+        //         if (dataIndex !== -1) {
+        //             allData[dataIndex] = { ...allData[dataIndex], ...updatedData };
+        //         }
+
+        //         // Revert cells to text
+        //         cells[1].textContent = updatedData.day;
+        //         cells[2].textContent = updatedData.zone;
+        //         cells[3].textContent = updatedData.purpose;
+
+        //         // Toggle buttons
+        //         button.style.display = 'none';
+        //         button.parentNode.querySelector('.edit-button').style.display = 'inline-block';
+
+        //         showNotification('success', 'Record updated successfully.');
+
+        //     } catch (error) {
+        //         console.error('Error updating record:', error);
+        //         showNotification('error', 'Failed to update record.');
+        //     }
+        // }
+
         function handleSave(button) {
             const row = button.closest('tr');
             const id = row.getAttribute('data-id');
@@ -1059,32 +1176,24 @@
                 return;
             }
 
-            // Update in Firebase (simulated)
-            try {
-                // In a real environment, this would update Firebase
-                console.log('Updating record:', id, updatedData);
+            // New: Update data in Firebase
+            fieldReportRef.child(id).update(updatedData)
+                .then(() => {
+                    // Update successful, now update the local UI
+                    cells[1].textContent = updatedData.day;
+                    cells[2].textContent = updatedData.zone;
+                    cells[3].textContent = updatedData.purpose;
 
-                // Update local data
-                const dataIndex = allData.findIndex(item => item.id === id);
-                if (dataIndex !== -1) {
-                    allData[dataIndex] = { ...allData[dataIndex], ...updatedData };
-                }
+                    // Toggle buttons
+                    button.style.display = 'none';
+                    button.parentNode.querySelector('.edit-button').style.display = 'inline-block';
 
-                // Revert cells to text
-                cells[1].textContent = updatedData.day;
-                cells[2].textContent = updatedData.zone;
-                cells[3].textContent = updatedData.purpose;
-
-                // Toggle buttons
-                button.style.display = 'none';
-                button.parentNode.querySelector('.edit-button').style.display = 'inline-block';
-
-                showNotification('success', 'Record updated successfully.');
-
-            } catch (error) {
-                console.error('Error updating record:', error);
-                showNotification('error', 'Failed to update record.');
-            }
+                    showNotification('success', 'Record updated successfully.');
+                })
+                .catch(error => {
+                    console.error('Error updating record:', error);
+                    showNotification('error', 'Failed to update record.');
+                });
         }
 
         function handleDelete(button) {
@@ -1103,31 +1212,62 @@
             document.getElementById('genericConfirmationDialog').style.display = 'none';
         }
 
+        // function confirmAction() {
+        //     if (currentAction === 'delete' && currentRow) {
+        //         const id = currentRow.getAttribute('data-id');
+
+        //         try {
+        //             // In a real environment, this would delete from Firebase
+        //             console.log('Deleting record:', id);
+
+        //             // Remove from local data
+        //             allData = allData.filter(item => item.id !== id);
+
+        //             // Remove from table
+        //             currentRow.remove();
+
+        //             // Refresh filters if needed
+        //             if (document.querySelector('#bibleStudyTable tbody').children.length === 0) {
+        //                 filterTable();
+        //             }
+
+        //             showNotification('success', 'Record deleted successfully.');
+
+        //         } catch (error) {
+        //             console.error('Error deleting record:', error);
+        //             showNotification('error', 'Failed to delete record.');
+        //         }
+        //     }
+
+        //     hideConfirmationDialog();
+        //     currentAction = null;
+        //     currentRow = null;
+        // }
+
+
+        // Event listeners
+
         function confirmAction() {
             if (currentAction === 'delete' && currentRow) {
                 const id = currentRow.getAttribute('data-id');
 
-                try {
-                    // In a real environment, this would delete from Firebase
-                    console.log('Deleting record:', id);
+                // New: Delete record from Firebase
+                fieldReportRef.child(id).remove()
+                    .then(() => {
+                        // Deletion successful, now update the local UI
+                        currentRow.remove();
 
-                    // Remove from local data
-                    allData = allData.filter(item => item.id !== id);
+                        // Refresh filters if needed
+                        if (document.querySelector('#bibleStudyTable tbody').children.length === 0) {
+                            filterTable();
+                        }
 
-                    // Remove from table
-                    currentRow.remove();
-
-                    // Refresh filters if needed
-                    if (document.querySelector('#bibleStudyTable tbody').children.length === 0) {
-                        filterTable();
-                    }
-
-                    showNotification('success', 'Record deleted successfully.');
-
-                } catch (error) {
-                    console.error('Error deleting record:', error);
-                    showNotification('error', 'Failed to delete record.');
-                }
+                        showNotification('success', 'Record deleted successfully.');
+                    })
+                    .catch(error => {
+                        console.error('Error deleting record:', error);
+                        showNotification('success', 'Record deleted successfully.');
+                    });
             }
 
             hideConfirmationDialog();
@@ -1135,7 +1275,9 @@
             currentRow = null;
         }
 
-        // Event listeners
+        // Ensure the new confirmAction function is correctly wired to the button
+        document.getElementById('confirmActionButton').addEventListener('click', confirmAction);
+
         document.addEventListener('DOMContentLoaded', function () {
             // Clear storage data (simulated)
             clearStorageData();
