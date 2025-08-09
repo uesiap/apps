@@ -724,7 +724,7 @@
                 merges.push({ s: { r: currentRowIndex, c: 0 }, e: { r: currentRowIndex, c: 4 } });
                 currentRowIndex++;
 
-                ws_data.push([`NAME: ${userName}      ${userBase}`]);
+                ws_data.push([`NAME: ${userName}      Base: ${userBase}`]);
                 merges.push({ s: { r: currentRowIndex, c: 0 }, e: { r: currentRowIndex, c: 4 } });
                 currentRowIndex++;
 
@@ -931,7 +931,7 @@
                     <td colspan="5">FIELD REPORT - ${monthName ? monthName.toUpperCase() : ''} ${selectedYear}</td>
                 </tr>
                 <tr class="export-staff-info-row">
-                    <td colspan="5">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${userBase || 'N/A'}</td>
+                    <td colspan="5">NAME: ${userName || 'N/A'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Base: ${userBase || 'N/A'}</td>
                 </tr>
                 <tr>`;
 
