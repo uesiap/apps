@@ -384,7 +384,7 @@
                     </tr>
                     <tr class="staff-info-row">
                         <td colspan="5">NAME: <span id="staffInfoName"></span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            <span id="staffInfoBase"></span>
+                            Base: <span id="staffInfoBase"></span>
                         </td>
                     </tr>
                     <tr>
@@ -691,7 +691,7 @@
                         heightLeft -= pageHeight;
                     }
 
-                    doc.save(`${userName}_Field_Report_${monthName}_${selectedYear}.pdf`);
+                    doc.save(`${userName} Field Report ${monthName} ${selectedYear}.pdf`);
                     document.body.removeChild(tempDiv);
                     hideExportLoading();
                 }).catch(error => {
@@ -854,7 +854,7 @@
                 });
 
                 XLSX.utils.book_append_sheet(wb, ws, 'Field Report');
-                XLSX.writeFile(wb, `${userName}_Field_Report_${monthName}_${selectedYear}.xlsx`);
+                XLSX.writeFile(wb, `${userName} Field Report ${monthName} ${selectedYear}.xlsx`);
 
                 hideExportLoading();
             } catch (error) {
@@ -879,7 +879,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${userName}_Field_Report_${monthName}_${selectedYear}.doc`;
+                a.download = `${userName} Field Report ${monthName} ${selectedYear}.doc`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
