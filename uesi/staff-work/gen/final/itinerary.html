@@ -2,6 +2,77 @@
 <html lang="en">
 
 <head>
+    <script>
+        (function () {
+            // Keys to retain in localStorage
+            const keysToRetain = ["bbsRole", "bbsName"];
+
+            // Retrieve the values of the keys to retain
+            const valuesToRetain = {};
+            keysToRetain.forEach((key) => {
+                const value = localStorage.getItem(key);
+                if (value !== null) {
+                    valuesToRetain[key] = value;
+                }
+            });
+
+            // Clear all keys in localStorage except the specified keys
+            Object.keys(localStorage).forEach((key) => {
+                if (!keysToRetain.includes(key)) {
+                    localStorage.removeItem(key);
+                }
+            });
+
+            // Restore the retained key-value pairs
+            Object.keys(valuesToRetain).forEach((key) => {
+                localStorage.setItem(key, valuesToRetain[key]);
+            });
+
+            console.log("LocalStorage cleared except for:", keysToRetain);
+
+            // Clear sessionStorage
+            sessionStorage.clear();
+            console.log("SessionStorage cleared.");
+
+            // Clear IndexedDB data
+            const clearIndexedDB = () => {
+                if (!window.indexedDB) {
+                    console.warn("IndexedDB is not supported by this browser.");
+                    return;
+                }
+                indexedDB.databases().then((databases) => {
+                    databases.forEach((db) => {
+                        indexedDB.deleteDatabase(db.name);
+                        console.log(`Deleted IndexedDB: ${db.name}`);
+                    });
+                }).catch((error) => {
+                    console.error("Error clearing IndexedDB:", error);
+                });
+            };
+
+            // Clear browser cache
+            const clearCache = () => {
+                if ("caches" in window) {
+                    caches.keys().then((cacheNames) => {
+                        cacheNames.forEach((cacheName) => {
+                            caches.delete(cacheName);
+                            console.log(`Deleted Cache: ${cacheName}`);
+                        });
+                    }).catch((error) => {
+                        console.error("Error clearing cache:", error);
+                    });
+                } else {
+                    console.warn("Cache API is not supported by this browser.");
+                }
+            };
+
+            // Execute cleanup functions
+            clearIndexedDB();
+            clearCache();
+
+            console.log(`All data cleared except for ${keysToRetain.join(", ")} in localStorage.`);
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generated Itinerary</title>
@@ -691,7 +762,7 @@
                         heightLeft -= pageHeight;
                     }
 
-                    doc.save(`${userName}_Itinerary_${monthName}_${selectedYear}.pdf`);
+                    doc.save(`${userName} Itinerary ${monthName} ${selectedYear}.pdf`);
                     document.body.removeChild(tempDiv);
                     hideExportLoading();
                 }).catch(error => {
@@ -854,7 +925,7 @@
                 });
 
                 XLSX.utils.book_append_sheet(wb, ws, 'Itinerary Report');
-                XLSX.writeFile(wb, `${userName}_Itinerary_${monthName}_${selectedYear}.xlsx`);
+                XLSX.writeFile(wb, `${userName} Itinerary ${monthName} ${selectedYear}.xlsx`);
 
                 hideExportLoading();
             } catch (error) {
@@ -879,7 +950,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${userName}_Itinerary_${monthName}_${selectedYear}.doc`;
+                a.download = `${userName} Itinerary ${monthName} ${selectedYear}.doc`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
