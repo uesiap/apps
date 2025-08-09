@@ -1339,7 +1339,28 @@
             setInterval(checkAndToggleSplashScreen, 2000);
         });
 
-        function showTabs(format, event = null) {
+        // function showTabs(format, event = null) {
+        //     const form1 = document.getElementById('form1');
+        //     const form2 = document.getElementById('form2');
+        //     const buttons = document.querySelectorAll('.tab-btn');
+
+        //     buttons.forEach(btn => btn.classList.remove('active'));
+
+        //     if (format === 'field') {
+        //         form1.classList.remove('hidden');
+        //         form2.classList.add('hidden');
+        //         history.replaceState(null, '', '#FieldReport');
+        //         buttons[0].classList.add('active');
+        //     } else {
+        //         form1.classList.add('hidden');
+        //         form2.classList.remove('hidden');
+        //         history.replaceState(null, '', '#ItineraryForm');
+        //         buttons[1].classList.add('active');
+        //     }
+
+        //     // Optional: filterSongs(currentQuery);
+        // }
+        function showTabs(format) {
             const form1 = document.getElementById('form1');
             const form2 = document.getElementById('form2');
             const buttons = document.querySelectorAll('.tab-btn');
@@ -1357,8 +1378,6 @@
                 history.replaceState(null, '', '#ItineraryForm');
                 buttons[1].classList.add('active');
             }
-
-            // Optional: filterSongs(currentQuery);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -1493,6 +1512,19 @@
             const setBBSNameBtn = document.getElementById('setBBSNameBtn');
             const mailNameBtn = document.getElementById('mail');
             const waNameBtn = document.getElementById('wa');
+
+            function handleInitialTab() {
+                const hash = window.location.hash;
+                if (hash === '#ItineraryForm') {
+                    showTabs('itinerary');
+                } else {
+                    // Default to 'field' if hash is not present or is something else
+                    showTabs('field');
+                }
+            }
+
+            // Call the new function to set the initial state
+            handleInitialTab();
 
             // Firebase Config
             var firebaseConfig = {
