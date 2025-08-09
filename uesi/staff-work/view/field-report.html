@@ -955,7 +955,7 @@
             const currentDate = new Date();
             const currentMonth = currentDate.getMonth();
             const currentYear = currentDate.getFullYear();
-            
+
             if (months.includes(currentMonth)) {
                 monthSelect.value = currentMonth.toString();
             }
@@ -1028,6 +1028,51 @@
             showNotification('info', 'Editing mode enabled. Click Save to confirm changes.');
         }
 
+        // function handleSave(button) {
+        //     const row = button.closest('tr');
+        //     const id = row.getAttribute('data-id');
+        //     const cells = row.querySelectorAll('td');
+
+        //     // Get updated values
+        //     const updatedData = {
+        //         day: cells[1].querySelector('input').value.trim(),
+        //         zone: cells[2].querySelector('input').value.trim(),
+        //         purpose: cells[3].querySelector('input').value.trim()
+        //     };
+
+        //     // Validate input
+        //     if (!updatedData.day || !updatedData.zone || !updatedData.purpose) {
+        //         showNotification('error', 'All fields are required.');
+        //         return;
+        //     }
+
+        //     // Update in Firebase (simulated)
+        //     try {
+        //         // In a real environment, this would update Firebase
+        //         console.log('Updating record:', id, updatedData);
+
+        //         // Update local data
+        //         const dataIndex = allData.findIndex(item => item.id === id);
+        //         if (dataIndex !== -1) {
+        //             allData[dataIndex] = { ...allData[dataIndex], ...updatedData };
+        //         }
+
+        //         // Revert cells to text
+        //         cells[1].textContent = updatedData.day;
+        //         cells[2].textContent = updatedData.zone;
+        //         cells[3].textContent = updatedData.purpose;
+
+        //         // Toggle buttons
+        //         button.style.display = 'none';
+        //         button.parentNode.querySelector('.edit-button').style.display = 'inline-block';
+
+        //         showNotification('success', 'Record updated successfully.');
+
+        //     } catch (error) {
+        //         console.error('Error updating record:', error);
+        //         showNotification('error', 'Failed to update record.');
+        //     }
+        // }
         function handleSave(button) {
             const row = button.closest('tr');
             const id = row.getAttribute('data-id');
@@ -1046,32 +1091,24 @@
                 return;
             }
 
-            // Update in Firebase (simulated)
-            try {
-                // In a real environment, this would update Firebase
-                console.log('Updating record:', id, updatedData);
+            // New: Update data in Firebase
+            fieldReportRef.child(id).update(updatedData)
+                .then(() => {
+                    // Update successful, now update the local UI
+                    cells[1].textContent = updatedData.day;
+                    cells[2].textContent = updatedData.zone;
+                    cells[3].textContent = updatedData.purpose;
 
-                // Update local data
-                const dataIndex = allData.findIndex(item => item.id === id);
-                if (dataIndex !== -1) {
-                    allData[dataIndex] = { ...allData[dataIndex], ...updatedData };
-                }
+                    // Toggle buttons
+                    button.style.display = 'none';
+                    button.parentNode.querySelector('.edit-button').style.display = 'inline-block';
 
-                // Revert cells to text
-                cells[1].textContent = updatedData.day;
-                cells[2].textContent = updatedData.zone;
-                cells[3].textContent = updatedData.purpose;
-
-                // Toggle buttons
-                button.style.display = 'none';
-                button.parentNode.querySelector('.edit-button').style.display = 'inline-block';
-
-                showNotification('success', 'Record updated successfully.');
-
-            } catch (error) {
-                console.error('Error updating record:', error);
-                showNotification('error', 'Failed to update record.');
-            }
+                    showNotification('success', 'Record updated successfully.');
+                })
+                .catch(error => {
+                    console.error('Error updating record:', error);
+                    showNotification('error', 'Failed to update record.');
+                });
         }
 
         function handleDelete(button) {
@@ -1090,31 +1127,60 @@
             document.getElementById('genericConfirmationDialog').style.display = 'none';
         }
 
+        // function confirmAction() {
+        //     if (currentAction === 'delete' && currentRow) {
+        //         const id = currentRow.getAttribute('data-id');
+
+        //         try {
+        //             // In a real environment, this would delete from Firebase
+        //             console.log('Deleting record:', id);
+
+        //             // Remove from local data
+        //             allData = allData.filter(item => item.id !== id);
+
+        //             // Remove from table
+        //             currentRow.remove();
+
+        //             // Refresh filters if needed
+        //             if (document.querySelector('#bibleStudyTable tbody').children.length === 0) {
+        //                 filterTable();
+        //             }
+
+        //             showNotification('success', 'Record deleted successfully.');
+
+        //         } catch (error) {
+        //             console.error('Error deleting record:', error);
+        //             showNotification('error', 'Failed to delete record.');
+        //         }
+        //     }
+
+        //     hideConfirmationDialog();
+        //     currentAction = null;
+        //     currentRow = null;
+        // }
+
+        // Event listeners
         function confirmAction() {
             if (currentAction === 'delete' && currentRow) {
                 const id = currentRow.getAttribute('data-id');
 
-                try {
-                    // In a real environment, this would delete from Firebase
-                    console.log('Deleting record:', id);
+                // New: Delete record from Firebase
+                fieldReportRef.child(id).remove()
+                    .then(() => {
+                        // Deletion successful, now update the local UI
+                        currentRow.remove();
 
-                    // Remove from local data
-                    allData = allData.filter(item => item.id !== id);
+                        // Refresh filters if needed
+                        if (document.querySelector('#bibleStudyTable tbody').children.length === 0) {
+                            filterTable();
+                        }
 
-                    // Remove from table
-                    currentRow.remove();
-
-                    // Refresh filters if needed
-                    if (document.querySelector('#bibleStudyTable tbody').children.length === 0) {
-                        filterTable();
-                    }
-
-                    showNotification('success', 'Record deleted successfully.');
-
-                } catch (error) {
-                    console.error('Error deleting record:', error);
-                    showNotification('error', 'Failed to delete record.');
-                }
+                        showNotification('success', 'Record deleted successfully.');
+                    })
+                    .catch(error => {
+                        console.error('Error deleting record:', error);
+                        showNotification('success', 'Record deleted successfully.');
+                    });
             }
 
             hideConfirmationDialog();
@@ -1122,7 +1188,9 @@
             currentRow = null;
         }
 
-        // Event listeners
+        // Ensure the new confirmAction function is correctly wired to the button
+        document.getElementById('confirmActionButton').addEventListener('click', confirmAction);
+
         document.addEventListener('DOMContentLoaded', function () {
             // Clear storage data (simulated)
             clearStorageData();
