@@ -95,24 +95,27 @@ self.addEventListener('push', event => {
 });
 
 // Notification click event handler
+// In your service-worker.js file
 self.addEventListener('notificationclick', event => {
   event.notification.close();
 
   event.waitUntil(async () => {
+    // If the 'dismiss' action is clicked, we stop here.
     if (event.action === 'dismiss') {
-      return; 
+      return;
     }
 
-    // Default or 'open' action
     const url = event.notification.data.url || '/';
     const allClients = await clients.matchAll({ type: 'window' });
-    let appClient = allClients.find(client => client.url === url && 'focus' in client);
 
-    if (appClient) {
+    // Use includes() for a more flexible URL match
+    let clientToFocus = allClients.find(client => client.url.includes(url));
+
+    if (clientToFocus) {
       // App is already open, focus the existing tab.
-      return appClient.focus();
+      return clientToFocus.focus();
     } else {
-      // App is not open, open a new window.
+      // App is not open, so open a new window.
       return clients.openWindow(url);
     }
   });
