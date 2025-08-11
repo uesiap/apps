@@ -79,7 +79,7 @@ self.addEventListener('push', event => {
   const options = {
     body: data.body || '',
     icon: '/vidhyardhi-geethavali/Icon192.jpg',
-    badge: 'https://cdn-icons-png.flaticon.com/512/9687/9687399.png',
+    badge: 'https://whatpwacando.today/src/img/icons/notification.png',
     data: {
       url: data.url || '/'
     },
@@ -98,46 +98,31 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
 
-  const notificationData = event.notification.data;
   const action = event.action;
+  const notificationData = event.notification.data;
 
-  // Check if a specific action and its configuration exist in the payload
-  if (notificationData && notificationData.onActionClick && notificationData.onActionClick[action]) {
-    const actionConfig = notificationData.onActionClick[action];
+  // Handle the 'dismiss' action explicitly
+  if (action === 'dismiss') {
+    // The notification is already closed by event.notification.close(), so we do nothing else.
+    return;
+  }
 
-    // Determine the operation and perform the action
-    if (actionConfig.operation === 'openWindow' && actionConfig.url) {
-      event.waitUntil(clients.openWindow(actionConfig.url));
-    } else if (actionConfig.operation === 'focusLastFocusedOrOpen' && actionConfig.url) {
-      event.waitUntil(async () => {
-        const urlToOpen = new URL(actionConfig.url, self.location.origin).href;
-        const allClients = await clients.matchAll({ type: 'window' });
-        const clientToFocus = allClients.find(client => client.url.includes(urlToOpen));
+  // Handle the 'open' action and the main body click
+  if (action === 'open' || action === '') {
+    const url = notificationData.url || '/';
 
-        if (clientToFocus) {
-          return clientToFocus.focus();
-        } else {
-          return clients.openWindow(urlToOpen);
-        }
-      });
-    } else if (actionConfig.operation === 'navigateLastFocusedOrOpen' && actionConfig.url) {
-      event.waitUntil(async () => {
-        const allClients = await clients.matchAll({ type: 'window' });
-        const clientToFocus = allClients.find(client => client.focused);
+    event.waitUntil(async () => {
+      const allClients = await clients.matchAll({ type: 'window' });
 
-        if (clientToFocus) {
-          return clientToFocus.navigate(actionConfig.url);
-        } else {
-          return clients.openWindow(actionConfig.url);
-        }
-      });
-    } else if (actionConfig.operation === 'sendRequest' && actionConfig.url) {
-      event.waitUntil(fetch(actionConfig.url, { method: 'POST' }));
-    }
-  } else {
-    // This handles the main body click (action is '') and any other undefined actions.
-    // Use the default URL from the payload or fall back to the root ('/')
-    const defaultUrl = notificationData?.url || '/';
-    event.waitUntil(clients.openWindow(defaultUrl));
+      // Check if a client is already open and try to focus it
+      const clientToFocus = allClients.find(client => client.url.includes(url));
+
+      if (clientToFocus) {
+        return clientToFocus.focus();
+      } else {
+        // If not, open a new window
+        return clients.openWindow(url);
+      }
+    });
   }
 });
