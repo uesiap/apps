@@ -100,14 +100,24 @@ self.addEventListener('notificationclick', event => {
 
   if (event.action === 'open') {
     event.waitUntil(
-      clients.openWindow('https://uesiap.github.io/apps/uesi/staff-work/')  // your PWA index URL
+      clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+        for (const client of clientList) {
+          if (client.url.includes('/apps/uesi/staff-work/') && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        if (clients.openWindow) {
+          // Use relative URL matching manifest start_url
+          return clients.openWindow('/apps/uesi/staff-work/');
+        }
+      })
     );
   } else if (event.action === 'dismiss') {
-    // Just close notification, no action needed
+    // No action needed, just close notification
   } else {
-    // Handle notification click without action button (e.g. tap on body)
     event.waitUntil(
       clients.openWindow(event.notification.data.url)
     );
   }
 });
+
