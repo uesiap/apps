@@ -98,26 +98,14 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
 
-  if (event.action === 'open') {
-    event.waitUntil(
-      clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-        for (const client of clientList) {
-          if (client.url.includes('/apps/uesi/staff-work/') && 'focus' in client) {
-            return client.focus();
-          }
-        }
-        if (clients.openWindow) {
-          // Use relative URL matching manifest start_url
-          return clients.openWindow('/apps/uesi/staff-work/');
-        }
-      })
-    );
-  } else if (event.action === 'dismiss') {
-    // No action needed, just close notification
-  } else {
-    event.waitUntil(
-      clients.openWindow(event.notification.data.url)
-    );
-  }
+  event.waitUntil((async () => {
+    if (event.action === 'open') {
+      return clients.openWindow(event.notification.data.url || '/');
+    } else if (event.action === 'dismiss') {
+      // do nothing, just close
+    } else {
+      return clients.openWindow(event.notification.data.url || '/');
+    }
+  })());
 });
 
