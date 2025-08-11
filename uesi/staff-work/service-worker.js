@@ -79,3 +79,22 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
+// Push Notification Event
+self.addEventListener('push', event => {
+  const data = event.data ? event.data.json() : {};
+  const title = data.title || 'New Message';
+  const options = {
+    body: data.body || '',
+    icon: '/vidhyardhi-geethavali/Icon192.jpg',
+    badge: '/vidhyardhi-geethavali/Icon192.jpg',
+    data: data.url || '/'
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Click event for notification
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(clients.openWindow(event.notification.data));
+});
