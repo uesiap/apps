@@ -1896,37 +1896,29 @@
     return;
   }
 
-  const subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(
-      'BMEz2RWWPeRNP5_7f_UaBSSmLclANhlwIA0hZf7KsKuTZakj89IpglnFRKhfVKsMveEgXTx10z4vvbwSCsYVLfI'
-    )
-  });
+  // Check for existing subscription
+  let subscription = await registration.pushManager.getSubscription();
 
-  console.log('Push subscription:', subscription);
+  if (!subscription) {
+    // No subscription found, create a new one
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(
+        'BMEz2RWWPeRNP5_7f_UaBSSmLclANhlwIA0hZf7KsKuTZakj89IpglnFRKhfVKsMveEgXTx10z4vvbwSCsYVLfI'
+      )
+    });
+    console.log('New push subscription:', subscription);
+  } else {
+    console.log('Existing push subscription found:', subscription);
+  }
 
-  // Send subscription to server
+  // Send subscription to server (only if new or changed)
   await fetch('https://rahul.serv00.net/apps/web-push/apps/sample/save-subscription.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(subscription)
   });
 }
-
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
-  const rawData = atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
-subscribeUserToPush();
 
     </script>
 </body>
