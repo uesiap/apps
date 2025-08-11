@@ -79,7 +79,7 @@ self.addEventListener('push', event => {
   const options = {
     body: data.body || '',
     icon: '/vidhyardhi-geethavali/Icon192.jpg',
-    badge: '/vidhyardhi-geethavali/favicon.ico',
+    badge: '/vidhyardhi-geethavali/IconApple.png',
     data: {
       url: data.url || '/'
     },
