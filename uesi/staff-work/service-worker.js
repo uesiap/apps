@@ -78,8 +78,8 @@ self.addEventListener('push', event => {
   const title = data.title || 'New Message';
   const options = {
     body: data.body || '',
-    icon: '/vidhyardhi-geethavali/favicon.ico',
-    badge: '/vidhyardhi-geethavali/Icon192.jpg',
+    icon: '/vidhyardhi-geethavali/Icon192.jpg',
+    badge: '/vidhyardhi-geethavali/favicon.ico',
     data: {
       url: data.url || '/'
     },
@@ -100,7 +100,7 @@ self.addEventListener('notificationclick', event => {
 
   if (event.action === 'open') {
     event.waitUntil(
-      clients.openWindow(event.notification.data.url)
+      clients.openWindow('/apps/uesi/staff-work/')  // your PWA index URL
     );
   } else if (event.action === 'dismiss') {
     // Just close notification, no action needed
