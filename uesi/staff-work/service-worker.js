@@ -78,7 +78,7 @@ self.addEventListener('push', event => {
   const title = data.title || 'New Message';
   const options = {
     body: data.body || '',
-    icon: '/vidhyardhi-geethavali/Icon192.jpg',
+    icon: '/vidhyardhi-geethavali/favicon.ico',
     badge: '/vidhyardhi-geethavali/Icon192.jpg',
     data: {
       url: data.url || '/'
