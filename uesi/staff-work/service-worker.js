@@ -98,14 +98,22 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
 
-  event.waitUntil((async () => {
-    if (event.action === 'open') {
-      return clients.openWindow(event.notification.data.url || '/');
-    } else if (event.action === 'dismiss') {
-      // do nothing, just close
-    } else {
-      return clients.openWindow(event.notification.data.url || '/');
+  event.waitUntil(async () => {
+    if (event.action === 'dismiss') {
+      return; 
     }
-  })());
-});
 
+    // Default or 'open' action
+    const url = event.notification.data.url || '/';
+    const allClients = await clients.matchAll({ type: 'window' });
+    let appClient = allClients.find(client => client.url === url && 'focus' in client);
+
+    if (appClient) {
+      // App is already open, focus the existing tab.
+      return appClient.focus();
+    } else {
+      // App is not open, open a new window.
+      return clients.openWindow(url);
+    }
+  });
+});
