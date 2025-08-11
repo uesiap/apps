@@ -1888,37 +1888,38 @@
         }
 
         async function subscribeUserToPush() {
-  const registration = await navigator.serviceWorker.ready;
+            const registration = await navigator.serviceWorker.ready;
 
-  const permission = await Notification.requestPermission();
-  if (permission !== 'granted') {
-    console.error('Permission not granted');
-    return;
-  }
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                console.error('Permission not granted');
+                return;
+            }
 
-  // Check for existing subscription
-  let subscription = await registration.pushManager.getSubscription();
+            // Check for existing subscription
+            let subscription = await registration.pushManager.getSubscription();
 
-  if (!subscription) {
-    // No subscription found, create a new one
-    subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(
-        'BMEz2RWWPeRNP5_7f_UaBSSmLclANhlwIA0hZf7KsKuTZakj89IpglnFRKhfVKsMveEgXTx10z4vvbwSCsYVLfI'
-      )
-    });
-    console.log('New push subscription:', subscription);
-  } else {
-    console.log('Existing push subscription found:', subscription);
-  }
+            if (!subscription) {
+                // No subscription found, create a new one
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(
+                        'BMEz2RWWPeRNP5_7f_UaBSSmLclANhlwIA0hZf7KsKuTZakj89IpglnFRKhfVKsMveEgXTx10z4vvbwSCsYVLfI'
+                    )
+                });
+                console.log('New push subscription:', subscription);
+            } else {
+                console.log('Existing push subscription found:', subscription);
+            }
 
-  // Send subscription to server (only if new or changed)
-  await fetch('https://rahul.serv00.net/apps/web-push/apps/sample/save-subscription.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(subscription)
-  });
-}
+            // Send subscription to server (only if new or changed)
+            await fetch('https://rahul.serv00.net/apps/web-push/apps/sample/save-subscription.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(subscription)
+            });
+        }
+        subscribeUserToPush();
 
     </script>
 </body>
