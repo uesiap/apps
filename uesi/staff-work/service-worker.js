@@ -87,7 +87,7 @@ self.addEventListener('push', event => {
   const options = {
     body: data.body || '',
     icon: '/vidhyardhi-geethavali/Icon192.jpg',
-    badge: '/vidhyardhi-geethavali/Icon192.jpg',
+    badge: 'https://whatpwacando.today/src/img/icons/notification.png',
     data: data.url || '/'
   };
   event.waitUntil(self.registration.showNotification(title, options));
