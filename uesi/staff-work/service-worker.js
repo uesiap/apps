@@ -79,7 +79,7 @@ self.addEventListener('push', event => {
   const options = {
     body: data.body || '',
     icon: '/vidhyardhi-geethavali/Icon192.jpg',
-    badge: '/vidhyardhi-geethavali/Icon72.png',
+    badge: '/apps/uesi/staff-work/notification-icon.png',
     data: {
       url: data.url || '/'
     },
