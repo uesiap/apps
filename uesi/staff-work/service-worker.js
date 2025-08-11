@@ -79,7 +79,7 @@ self.addEventListener('push', event => {
   const options = {
     body: data.body || '',
     icon: '/vidhyardhi-geethavali/Icon192.jpg',
-    badge: '/vidhyardhi-geethavali/IconApple.png',
+    badge: '/vidhyardhi-geethavali/Icon72.png',
     data: {
       url: data.url || '/'
     },
@@ -100,7 +100,7 @@ self.addEventListener('notificationclick', event => {
 
   if (event.action === 'open') {
     event.waitUntil(
-      clients.openWindow('/apps/uesi/staff-work/')  // your PWA index URL
+      clients.openWindow('https://uesiap.github.io/apps/uesi/staff-work/')  // your PWA index URL
     );
   } else if (event.action === 'dismiss') {
     // Just close notification, no action needed
