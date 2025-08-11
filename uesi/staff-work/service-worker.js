@@ -4,13 +4,12 @@ const urlsToCache = [
   '/apps/uesi/staff-work/',
   '/vidhyardhi-geethavali/Icon192.jpg',
   '/vidhyardhi-geethavali/Icon512.jpg',
-  '/vidhyardhi-geethavali/uesisongsmain.jpg'  // Add the splash screen image to the cache
+  '/vidhyardhi-geethavali/uesisongsmain.jpg'
 ];
 
 // Install event
 self.addEventListener('install', event => {
   console.log('Service Worker: Installing');
-  // Perform install steps
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -18,12 +17,12 @@ self.addEventListener('install', event => {
         return cache.addAll(urlsToCache);
       })
   );
+  self.skipWaiting(); // Activate new SW immediately
 });
 
 // Activate event
 self.addEventListener('activate', event => {
   console.log('Service Worker: Activating');
-  // Remove old caches
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
@@ -34,47 +33,34 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Take control of clients immediately
   );
 });
 
 // Fetch event
 self.addEventListener('fetch', event => {
-  console.log('Service Worker: Fetching');
+  console.log('Service Worker: Fetching', event.request.url);
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Cache hit - return response
         if (response) {
           console.log('Service Worker: Cache hit');
           return response;
         }
-
-        // Clone the request because it's a stream
         const fetchRequest = event.request.clone();
-
-        return fetch(fetchRequest).then(
-          response => {
-            // Check if we received a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              console.log('Service Worker: Invalid response');
-              return response;
-            }
-
-            // Clone the response because it's a stream
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                console.log('Service Worker: Caching new resource');
-                cache.put(event.request, responseToCache);
-              });
-
+        return fetch(fetchRequest).then(response => {
+          if (!response || response.status !== 200 || response.type !== 'basic') {
+            console.log('Service Worker: Invalid response');
             return response;
           }
-        );
-      })
-      .catch(error => {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            console.log('Service Worker: Caching new resource', event.request.url);
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        });
+      }).catch(error => {
         console.error('Service Worker: Fetch error:', error);
       })
   );
@@ -82,19 +68,46 @@ self.addEventListener('fetch', event => {
 
 // Push Notification Event
 self.addEventListener('push', event => {
-  const data = event.data ? event.data.json() : {};
+  let data = {};
+  try {
+    data = event.data.json();
+  } catch (e) {
+    data = { title: 'Notification', body: 'You have a new message!', url: '/' };
+  }
+
   const title = data.title || 'New Message';
   const options = {
     body: data.body || '',
     icon: '/vidhyardhi-geethavali/Icon192.jpg',
     badge: '/vidhyardhi-geethavali/Icon192.jpg',
-    data: data.url || '/'
+    data: {
+      url: data.url || '/'
+    },
+    actions: [
+      { action: 'open', title: 'Open' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ]
   };
-  event.waitUntil(self.registration.showNotification(title, options));
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
 });
 
-// Click event for notification
+// Notification click event handler
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  event.waitUntil(clients.openWindow(event.notification.data));
+
+  if (event.action === 'open') {
+    event.waitUntil(
+      clients.openWindow(event.notification.data.url)
+    );
+  } else if (event.action === 'dismiss') {
+    // Just close notification, no action needed
+  } else {
+    // Handle notification click without action button (e.g. tap on body)
+    event.waitUntil(
+      clients.openWindow(event.notification.data.url)
+    );
+  }
 });
