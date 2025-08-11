@@ -95,28 +95,49 @@ self.addEventListener('push', event => {
 });
 
 // Notification click event handler
-// In your service-worker.js file
 self.addEventListener('notificationclick', event => {
   event.notification.close();
 
-  event.waitUntil(async () => {
-    // If the 'dismiss' action is clicked, we stop here.
-    if (event.action === 'dismiss') {
-      return;
+  const notificationData = event.notification.data;
+  const action = event.action;
+
+  // Check if a specific action and its configuration exist in the payload
+  if (notificationData && notificationData.onActionClick && notificationData.onActionClick[action]) {
+    const actionConfig = notificationData.onActionClick[action];
+
+    // Determine the operation and perform the action
+    if (actionConfig.operation === 'openWindow' && actionConfig.url) {
+      event.waitUntil(clients.openWindow(actionConfig.url));
+    } else if (actionConfig.operation === 'focusLastFocusedOrOpen' && actionConfig.url) {
+      event.waitUntil(async () => {
+        const urlToOpen = new URL(actionConfig.url, self.location.origin).href;
+        const allClients = await clients.matchAll({ type: 'window' });
+        const clientToFocus = allClients.find(client => client.url.includes(urlToOpen));
+
+        if (clientToFocus) {
+          return clientToFocus.focus();
+        } else {
+          return clients.openWindow(urlToOpen);
+        }
+      });
+    } else if (actionConfig.operation === 'navigateLastFocusedOrOpen' && actionConfig.url) {
+      event.waitUntil(async () => {
+        const allClients = await clients.matchAll({ type: 'window' });
+        const clientToFocus = allClients.find(client => client.focused);
+
+        if (clientToFocus) {
+          return clientToFocus.navigate(actionConfig.url);
+        } else {
+          return clients.openWindow(actionConfig.url);
+        }
+      });
+    } else if (actionConfig.operation === 'sendRequest' && actionConfig.url) {
+      event.waitUntil(fetch(actionConfig.url, { method: 'POST' }));
     }
-
-    const url = event.notification.data.url || '/';
-    const allClients = await clients.matchAll({ type: 'window' });
-
-    // Use includes() for a more flexible URL match
-    let clientToFocus = allClients.find(client => client.url.includes(url));
-
-    if (clientToFocus) {
-      // App is already open, focus the existing tab.
-      return clientToFocus.focus();
-    } else {
-      // App is not open, so open a new window.
-      return clients.openWindow(url);
-    }
-  });
+  } else {
+    // This handles the main body click (action is '') and any other undefined actions.
+    // Use the default URL from the payload or fall back to the root ('/')
+    const defaultUrl = notificationData?.url || '/';
+    event.waitUntil(clients.openWindow(defaultUrl));
+  }
 });
