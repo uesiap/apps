@@ -83,10 +83,10 @@ self.addEventListener('push', event => {
     data: {
       url: data.url || '/'
     },
-    actions: [
-      { action: 'open', title: 'Open' },
-      { action: 'dismiss', title: 'Dismiss' }
-    ]
+    // actions: [
+    //   { action: 'open', title: 'Open' },
+    //   { action: 'dismiss', title: 'Dismiss' }
+    // ]
   };
 
   event.waitUntil(
