@@ -86,7 +86,7 @@ self.addEventListener('push', event => {
   const title = data.title || 'New Message';
   const options = {
     body: data.body || '',
-    icon: '/vidhyardhi-geethavali/Icon192.jpg',
+    icon: '/vidhyarthi-geethavali/Icon192.jpg',
     badge: 'https://whatpwacando.today/src/img/icons/notification.png',
     data: data.url || '/'
   };
