@@ -1,0 +1,28 @@
+name: Bulk Spelling Fix Large Repo
+on:
+  workflow_dispatch:
+
+jobs:
+  fix-spelling:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Bulk Search and Replace Both Cases
+        run: |
+          # This replaces capitalized "Vidhyardhi" with "Vidhyarthi"
+          find . -type f -not -path '*/.*' -exec sed -i 's/Vidhyardhi/Vidhyarthi/g' {} +
+          
+          # This replaces lowercase "vidhyardhi" with "vidhyarthi"
+          find . -type f -not -path '*/.*' -exec sed -i 's/vidhyardhi/vidhyarthi/g' {} +
+
+      - name: Commit and Push Changes back to Repo
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@://github.com'
+          git add -A
+          git diff-index --quiet HEAD || git commit -m "Automated bulk typo fix for both case variations"
+          git push
