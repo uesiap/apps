@@ -1,10 +1,10 @@
-const CACHE_NAME = 'my-cache';
+const CACHE_NAME = 'my-cache-v1';
 const urlsToCache = [
   '/',
   '/apps/uesi/staff-work/',
-  '/vidhyardhi-geethavali/Icon192.jpg',
-  '/vidhyardhi-geethavali/Icon512.jpg',
-  '/vidhyardhi-geethavali/uesisongsmain.jpg'  // Add the splash screen image to the cache
+  '/vidhyarthi-geethavali/Icon192.jpg',
+  '/vidhyarthi-geethavali/Icon512.jpg',
+  '/vidhyarthi-geethavali/uesisongsmain.jpg'  // Add the splash screen image to the cache
 ];
 
 // Install event
