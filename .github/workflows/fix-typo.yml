@@ -2,6 +2,10 @@ name: Bulk Spelling Fix Large Repo
 on:
   workflow_dispatch:
 
+# Added write permission so the bot can push changes back to your repository
+permissions:
+  contents: write
+
 jobs:
   fix-spelling:
     runs-on: ubuntu-latest
@@ -22,7 +26,8 @@ jobs:
       - name: Commit and Push Changes back to Repo
         run: |
           git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@://github.com'
+          # Fixed the invalid email format below
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add -A
           git diff-index --quiet HEAD || git commit -m "Automated bulk typo fix for both case variations"
           git push
