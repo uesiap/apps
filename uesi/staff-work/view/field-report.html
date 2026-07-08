@@ -1073,7 +1073,10 @@
                 row.insertCell(0).textContent = formattedDate;
                 row.insertCell(1).textContent = entry.day;
                 row.insertCell(2).textContent = entry.zone;
-                row.insertCell(3).textContent = entry.purpose;
+                const purposeCell = row.insertCell(3);
+                purposeCell.textContent = Array.isArray(entry.purpose) ? entry.purpose.map((p, i) => `${i + 1}. ${p}`).join('\n') : entry.purpose;
+                purposeCell.style.whiteSpace = 'pre-line';
+                purposeCell.style.textAlign = 'left';
                 row.insertCell(4).innerHTML = `
                     <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
                         <button class="edit-button" onclick="handleEdit(this)">Edit</button>
@@ -1093,7 +1096,12 @@
             // Make cells editable (excluding date and actions columns)
             for (let i = 1; i < cells.length - 1; i++) {
                 const currentText = cells[i].textContent;
-                cells[i].innerHTML = `<input type="text" value="${currentText}" style="width: 100%; border: 1px solid #ccc; padding: 4px; border-radius: 3px;">`;
+                if (i === 3) {
+                    // Purpose column: textarea so multi-line points are editable
+                    cells[i].innerHTML = `<textarea rows="4" style="width: 100%; border: 1px solid #ccc; padding: 4px; border-radius: 3px; resize: vertical;">${currentText}</textarea>`;
+                } else {
+                    cells[i].innerHTML = `<input type="text" value="${currentText}" style="width: 100%; border: 1px solid #ccc; padding: 4px; border-radius: 3px;">`;
+                }
             }
 
             // Toggle buttons
@@ -1154,14 +1162,18 @@
             const cells = row.querySelectorAll('td');
 
             // Get updated values
+            const purposeRaw = cells[3].querySelector('textarea').value.trim();
             const updatedData = {
                 day: cells[1].querySelector('input').value.trim(),
                 zone: cells[2].querySelector('input').value.trim(),
-                purpose: cells[3].querySelector('input').value.trim()
+                purpose: purposeRaw
+                    .split('\n')
+                    .map(line => line.trim().replace(/^\d+\.\s*/, '').replace(/^[\*\-•]\s*/, ''))
+                    .filter(line => line.length > 0)
             };
 
             // Validate input
-            if (!updatedData.day || !updatedData.zone || !updatedData.purpose) {
+            if (!updatedData.day || !updatedData.zone || updatedData.purpose.length === 0) {
                 showNotification('error', 'All fields are required.');
                 return;
             }
@@ -1172,7 +1184,9 @@
                     // Update successful, now update the local UI
                     cells[1].textContent = updatedData.day;
                     cells[2].textContent = updatedData.zone;
-                    cells[3].textContent = updatedData.purpose;
+                    cells[3].textContent = updatedData.purpose.map((p, i) => `${i + 1}. ${p}`).join('\n');
+                    cells[3].style.whiteSpace = 'pre-line';
+                    cells[3].style.textAlign = 'left';
 
                     // Toggle buttons
                     button.style.display = 'none';
