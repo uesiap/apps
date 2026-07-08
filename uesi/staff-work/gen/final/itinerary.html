@@ -557,10 +557,9 @@
 
         // Helper functions
         function isSpecialPurpose(purpose) {
+            const text = Array.isArray(purpose) ? purpose.join(' ') : purpose;
             const specialKeywords = ['day off', 'preparation', 'holidays', 'leave', 'sick'];
-            return specialKeywords.some(keyword =>
-                purpose.toLowerCase().includes(keyword.toLowerCase())
-            );
+            return specialKeywords.some(keyword => text.toLowerCase().includes(keyword.toLowerCase()));
         }
 
         function isConsecutiveDay(date1, date2) {
@@ -569,6 +568,23 @@
             const timeDiff = d2.getTime() - d1.getTime();
             const dayDiff = timeDiff / (1000 * 3600 * 24);
             return dayDiff === 1;
+        }
+
+        function renderPurposeCell(cell, purpose) {
+            if (Array.isArray(purpose)) {
+                const ol = document.createElement('ol');
+                ol.style.textAlign = 'left';
+                ol.style.margin = '0';
+                ol.style.paddingLeft = '1.2em';
+                purpose.forEach(p => {
+                    const li = document.createElement('li');
+                    li.textContent = p;
+                    ol.appendChild(li);
+                });
+                cell.appendChild(ol);
+            } else {
+                cell.textContent = purpose;
+            }
         }
 
         /**
@@ -597,7 +613,7 @@
                 while (j < rawData.length &&
                     !isSpecialPurpose(startData.purpose) &&
                     startData.zone === rawData[j].zone &&
-                    startData.purpose === rawData[j].purpose &&
+                    JSON.stringify(startData.purpose) === JSON.stringify(rawData[j].purpose) &&
                     isConsecutiveDay(rawData[j - 1].date, rawData[j].date)) {
                     groupCount++;
                     j++;
@@ -617,7 +633,7 @@
                 zoneCell.style.textAlign = 'center'; // Centered
 
                 const purposeCell = row.insertCell(4);
-                purposeCell.textContent = startData.purpose;
+                renderPurposeCell(purposeCell, startData.purpose);
                 purposeCell.rowSpan = groupCount;
                 purposeCell.style.verticalAlign = 'middle';
                 purposeCell.style.textAlign = 'center'; // Centered
@@ -712,68 +728,100 @@
         // --- PDF Export (using generated HTML with rowspan) ---
         function generatePDF() {
             showExportLoading();
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
 
-            // Generate HTML content specifically for PDF, including rowspan
-            const pdfHtmlContent = generateExportHtmlContent(processedTableDataForExport, userName, userBase, userState, monthName, selectedYear, 'pdf');
-            const tempDiv = document.createElement('div');
-            tempDiv.style.cssText = `
-                position: absolute;
-                left: -9999px;
-                top: -9999px;
-                display: block !important;
-                /* Adjust width for PDF if necessary to fit content, a bit less than A4 print width */
-                width: 760px; /* Adjusted from 794px, gives some padding */
-                background-color: #fff;
-                padding: 10mm; /* Use mm for consistent print size */
-                box-sizing: border-box;
-                font-family: 'Times New Roman', Times, serif; /* Apply Times New Roman for PDF */
-                color: #000;
-                line-height: 1.2; /* Tighter line height */
-            `;
-            tempDiv.innerHTML = pdfHtmlContent;
-            document.body.appendChild(tempDiv);
+                function purposeText(p) {
+                    return Array.isArray(p) ? p.map((x, i) => `${i + 1}. ${x}`).join('\n') : p;
+                }
+                function fmtDate(dateStr) {
+                    const d = new Date(dateStr + 'T12:00:00');
+                    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                }
 
-            setTimeout(() => {
-                html2canvas(tempDiv, {
-                    scale: 2, // Keep scale high for better resolution
-                    logging: false,
-                    useCORS: true,
-                    windowWidth: tempDiv.scrollWidth,
-                    windowHeight: tempDiv.scrollHeight
-                }).then(canvas => {
-                    const imgData = canvas.toDataURL('image/png');
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF('p', 'mm', 'a4');
-                    const imgWidth = 210; // A4 width in mm
-                    const pageHeight = 297; // A4 height in mm
-                    const imgHeight = canvas.height * imgWidth / canvas.width; // Calculate image height to maintain aspect ratio
-                    let heightLeft = imgHeight;
-                    let position = 0;
-
-                    // Add image to PDF
-                    doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-
-                    // If content exceeds one page, add more pages
-                    while (heightLeft > 0) {
-                        position = heightLeft - pageHeight;
-                        doc.addPage();
-                        doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                        heightLeft -= pageHeight;
+                const body = [];
+                processedTableDataForExport.forEach(item => {
+                    if (item.type === 'firstInGroup') {
+                        body.push([
+                            item.slNoStart,
+                            fmtDate(item.date),
+                            item.day,
+                            { content: item.zone, rowSpan: item.count },
+                            { content: purposeText(item.purpose), rowSpan: item.count }
+                        ]);
+                    } else {
+                        body.push([item.slNo, fmtDate(item.date), item.day]);
                     }
-
-                    doc.save(`${userName} Itinerary ${monthName} ${selectedYear}.pdf`);
-                    document.body.removeChild(tempDiv);
-                    hideExportLoading();
-                }).catch(error => {
-                    console.error("Error generating PDF:", error);
-                    alert("Failed to generate PDF. Please try again.");
-                    if (tempDiv.parentNode) {
-                        document.body.removeChild(tempDiv);
-                    }
-                    hideExportLoading();
                 });
-            }, 100);
+
+                const head = [
+                    [{ content: `Union of Evangelical Students of India - ${userState}`, colSpan: 5 }],
+                    [{ content: `ITINERARY - ${monthName ? monthName.toUpperCase() : ''} ${selectedYear}`, colSpan: 5 }],
+                    [{ content: `NAME: ${userName}      Base: ${userBase}`, colSpan: 5 }],
+                    ['Sl. No', 'Date', 'DAY', 'Zone / Division', 'Purpose']
+                ];
+
+                doc.autoTable({
+                    startY: 12,
+                    head,
+                    body,
+                    theme: 'grid',
+                    styles: {
+                        font: 'times',
+                        fontSize: 9,
+                        valign: 'middle',
+                        halign: 'center',
+                        lineColor: [68, 68, 68],
+                        lineWidth: 0.2,
+                        cellPadding: 2,
+                        textColor: [0, 0, 0]
+                    },
+                    headStyles: {
+                        fillColor: [255, 255, 255],
+                        textColor: [0, 0, 0],
+                        fontStyle: 'bold',
+                        lineColor: [68, 68, 68],
+                        lineWidth: 0.2
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 12 },
+                        1: { cellWidth: 20 },
+                        2: { cellWidth: 22 },
+                        3: { cellWidth: 28 },
+                        4: { halign: 'left', cellWidth: 'auto' }
+                    },
+                    rowPageBreak: 'avoid',
+                    didParseCell: function (data) {
+                        if (data.section === 'head') {
+                            if (data.row.index === 0) {
+                                data.cell.styles.fontSize = 12;
+                                data.cell.styles.fontStyle = 'bold';
+                                data.cell.styles.textColor = [0, 0, 0];
+                            } else if (data.row.index === 1) {
+                                data.cell.styles.fontSize = 15;
+                                data.cell.styles.fontStyle = 'bold';
+                                data.cell.styles.textColor = [7, 94, 84];
+                            } else if (data.row.index === 2) {
+                                data.cell.styles.fontSize = 12;
+                                data.cell.styles.fontStyle = 'bold';
+                                data.cell.styles.textColor = [0, 0, 0];
+                            } else if (data.row.index === 3) {
+                                data.cell.styles.fontSize = 10;
+                                data.cell.styles.fontStyle = 'bold';
+                                data.cell.styles.fillColor = [242, 242, 242];
+                                data.cell.styles.textColor = [0, 0, 0];
+                            }
+                        }
+                    }
+                });
+
+                doc.save(`${userName} Itinerary ${monthName} ${selectedYear}.pdf`);
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                alert("Failed to generate PDF. Please try again.");
+            }
+            hideExportLoading();
         }
 
         // --- Excel Export (with actual cell merging) ---
@@ -816,7 +864,7 @@
                         rowData.push(`${String(formattedDate.getDate()).padStart(2, '0')}/${String(formattedDate.getMonth() + 1).padStart(2, '0')}/${formattedDate.getFullYear()}`);
                         rowData.push(item.day);
                         rowData.push(item.zone);
-                        rowData.push(item.purpose);
+                        rowData.push(Array.isArray(item.purpose) ? item.purpose.map((x,i) => `${i+1}. ${x}`).join('\n') : item.purpose);
 
                         // Add merge info for Zone and Purpose columns
                         if (item.count > 1) {
@@ -906,8 +954,10 @@
                             // Alignment for data cells
                             if (C >= 0 && C <= 2) { // Sl. No, Date, Day
                                 ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'top' };
-                            } else if (C >= 3 && C <= 4) { // Zone / Division, Purpose
-                                ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'top' }; // Changed to center
+                            } else if (C === 3) { // Zone / Division
+                                ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'top' };
+                            } else if (C === 4) { // Purpose
+                                ws[cellAddress].s.alignment = { horizontal: 'left', vertical: 'top', wrapText: true };
                             }
                         }
                     }
@@ -962,6 +1012,14 @@
                 alert("Failed to generate Word document. Please try again.");
                 hideExportLoading();
             }
+        }
+
+        function purposeHtml(p) {
+            if (Array.isArray(p)) {
+                return '<ol style="text-align:left; margin:0; padding-left:1.2em;">' +
+                    p.map(x => `<li>${x}</li>`).join('') + '</ol>';
+            }
+            return p;
         }
 
         /**
@@ -1046,7 +1104,7 @@
 
                 if (item.type === 'firstInGroup') {
                     tableHtml += `<td rowspan="${item.count}" style="${cellStyles} vertical-align:middle; width:${specifiedColWidths["Zone / Division"]};">${item.zone}</td>`;
-                    tableHtml += `<td rowspan="${item.count}" style="${cellStyles} vertical-align:middle; width:${specifiedColWidths["Purpose"]};">${item.purpose}</td>`;
+                    tableHtml += `<td rowspan="${item.count}" style="${cellStyles} vertical-align:middle; width:${specifiedColWidths["Purpose"]};">${purposeHtml(item.purpose)}</td>`;
                 }
 
                 tableHtml += '</tr>';
