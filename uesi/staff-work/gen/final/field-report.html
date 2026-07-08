@@ -727,57 +727,91 @@
 
         // --- PDF Export (using generated HTML with rowspan) ---
         function generatePDF() {
-        showExportLoading();
-        try {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
-    
-            doc.setFont('times', 'bold');
-            doc.setFontSize(13);
-            doc.text(`Union of Evangelical Students of India - ${userState}`, 105, 12, { align: 'center' });
-            doc.setFontSize(15);
-            doc.text(`FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}`, 105, 20, { align: 'center' });
-            doc.setFontSize(12);
-            doc.text(`NAME: ${userName}     Base: ${userBase}`, 105, 27, { align: 'center' });
-    
-            function purposeText(p) {
-                return Array.isArray(p) ? p.map((x, i) => `${i + 1}. ${x}`).join('\n') : p;
-            }
-            function fmtDate(dateStr) {
-                const d = new Date(dateStr + 'T12:00:00');
-                return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-            }
-    
-            const body = [];
-            processedTableDataForExport.forEach(item => {
-                if (item.type === 'firstInGroup') {
-                    body.push([
-                        item.slNoStart, fmtDate(item.date), item.day,
-                        { content: item.zone, rowSpan: item.count },
-                        { content: purposeText(item.purpose), rowSpan: item.count }
-                    ]);
-                } else {
-                    body.push([item.slNo, fmtDate(item.date), item.day]);
+            showExportLoading();
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+        
+                // --- Header text ---
+                doc.setFont('times', 'bold');
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(13);
+                doc.text(`Union of Evangelical Students of India - ${userState}`, 105, 12, { align: 'center' });
+        
+                doc.setTextColor(7, 94, 84); // matches --primary-color #075E54
+                doc.setFontSize(16);
+                doc.text(`FIELD REPORT - ${monthName ? monthName.toUpperCase() : ''} ${selectedYear}`, 105, 20, { align: 'center' });
+        
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(13);
+                doc.text(`NAME: ${userName}     Base: ${userBase}`, 105, 28, { align: 'center' });
+        
+                // --- Helpers ---
+                function purposeText(p) {
+                    return Array.isArray(p) ? p.map((x, i) => `${i + 1}. ${x}`).join('\n') : p;
                 }
-            });
-    
-            doc.autoTable({
-                startY: 32,
-                head: [['Sl. No', 'Date', 'Day', 'Zone / Division', 'Purpose']],
-                body,
-                styles: { font: 'times', fontSize: 9, valign: 'middle', halign: 'center', lineColor: [68,68,68], lineWidth: 0.1 },
-                headStyles: { fillColor: [242,242,242], textColor: 0, fontStyle: 'bold' },
-                columnStyles: { 4: { halign: 'left', cellWidth: 90 } },
-                rowPageBreak: 'avoid'   // <-- this is what stops rows being sliced across pages
-            });
-    
-            doc.save(`${userName} Field Report ${monthName} ${selectedYear}.pdf`);
-        } catch (error) {
-            console.error("Error generating PDF:", error);
-            alert("Failed to generate PDF. Please try again.");
+                function fmtDate(dateStr) {
+                    const d = new Date(dateStr + 'T12:00:00');
+                    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                }
+        
+                // --- Build table body from processedTableDataForExport ---
+                const body = [];
+                processedTableDataForExport.forEach(item => {
+                    if (item.type === 'firstInGroup') {
+                        body.push([
+                            item.slNoStart,
+                            fmtDate(item.date),
+                            item.day,
+                            { content: item.zone, rowSpan: item.count },
+                            { content: purposeText(item.purpose), rowSpan: item.count }
+                        ]);
+                    } else {
+                        body.push([item.slNo, fmtDate(item.date), item.day]);
+                    }
+                });
+        
+                // --- Render table ---
+                doc.autoTable({
+                    startY: 33,
+                    head: [['Sl. No', 'Date', 'Day', 'Zone / Division', 'Purpose']],
+                    body,
+                    theme: 'grid',
+                    styles: {
+                        font: 'times',
+                        fontSize: 9,
+                        valign: 'middle',
+                        halign: 'center',
+                        lineColor: [68, 68, 68],
+                        lineWidth: 0.2,
+                        cellPadding: 2,
+                        textColor: [0, 0, 0]
+                    },
+                    headStyles: {
+                        fillColor: [242, 242, 242],
+                        textColor: [0, 0, 0],
+                        fontStyle: 'bold',
+                        fontSize: 10,
+                        lineColor: [68, 68, 68],
+                        lineWidth: 0.2
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 12 },
+                        1: { cellWidth: 20 },
+                        2: { cellWidth: 22 },
+                        3: { cellWidth: 28 },
+                        4: { halign: 'left', cellWidth: 'auto' }
+                    },
+                    rowPageBreak: 'avoid'
+                });
+        
+                doc.save(`${userName} Field Report ${monthName} ${selectedYear}.pdf`);
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                alert("Failed to generate PDF. Please try again.");
+            }
+            hideExportLoading();
         }
-        hideExportLoading();
-    }
 
         // --- Excel Export (with actual cell merging) ---
         function generateExcel() {
