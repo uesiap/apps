@@ -557,10 +557,9 @@
 
         // Helper functions
         function isSpecialPurpose(purpose) {
+            const text = Array.isArray(purpose) ? purpose.join(' ') : purpose;
             const specialKeywords = ['day off', 'preparation', 'holidays', 'leave', 'sick'];
-            return specialKeywords.some(keyword =>
-                purpose.toLowerCase().includes(keyword.toLowerCase())
-            );
+            return specialKeywords.some(keyword => text.toLowerCase().includes(keyword.toLowerCase()));
         }
 
         function isConsecutiveDay(date1, date2) {
@@ -569,6 +568,23 @@
             const timeDiff = d2.getTime() - d1.getTime();
             const dayDiff = timeDiff / (1000 * 3600 * 24);
             return dayDiff === 1;
+        }
+
+        function renderPurposeCell(cell, purpose) {
+            if (Array.isArray(purpose)) {
+                const ol = document.createElement('ol');
+                ol.style.textAlign = 'left';
+                ol.style.margin = '0';
+                ol.style.paddingLeft = '1.2em';
+                purpose.forEach(p => {
+                    const li = document.createElement('li');
+                    li.textContent = p;
+                    ol.appendChild(li);
+                });
+                cell.appendChild(ol);
+            } else {
+                cell.textContent = purpose;
+            }
         }
 
         /**
@@ -597,7 +613,7 @@
                 while (j < rawData.length &&
                     !isSpecialPurpose(startData.purpose) &&
                     startData.zone === rawData[j].zone &&
-                    startData.purpose === rawData[j].purpose &&
+                    JSON.stringify(startData.purpose) === JSON.stringify(rawData[j].purpose) &&
                     isConsecutiveDay(rawData[j - 1].date, rawData[j].date)) {
                     groupCount++;
                     j++;
@@ -617,7 +633,7 @@
                 zoneCell.style.textAlign = 'center'; // Centered
 
                 const purposeCell = row.insertCell(4);
-                purposeCell.textContent = startData.purpose;
+                renderPurposeCell(purposeCell, startData.purpose);
                 purposeCell.rowSpan = groupCount;
                 purposeCell.style.verticalAlign = 'middle';
                 purposeCell.style.textAlign = 'center'; // Centered
@@ -815,7 +831,7 @@
                         const formattedDate = new Date(item.date + 'T12:00:00');
                         rowData.push(`${String(formattedDate.getDate()).padStart(2, '0')}/${String(formattedDate.getMonth() + 1).padStart(2, '0')}/${formattedDate.getFullYear()}`);
                         rowData.push(item.day);
-                        rowData.push(item.zone);
+                        rowData.push(Array.isArray(item.purpose) ? item.purpose.map((x,i) => `${i+1}. ${x}`).join('\n') : item.purpose);
                         rowData.push(item.purpose);
 
                         // Add merge info for Zone and Purpose columns
@@ -906,8 +922,10 @@
                             // Alignment for data cells
                             if (C >= 0 && C <= 2) { // Sl. No, Date, Day
                                 ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'top' };
-                            } else if (C >= 3 && C <= 4) { // Zone / Division, Purpose
-                                ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'top' }; // Changed to center
+                            } else if (C === 3) { // Zone / Division
+                                ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'top' };
+                            } else if (C === 4) { // Purpose
+                                ws[cellAddress].s.alignment = { horizontal: 'left', vertical: 'top', wrapText: true };
                             }
                         }
                     }
@@ -962,6 +980,14 @@
                 alert("Failed to generate Word document. Please try again.");
                 hideExportLoading();
             }
+        }
+
+        function purposeHtml(p) {
+            if (Array.isArray(p)) {
+                return '<ol style="text-align:left; margin:0; padding-left:1.2em;">' +
+                    p.map(x => `<li>${x}</li>`).join('') + '</ol>';
+            }
+            return p;
         }
 
         /**
@@ -1046,7 +1072,7 @@
 
                 if (item.type === 'firstInGroup') {
                     tableHtml += `<td rowspan="${item.count}" style="${cellStyles} vertical-align:middle; width:${specifiedColWidths["Zone / Division"]};">${item.zone}</td>`;
-                    tableHtml += `<td rowspan="${item.count}" style="${cellStyles} vertical-align:middle; width:${specifiedColWidths["Purpose"]};">${item.purpose}</td>`;
+                    tableHtml += `<td rowspan="${item.count}" style="${cellStyles} vertical-align:middle; width:${specifiedColWidths["Purpose"]};">${purposeHtml(item.purpose)}</td>`;
                 }
 
                 tableHtml += '</tr>';
