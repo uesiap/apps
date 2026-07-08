@@ -727,70 +727,57 @@
 
         // --- PDF Export (using generated HTML with rowspan) ---
         function generatePDF() {
-            showExportLoading();
-
-            // Generate HTML content specifically for PDF, including rowspan
-            const pdfHtmlContent = generateExportHtmlContent(processedTableDataForExport, userName, userBase, userState, monthName, selectedYear, 'pdf');
-            const tempDiv = document.createElement('div');
-            tempDiv.style.cssText = `
-                position: absolute;
-                left: -9999px;
-                top: -9999px;
-                display: block !important;
-                /* Adjust width for PDF if necessary to fit content, a bit less than A4 print width */
-                width: 760px; /* Adjusted from 794px, gives some padding */
-                background-color: #fff;
-                padding: 10mm; /* Use mm for consistent print size */
-                box-sizing: border-box;
-                font-family: 'Times New Roman', Times, serif; /* Apply Times New Roman for PDF */
-                color: #000;
-                line-height: 1.2; /* Tighter line height */
-            `;
-            tempDiv.innerHTML = pdfHtmlContent;
-            document.body.appendChild(tempDiv);
-
-            setTimeout(() => {
-                html2canvas(tempDiv, {
-                    scale: 2, // Keep scale high for better resolution
-                    logging: false,
-                    useCORS: true,
-                    windowWidth: tempDiv.scrollWidth,
-                    windowHeight: tempDiv.scrollHeight
-                }).then(canvas => {
-                    const imgData = canvas.toDataURL('image/png');
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF('p', 'mm', 'a4');
-                    const imgWidth = 210; // A4 width in mm
-                    const pageHeight = 297; // A4 height in mm
-                    const imgHeight = canvas.height * imgWidth / canvas.width; // Calculate image height to maintain aspect ratio
-                    let heightLeft = imgHeight;
-                    let position = 0;
-
-                    // Add image to PDF
-                    doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-
-                    // If content exceeds one page, add more pages
-                    while (heightLeft > 0) {
-                        position = heightLeft - pageHeight;
-                        doc.addPage();
-                        doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                        heightLeft -= pageHeight;
-                    }
-
-                    doc.save(`${userName} Field Report ${monthName} ${selectedYear}.pdf`);
-                    document.body.removeChild(tempDiv);
-                    hideExportLoading();
-                }).catch(error => {
-                    console.error("Error generating PDF:", error);
-                    alert("Failed to generate PDF. Please try again.");
-                    if (tempDiv.parentNode) {
-                        document.body.removeChild(tempDiv);
-                    }
-                    hideExportLoading();
-                });
-            }, 100);
+        showExportLoading();
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+    
+            doc.setFont('times', 'bold');
+            doc.setFontSize(13);
+            doc.text(`Union of Evangelical Students of India - ${userState}`, 105, 12, { align: 'center' });
+            doc.setFontSize(15);
+            doc.text(`FIELD REPORT - ${monthName.toUpperCase()} ${selectedYear}`, 105, 20, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text(`NAME: ${userName}     Base: ${userBase}`, 105, 27, { align: 'center' });
+    
+            function purposeText(p) {
+                return Array.isArray(p) ? p.map((x, i) => `${i + 1}. ${x}`).join('\n') : p;
+            }
+            function fmtDate(dateStr) {
+                const d = new Date(dateStr + 'T12:00:00');
+                return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+            }
+    
+            const body = [];
+            processedTableDataForExport.forEach(item => {
+                if (item.type === 'firstInGroup') {
+                    body.push([
+                        item.slNoStart, fmtDate(item.date), item.day,
+                        { content: item.zone, rowSpan: item.count },
+                        { content: purposeText(item.purpose), rowSpan: item.count }
+                    ]);
+                } else {
+                    body.push([item.slNo, fmtDate(item.date), item.day]);
+                }
+            });
+    
+            doc.autoTable({
+                startY: 32,
+                head: [['Sl. No', 'Date', 'Day', 'Zone / Division', 'Purpose']],
+                body,
+                styles: { font: 'times', fontSize: 9, valign: 'middle', halign: 'center', lineColor: [68,68,68], lineWidth: 0.1 },
+                headStyles: { fillColor: [242,242,242], textColor: 0, fontStyle: 'bold' },
+                columnStyles: { 4: { halign: 'left', cellWidth: 90 } },
+                rowPageBreak: 'avoid'   // <-- this is what stops rows being sliced across pages
+            });
+    
+            doc.save(`${userName} Field Report ${monthName} ${selectedYear}.pdf`);
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            alert("Failed to generate PDF. Please try again.");
         }
+        hideExportLoading();
+    }
 
         // --- Excel Export (with actual cell merging) ---
         function generateExcel() {
