@@ -1184,16 +1184,15 @@
         // Firebase data fetching with improved row merging logic
         if (userEmail && userEmail !== 'sample@test.com') {
             const safeUserEmail = userEmail.replace(/\./g, '_');
-            const fieldReportRef = database.ref(`apps/uesi/staff-work/users/${safeUserEmail}/userData/Field_Report`);
+            const paddedMonth = String(selectedMonthNum).padStart(2, '0');
+            const fieldReportRef = database.ref(`apps/uesi/staff-work/users/${safeUserEmail}/userData/Field_Report/${selectedYear}/${paddedMonth}`);
 
             if (fieldReportRef && selectedYear && selectedMonthNum) {
                 document.getElementById('loader').style.display = 'block';
                 document.getElementById('exportReportBtn').style.display = 'none';
 
-                fieldReportRef.orderByKey()
-                    .startAt(`${selectedYear}-${String(selectedMonthNum).padStart(2, '0')}-01`)
-                    .endAt(`${selectedYear}-${String(selectedMonthNum).padStart(2, '0')}-31`)
-                    .once('value', function (snapshot) {
+                fieldReportRef
+                        .once('value', function (snapshot) {
                         document.getElementById('loader').style.display = 'none';
 
                         const rawData = [];
