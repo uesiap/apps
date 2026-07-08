@@ -732,16 +732,44 @@
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'a4');
         
-                // --- Helpers ---
-                function purposeText(p) {
-                    return Array.isArray(p) ? p.map((x, i) => `${i + 1}. ${x}`).join('\n') : p;
+                // Match these to your table's actual body font settings
+                doc.setFont('times', 'normal');
+                doc.setFontSize(9);
+        
+                const CELL_PADDING = 2;
+                const PURPOSE_COL_WIDTH = 104; // must match columnStyles[4].cellWidth below
+        
+                // Builds hanging-indent text: wrapped/continuation lines align under the text, not the number
+                function formatPurposeForPDF(p) {
+                    if (!Array.isArray(p)) return p;
+                    const maxWidth = PURPOSE_COL_WIDTH - (CELL_PADDING * 2);
+                    const spaceWidth = doc.getTextWidth(' ');
+                    const lines = [];
+        
+                    p.forEach((point, idx) => {
+                        const prefix = `${idx + 1}. `;
+                        const indent = doc.getTextWidth(prefix);
+                        const wrapWidth = maxWidth - indent;
+                        const wrapped = doc.splitTextToSize(point, wrapWidth);
+        
+                        wrapped.forEach((line, li) => {
+                            if (li === 0) {
+                                lines.push(prefix + line);
+                            } else {
+                                const numSpaces = Math.max(0, Math.round(indent / spaceWidth));
+                                lines.push(' '.repeat(numSpaces) + line);
+                            }
+                        });
+                    });
+        
+                    return lines.join('\n');
                 }
+        
                 function fmtDate(dateStr) {
                     const d = new Date(dateStr + 'T12:00:00');
                     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
                 }
         
-                // --- Build table body ---
                 const body = [];
                 processedTableDataForExport.forEach(item => {
                     if (item.type === 'firstInGroup') {
@@ -750,14 +778,13 @@
                             fmtDate(item.date),
                             item.day,
                             { content: item.zone, rowSpan: item.count },
-                            { content: purposeText(item.purpose), rowSpan: item.count }
+                            { content: formatPurposeForPDF(item.purpose), rowSpan: item.count }
                         ]);
                     } else {
                         body.push([item.slNo, fmtDate(item.date), item.day]);
                     }
                 });
         
-                // --- Banner rows + real column header, all as part of `head` ---
                 const head = [
                     [{ content: `Union of Evangelical Students of India - ${userState}`, colSpan: 5 }],
                     [{ content: `FIELD REPORT - ${monthName ? monthName.toUpperCase() : ''} ${selectedYear}`, colSpan: 5 }],
@@ -777,7 +804,7 @@
                         halign: 'center',
                         lineColor: [68, 68, 68],
                         lineWidth: 0.2,
-                        cellPadding: 2,
+                        cellPadding: CELL_PADDING,
                         textColor: [0, 0, 0]
                     },
                     headStyles: {
@@ -792,28 +819,24 @@
                         1: { cellWidth: 20 },
                         2: { cellWidth: 22 },
                         3: { cellWidth: 28 },
-                        4: { halign: 'left', cellWidth: 'auto' }
+                        4: { halign: 'left', cellWidth: PURPOSE_COL_WIDTH }
                     },
                     rowPageBreak: 'avoid',
                     didParseCell: function (data) {
                         if (data.section === 'head') {
                             if (data.row.index === 0) {
-                                // Org name row
                                 data.cell.styles.fontSize = 12;
                                 data.cell.styles.fontStyle = 'bold';
                                 data.cell.styles.textColor = [0, 0, 0];
                             } else if (data.row.index === 1) {
-                                // Title row
                                 data.cell.styles.fontSize = 15;
                                 data.cell.styles.fontStyle = 'bold';
-                                data.cell.styles.textColor = [7, 94, 84]; // --primary-color
+                                data.cell.styles.textColor = [7, 94, 84];
                             } else if (data.row.index === 2) {
-                                // Name / Base row
                                 data.cell.styles.fontSize = 12;
                                 data.cell.styles.fontStyle = 'bold';
                                 data.cell.styles.textColor = [0, 0, 0];
                             } else if (data.row.index === 3) {
-                                // Actual column header row
                                 data.cell.styles.fontSize = 10;
                                 data.cell.styles.fontStyle = 'bold';
                                 data.cell.styles.fillColor = [242, 242, 242];
