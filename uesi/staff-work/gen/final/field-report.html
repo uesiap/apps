@@ -732,20 +732,6 @@
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'a4');
         
-                // --- Header text ---
-                doc.setFont('times', 'bold');
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(13);
-                doc.text(`Union of Evangelical Students of India - ${userState}`, 105, 12, { align: 'center' });
-        
-                doc.setTextColor(7, 94, 84); // matches --primary-color #075E54
-                doc.setFontSize(16);
-                doc.text(`FIELD REPORT - ${monthName ? monthName.toUpperCase() : ''} ${selectedYear}`, 105, 20, { align: 'center' });
-        
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(13);
-                doc.text(`NAME: ${userName}     Base: ${userBase}`, 105, 28, { align: 'center' });
-        
                 // --- Helpers ---
                 function purposeText(p) {
                     return Array.isArray(p) ? p.map((x, i) => `${i + 1}. ${x}`).join('\n') : p;
@@ -755,7 +741,7 @@
                     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
                 }
         
-                // --- Build table body from processedTableDataForExport ---
+                // --- Build table body ---
                 const body = [];
                 processedTableDataForExport.forEach(item => {
                     if (item.type === 'firstInGroup') {
@@ -771,10 +757,17 @@
                     }
                 });
         
-                // --- Render table ---
+                // --- Banner rows + real column header, all as part of `head` ---
+                const head = [
+                    [{ content: `Union of Evangelical Students of India - ${userState}`, colSpan: 5 }],
+                    [{ content: `FIELD REPORT - ${monthName ? monthName.toUpperCase() : ''} ${selectedYear}`, colSpan: 5 }],
+                    [{ content: `NAME: ${userName}      Base: ${userBase}`, colSpan: 5 }],
+                    ['Sl. No', 'Date', 'Day', 'Zone / Division', 'Purpose']
+                ];
+        
                 doc.autoTable({
-                    startY: 33,
-                    head: [['Sl. No', 'Date', 'Day', 'Zone / Division', 'Purpose']],
+                    startY: 12,
+                    head,
                     body,
                     theme: 'grid',
                     styles: {
@@ -788,10 +781,9 @@
                         textColor: [0, 0, 0]
                     },
                     headStyles: {
-                        fillColor: [242, 242, 242],
+                        fillColor: [255, 255, 255],
                         textColor: [0, 0, 0],
                         fontStyle: 'bold',
-                        fontSize: 10,
                         lineColor: [68, 68, 68],
                         lineWidth: 0.2
                     },
@@ -802,7 +794,33 @@
                         3: { cellWidth: 28 },
                         4: { halign: 'left', cellWidth: 'auto' }
                     },
-                    rowPageBreak: 'avoid'
+                    rowPageBreak: 'avoid',
+                    didParseCell: function (data) {
+                        if (data.section === 'head') {
+                            if (data.row.index === 0) {
+                                // Org name row
+                                data.cell.styles.fontSize = 12;
+                                data.cell.styles.fontStyle = 'bold';
+                                data.cell.styles.textColor = [0, 0, 0];
+                            } else if (data.row.index === 1) {
+                                // Title row
+                                data.cell.styles.fontSize = 15;
+                                data.cell.styles.fontStyle = 'bold';
+                                data.cell.styles.textColor = [7, 94, 84]; // --primary-color
+                            } else if (data.row.index === 2) {
+                                // Name / Base row
+                                data.cell.styles.fontSize = 12;
+                                data.cell.styles.fontStyle = 'bold';
+                                data.cell.styles.textColor = [0, 0, 0];
+                            } else if (data.row.index === 3) {
+                                // Actual column header row
+                                data.cell.styles.fontSize = 10;
+                                data.cell.styles.fontStyle = 'bold';
+                                data.cell.styles.fillColor = [242, 242, 242];
+                                data.cell.styles.textColor = [0, 0, 0];
+                            }
+                        }
+                    }
                 });
         
                 doc.save(`${userName} Field Report ${monthName} ${selectedYear}.pdf`);
