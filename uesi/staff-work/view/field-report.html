@@ -823,27 +823,31 @@
                 return;
             }
 
-            snapshot.forEach(function (dateSnapshot) {
-                const dateKey = dateSnapshot.key;
-                const dateData = dateSnapshot.val();
+            snapshot.forEach(function (yearSnapshot) {
+                yearSnapshot.forEach(function (monthSnapshot) {
+                    monthSnapshot.forEach(function (dateSnapshot) {
+                        const dateKey = dateSnapshot.key;
+                        const dateData = dateSnapshot.val();
 
-                // Validate date format
-                const dateObj = new Date(dateKey + 'T12:00:00');
+                        // Validate date format
+                        const dateObj = new Date(dateKey + 'T12:00:00');
 
-                if (!isNaN(dateObj)) {
-                    allData.push({
-                        id: dateKey,
-                        date: dateKey,
-                        day: dateData.day || 'Unknown',
-                        zone: dateData.zone || 'Not specified',
-                        purpose: dateData.purpose || 'No purpose specified'
+                        if (!isNaN(dateObj)) {
+                            allData.push({
+                                id: `${yearSnapshot.key}/${monthSnapshot.key}/${dateKey}`,
+                                date: dateKey,
+                                day: dateData.day || 'Unknown',
+                                zone: dateData.zone || 'Not specified',
+                                purpose: dateData.purpose || 'No purpose specified'
+                            });
+
+                            monthsSet.add(dateObj.getMonth());
+                            yearsSet.add(dateObj.getFullYear());
+                        } else {
+                            console.warn('Invalid date format:', dateKey);
+                        }
                     });
-
-                    monthsSet.add(dateObj.getMonth());
-                    yearsSet.add(dateObj.getFullYear());
-                } else {
-                    console.warn('Invalid date format:', dateKey);
-                }
+                });
             });
 
             if (allData.length === 0) {
