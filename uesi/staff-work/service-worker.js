@@ -1,100 +1,112 @@
-const CACHE_NAME = 'my-cache-v1';
+
+const CACHE_NAME = 'uesi-staff-work-cache-v2';
+const APP_URL = 'https://uesiap.github.io/apps/uesi/staff-work/';
 const urlsToCache = [
   'https://uesiap.github.io/',
-  'https://uesiap.github.io/apps/uesi/staff-work/',
+  APP_URL,
   'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg',
   'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/icon512.jpg',
-  'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesiSplash.jpg'  // Add the splash screen image to the cache
+  'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesiSplash.jpg'
 ];
 
 // Install event
 self.addEventListener('install', event => {
-  console.log('Service Worker: Installing');
-  // Perform install steps
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Service Worker: Cache opened');
-        return cache.addAll(urlsToCache);
-      })
+      .then(cache => cache.addAll(urlsToCache))
+      .then(() => self.skipWaiting())
   );
 });
 
 // Activate event
 self.addEventListener('activate', event => {
-  console.log('Service Worker: Activating');
-  // Remove old caches
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Service Worker: Clearing old cache');
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches.keys()
+      .then(cacheNames =>
+        Promise.all(
+          cacheNames
+            .filter(name =>
+              name.startsWith('uesi-staff-work-cache-') &&
+              name !== CACHE_NAME
+            )
+            .map(name => caches.delete(name))
+        )
+      )
+      .then(() => self.clients.claim())
   );
 });
 
 // Fetch event
 self.addEventListener('fetch', event => {
-  console.log('Service Worker: Fetching');
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
     caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
-          console.log('Service Worker: Cache hit');
-          return response;
-        }
+      .then(cached => {
+        if (cached) return cached;
 
-        // Clone the request because it's a stream
-        const fetchRequest = event.request.clone();
-
-        return fetch(fetchRequest).then(
-          response => {
-            // Check if we received a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              console.log('Service Worker: Invalid response');
-              return response;
-            }
-
-            // Clone the response because it's a stream
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                console.log('Service Worker: Caching new resource');
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
+        return fetch(event.request).then(response => {
+          if (
+            response &&
+            response.status === 200 &&
+            response.type === 'basic'
+          ) {
+            const copy = response.clone();
+            event.waitUntil(
+              caches.open(CACHE_NAME)
+                .then(cache => cache.put(event.request, copy))
+            );
           }
-        );
-      })
-      .catch(error => {
-        console.error('Service Worker: Fetch error:', error);
+
+          return response;
+        });
       })
   );
 });
 
-// Push Notification Event
+// Push notification event
 self.addEventListener('push', event => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'New Message';
+  let data = {};
+
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = {
+      body: event.data ? event.data.text() : ''
+    };
+  }
+
+  const title = data.title || 'UESI Staff Work Reminder';
   const options = {
-    body: data.body || '',
+    body: data.body || 'Please open Staff Work to check your reminder.',
     icon: 'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg',
-    badge: 'https://whatpwacando.today/src/img/icons/notification.png',
-    data: data.url || '/'
+    badge: 'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg',
+    data: {
+      url: data.url || APP_URL
+    }
   };
-  event.waitUntil(self.registration.showNotification(title, options));
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
 });
 
-// Click event for notification
+// Notification click
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  event.waitUntil(clients.openWindow(event.notification.data));
+
+  const targetUrl = event.notification.data?.url || APP_URL;
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(windowClients => {
+        for (const client of windowClients) {
+          if (client.url.startsWith(APP_URL) && 'focus' in client) {
+            return client.navigate(targetUrl).then(() => client.focus());
+          }
+        }
+
+        return clients.openWindow(targetUrl);
+      })
+  );
 });
