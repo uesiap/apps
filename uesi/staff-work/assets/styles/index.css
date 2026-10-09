@@ -1,0 +1,110 @@
+/* =========================================================
+   index.css - home page only.
+   Shared theme and components live in common.css.
+   ========================================================= */
+
+/* ---------- Login gate ---------- */
+.auth-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--brand);
+    color: #fff;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: calc(var(--header-h) + var(--safe-top) + 24px) 24px calc(var(--safe-bottom) + 32px);
+    display: flex;
+}
+
+.auth-icon {
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    margin-bottom: 24px;
+}
+
+.auth-title {
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.auth-text {
+    opacity: 0.9;
+    margin-bottom: 32px;
+}
+
+.auth-inner {
+    width: 100%;
+    max-width: 340px;
+}
+
+/* ---------- Greeting ---------- */
+.greet {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
+    max-width: 100%;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--brand-50);
+    color: var(--brand);
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+}
+
+.greet strong {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+/* ---------- Install card ---------- */
+.install-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border-radius: var(--radius-lg);
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-1);
+}
+
+.install-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.install-text {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.install-text strong {
+    display: block;
+    font-size: 0.95rem;
+}
+
+.install-text span {
+    color: var(--muted);
+}
+
+.btn-dismiss {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--muted);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}

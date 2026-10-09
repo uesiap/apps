@@ -1,509 +1,109 @@
+---
+---
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <script>
-        (function () {
-            // Keys to retain in localStorage (added 'reportBase' and 'reportState')
-            const keysToRetain = ["bbsRole", "bbsName", "reportBase", "reportState"];
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-            // Retrieve the values of the keys to retain
-            const valuesToRetain = {};
-            keysToRetain.forEach((key) => {
-                const value = localStorage.getItem(key);
-                if (value !== null) {
-                    valuesToRetain[key] = value;
-                }
-            });
+    <!-- Keep staff pages out of search results and stop URLs leaking via referrer -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet" />
+    <meta name="referrer" content="no-referrer" />
 
-            // Clear all keys in localStorage except the specified keys
-            Object.keys(localStorage).forEach((key) => {
-                if (!keysToRetain.includes(key)) {
-                    localStorage.removeItem(key);
-                }
-            });
+    <meta name="theme-color" content="#075E54" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="UESI Staff Work" />
 
-            // Restore the retained key-value pairs
-            Object.keys(valuesToRetain).forEach((key) => {
-                localStorage.setItem(key, valuesToRetain[key]);
-            });
+    <link rel="icon" href="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" type="image/png" />
+    <link rel="apple-touch-icon" href="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" />
 
-            console.log("LocalStorage cleared except for:", keysToRetain);
+    <title>Generate Field Report - UESI Staff Work</title>
 
-            // Clear sessionStorage
-            sessionStorage.clear();
-            console.log("SessionStorage cleared.");
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v={{ site.github.build_revision }}" rel="stylesheet" />
 
-            // Clear IndexedDB data
-            const clearIndexedDB = () => {
-                if (!window.indexedDB) {
-                    console.warn("IndexedDB is not supported by this browser.");
-                    return;
-                }
-                indexedDB.databases().then((databases) => {
-                    databases.forEach((db) => {
-                        indexedDB.deleteDatabase(db.name);
-                        console.log(`Deleted IndexedDB: ${db.name}`);
-                    });
-                }).catch((error) => {
-                    console.error("Error clearing IndexedDB:", error);
-                });
-            };
+    <link rel="stylesheet" href="/apps/uesi/staff-work/assets/styles/common.css?v={{ site.github.build_revision }}" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/assets/styles/gen.css?v={{ site.github.build_revision }}" />
 
-            // Clear browser cache
-            const clearCache = () => {
-                if ("caches" in window) {
-                    caches.keys().then((cacheNames) => {
-                        cacheNames.forEach((cacheName) => {
-                            caches.delete(cacheName);
-                            console.log(`Deleted Cache: ${cacheName}`);
-                        });
-                    }).catch((error) => {
-                        console.error("Error clearing cache:", error);
-                    });
-                } else {
-                    console.warn("Cache API is not supported by this browser.");
-                }
-            };
-
-            // Execute cleanup functions
-            clearIndexedDB();
-            clearCache();
-
-            console.log(`All data cleared except for ${keysToRetain.join(", ")} in localStorage.`);
-        })();
-    </script>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generate Field Report</title>
-    <meta property="og:site_name" content="UESI Staff Work">
-    <meta property="og:title" content="Generate Field Report">
-    <meta property="og:description" content="Generate Field Report for UESI Staff Work.">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="/vidhyarthi-geethavali/assets/scripts/boom.js?v={{ site.github.build_revision }}" defer></script>
-    <style>
-        :root {
-            --primary-color: #075E54;
-            /* Consistent with index.html */
-            --primary-dark: #054a43;
-            /* Consistent with index.html */
-            --text-light: #ffffff;
-            /* Consistent with index.html */
-            --text-dark: #333333;
-            /* Consistent with index.html */
-            --text-gray: #666666;
-            /* Consistent with index.html */
-            --bg-light: #f8f9fa;
-            /* Consistent with index.html */
-            --bg-white: #ffffff;
-            /* Consistent with index.html */
-            --border-light: #eeeeee;
-            /* Consistent with index.html */
-            --shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-            /* Consistent with index.html */
-            --transition: all 0.3s ease;
-            /* Consistent with index.html */
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-light);
-            color: var(--text-dark);
-            min-height: 100vh;
-            padding-top: 5rem;
-            /* Space for fixed action bar */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            touch-action: pan-x pan-y;
-        }
-
-        /* App Bar */
-        .action-bar {
-            background: var(--primary-color);
-            color: var(--text-light);
-            padding: 0.75rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            height: 5rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        }
-
-        .app-title {
-            font-size: 1.65rem;
-            font-weight: 600;
-            color: var(--text-light);
-            letter-spacing: 0.025rem;
-        }
-
-        .menu-button {
-            background: none;
-            border: none;
-            color: var(--text-light);
-            font-size: 2.25rem;
-            cursor: pointer;
-            width: 3rem;
-            height: 3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: background-color 0.2s;
-            margin-right: 1rem;
-        }
-
-        .menu-button:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Main Container */
-        .container {
-            max-width: 600px;
-            width: 100%;
-            background-color: var(--bg-white);
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-            /* Space from footer */
-        }
-
-        .card-header {
-            color: var(--text-dark);
-            border-bottom: 0;
-            border-radius: 8px 8px 0 0;
-            padding: 1rem;
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .card-body {
-            padding: 0;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 500;
-            color: var(--text-dark);
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid #ccc;
-            border-radius: 5px;
-            font-size: 1rem;
-            color: var(--text-dark);
-            background-color: var(--bg-light);
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 5px rgba(7, 94, 84, 0.5);
-            outline: none;
-        }
-
-        /* Button Styling */
-        .btn-custom {
-            display: block;
-            width: 100%;
-            padding: 1rem;
-            background-color: var(--primary-color);
-            color: var(--text-light);
-            border: none;
-            border-radius: 5px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-custom:hover {
-            background-color: var(--primary-dark);
-        }
-
-        /* Horizontal rule styles */
-        hr {
-            border: none;
-            border-top: 2px dotted #ccc;
-            margin: 1.5rem 0;
-        }
-
-        /* Confirmation Dialog (re-using from other pages) */
-        .confirmation-dialog {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.95);
-            background: #FFFFFF;
-            padding: 2rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            z-index: 1002;
-            width: 360px;
-            max-width: 90%;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .confirmation-dialog.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        .confirmation-icon {
-            font-size: 3rem;
-            color: #D32F2F;
-            /* Error red */
-            margin-bottom: 1rem;
-        }
-
-        .confirmation-message {
-            font-size: 1.2rem;
-            color: #333;
-            margin-bottom: 1.5rem;
-        }
-
-        .confirmation-dialog button {
-            width: 100%;
-            padding: 0.95rem;
-            background: #D32F2F;
-            color: #FFFFFF;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 1.1rem;
-            transition: background 0.2s;
-        }
-
-        .confirmation-dialog button:hover {
-            background: #B71C1C;
-        }
-    </style>
+    <script src="/apps/uesi/staff-work/assets/scripts/boom.js?v={{ site.github.build_revision }}" defer></script>
 </head>
 
-<body>
-    <div class="action-bar">
-        <div style="display: flex; align-items: center;">
-            <button class="menu-button" id="menuButton" onclick="history.back()">
-                <i class="fas fa-arrow-left" style="color: white;"></i>
-            </button>
-            <span class="app-title" style="color: white;">Generate Report</span>
-        </div>
-    </div><br><br>
-    <div class="container mt-0">
-        <div class="card-header" id="cardHeader">
-            Generate Field Report
-        </div>
-        <hr>
-        <div class="card-body">
-            <form id="reportForm">
-                <div class="form-group">
-                    <label for="staffName" class="form-label">Staff Name:</label>
-                    <input type="text" disabled class="form-control" id="staffName"
-                        placeholder="Name from previous page" required>
-                </div>
-                <div class="form-group">
-                    <label for="staffEmail" class="form-label">Staff Email:</label>
-                    <input type="email" disabled class="form-control" id="staffEmail"
-                        placeholder="Email from previous page" required>
+<body class="auth-pending" data-kind="field">
+
+    <header class="app-header">
+        <button class="icon-btn ripple" id="backBtn" type="button" aria-label="Go back">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <span class="title">Generate Field Report</span>
+    </header>
+
+    <!-- Logged-out gate -->
+    <section class="guest-gate needs-guest">
+        <div class="gate-icon"><i class="fas fa-lock"></i></div>
+        <h1>Login required</h1>
+        <p>Login to generate a field report.</p>
+        <button class="btn btn-primary ripple" id="loginBtn" type="button">
+            <i class="fas fa-right-to-bracket"></i> Login to continue
+        </button>
+    </section>
+
+    <!-- Logged-in content -->
+    <main class="page needs-auth">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-file-lines"></i> Generate Field Report</div>
+            <div class="card-sub">Choose the month and add your details for the report header.</div>
+
+            <form id="reportForm" novalidate autocomplete="off">
+                <div class="field">
+                    <label class="label" for="staffName">Staff name</label>
+                    <input class="input input-readonly" type="text" id="staffName" readonly />
                 </div>
 
-                <div class="form-group">
-                    <label for="baseInput" class="form-label">Base *</label>
-                    <input type="text" id="baseInput" class="form-control"
-                        placeholder="Enter your Base (e.g., Visakhapatnam)" required>
+                <div class="field">
+                    <label class="label" for="staffEmail">Staff email</label>
+                    <input class="input input-readonly" type="email" id="staffEmail" readonly />
                 </div>
 
-                <div class="form-group">
-                    <label for="stateInput" class="form-label">State *</label>
-                    <input type="text" id="stateInput" class="form-control"
-                        placeholder="Enter your State (e.g., Andhra Pradesh)" required>
+                <div class="field">
+                    <label class="label" for="baseInput">Base</label>
+                    <input class="input" type="text" id="baseInput" placeholder="e.g. Visakhapatnam" autocapitalize="words" />
                 </div>
 
-                <div class="form-group">
-                    <label for="monthSelect" class="form-label">Month *</label>
-                    <select id="monthSelect" class="form-control" required>
-                        </select>
+                <div class="field">
+                    <label class="label" for="stateInput">State</label>
+                    <input class="input" type="text" id="stateInput" placeholder="e.g. Andhra Pradesh" autocapitalize="words" />
                 </div>
 
-                <div class="form-group">
-                    <label for="yearSelect" class="form-label">Year *</label>
-                    <select id="yearSelect" class="form-control" required>
-                        </select>
+                <div class="grid-2">
+                    <div class="field">
+                        <label class="label" for="monthSelect">Month</label>
+                        <select class="select" id="monthSelect"></select>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="yearSelect">Year</label>
+                        <select class="select" id="yearSelect"></select>
+                    </div>
                 </div>
 
-                <button type="submit" class="btn-custom">Generate Report</button>
+                <button type="submit" class="btn btn-primary ripple submit-btn">
+                    <i class="fas fa-file-export"></i> <span>Generate report</span>
+                </button>
             </form>
         </div>
-    </div>
 
-    <div class="confirmation-dialog" id="confirmationDialog">
-        <div class="confirmation-icon">
-            <i class="fas fa-exclamation-circle"></i>
-        </div>
-        <div class="confirmation-message" id="confirmationMessage">
-            Error message
-        </div>
-        <button id="okButton">OK</button>
-    </div>
+        <p class="end-note">
+            You've reached the end. App crafted by
+            <a href="https://melamrahul.github.io/" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Rahul</a>
+        </p>
+    </main>
 
-    <script>
-    // --- Double Decode URL Parameters ---
-    function getUrlParameter(name) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const rawValue = urlParams.get(name);
-        try {
-            // Handles cases like %2540 ➜ %40 ➜ @
-            return rawValue ? decodeURIComponent(decodeURIComponent(rawValue)) : null;
-        } catch (e) {
-            // Fallback to single decode if double fails
-            return rawValue ? decodeURIComponent(rawValue) : null;
-        }
-    }
-
-    // --- Populate initial fields from URL and localStorage ---
-    const staffNameInput = document.getElementById('staffName');
-    const staffEmailInput = document.getElementById('staffEmail');
-    const baseInput = document.getElementById('baseInput');
-    const stateInput = document.getElementById('stateInput');
-    const monthSelect = document.getElementById('monthSelect');
-    const yearSelect = document.getElementById('yearSelect');
-
-    const userName = getUrlParameter('name');
-    const userEmail = getUrlParameter('email');
-
-    if (userName) {
-        staffNameInput.value = userName;
-    } else {
-        staffNameInput.value = 'Name not provided';
-        showErrorDialog("You are not logged in, Please login to continue.");
-    }
-
-    if (userEmail) {
-        staffEmailInput.value = userEmail;
-    } else {
-        staffEmailInput.value = 'Email not provided';
-        showErrorDialog("You are not logged in, Please login to continue.");
-    }
-
-    // --- Load Base and State from localStorage ---
-    const savedBase = localStorage.getItem('reportBase');
-    const savedState = localStorage.getItem('reportState');
-
-    if (savedBase) {
-        baseInput.value = savedBase;
-    }
-    if (savedState) {
-        stateInput.value = savedState;
-    }
-
-    // --- Save Base and State to localStorage on change ---
-    baseInput.addEventListener('input', () => {
-        localStorage.setItem('reportBase', baseInput.value);
-    });
-    stateInput.addEventListener('input', () => {
-        localStorage.setItem('reportState', stateInput.value);
-    });
-
-    // --- Populate Month Dropdown ---
-    const months = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-    const currentMonthIndex = new Date().getMonth(); // 0-11
-
-    monthSelect.innerHTML = '<option value="" selected disabled>Select Month</option>';
-    months.forEach((month, index) => {
-        const option = document.createElement("option");
-        option.value = index + 1; // 1-12
-        option.textContent = month;
-        if (index === currentMonthIndex) {
-            option.selected = true;
-        }
-        monthSelect.appendChild(option);
-    });
-
-    // --- Populate Year Dropdown ---
-    const currentYear = new Date().getFullYear();
-    const startYear = currentYear - 2;
-    const endYear = currentYear + 2;
-
-    yearSelect.innerHTML = '<option value="" selected disabled>Select Year</option>';
-    for (let year = startYear; year <= endYear; year++) {
-        const option = document.createElement("option");
-        option.value = year;
-        option.textContent = year;
-        if (year === currentYear) {
-            option.selected = true;
-        }
-        yearSelect.appendChild(option);
-    }
-
-    // --- Show error dialog ---
-    function showErrorDialog(message) {
-        const confirmationMessage = document.getElementById('confirmationMessage');
-        const confirmationDialog = document.getElementById('confirmationDialog');
-
-        confirmationMessage.textContent = message;
-        confirmationDialog.classList.add('active');
-
-        document.getElementById('okButton').onclick = function () {
-            confirmationDialog.classList.remove('active');
-        };
-    }
-
-    // --- Handle Form Submission ---
-    document.getElementById('reportForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        if (!staffNameInput.value.trim() || !staffEmailInput.value.trim() ||
-            !baseInput.value.trim() || !stateInput.value.trim() ||
-            !monthSelect.value || !yearSelect.value) {
-            showErrorDialog("Please fill all required fields.");
-            return;
-        }
-
-        const name = staffNameInput.value.trim();
-        const email = staffEmailInput.value.trim();
-        const base = baseInput.value.trim();
-        const state = stateInput.value.trim();
-        const month = monthSelect.value;
-        const year = yearSelect.value;
-
-        const finalUrl = `/apps/uesi/staff-work/gen/final/field-report?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&base=${encodeURIComponent(base)}&state=${encodeURIComponent(state)}&month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}`;
-
-        window.location.href = finalUrl;
-    });
-</script>
+    <!-- Shared, then page-specific -->
+    <script src="/apps/uesi/staff-work/assets/scripts/common.js?v={{ site.github.build_revision }}"></script>
+    <script src="/apps/uesi/staff-work/assets/scripts/gen.js?v={{ site.github.build_revision }}"></script>
 </body>
-
 </html>

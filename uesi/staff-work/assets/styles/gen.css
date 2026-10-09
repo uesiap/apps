@@ -1,0 +1,25 @@
+
+.input-readonly {
+    background: #f9fafb;
+    color: var(--muted);
+    cursor: default;
+}
+
+.submit-btn {
+    margin-top: 8px;
+}
+
+.submit-btn i {
+    font-size: 1rem;
+}
+
+.end-note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 24px;
+}
+
+.end-note a {
+    color: #197afe;
+}

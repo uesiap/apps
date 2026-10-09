@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Submit, Edit, Generate Report using UESI Staff Work App." />
+
+    <!-- Keep staff pages out of search results and stop URLs leaking via referrer -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet" />
+    <meta name="referrer" content="no-referrer" />
+
+    <meta name="description" content="UESI Staff Work: submit, edit and generate reports." />
     <meta name="theme-color" content="#075E54" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -13,737 +19,33 @@
     <link rel="icon" href="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" type="image/png" />
     <link rel="apple-touch-icon" href="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" />
     <link rel="manifest" href="https://uesiap.github.io/apps/uesi/staff-work/manifest.json" />
-    <link rel="canonical" href="https://uesiap.github.io/apps/uesi/staff-work/" />
 
-    <meta property="og:title" content="UESI STAFF WORK App" />
-    <meta property="og:description" content="Submit, Edit, Generate Report using UESI Staff Work App." />
-    <meta property="og:image" content="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" />
-    <meta property="og:url" content="https://uesiap.github.io/apps/uesi/staff-work/" />
-    <meta property="og:type" content="website" />
-
-    <title>UESI STAFF WORK App</title>
+    <title>UESI Staff Work</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
-    <script src="/vidhyarthi-geethavali/assets/scripts/boom.js?v={{ site.github.build_revision }}" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 
-    <style>
-        :root {
-            --brand: #075E54;
-            --brand-soft: #e7f3f1;
-            --bg: #f2f4f5;
-            --card: #ffffff;
-            --text: #1d2939;
-            --muted: #667085;
-            --border: #d0d5dd;
-            --danger: #d92d20;
-            --success: #067647;
-            --header-h: 56px;
-            --nav-h: 64px;
-            --radius: 16px;
-            --safe-top: env(safe-area-inset-top, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-        }
+    <link rel="stylesheet" href="/apps/uesi/staff-work/assets/styles/common.css?v={{ site.github.build_revision }}" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/assets/styles/index.css?v={{ site.github.build_revision }}" />
 
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html,
-        body {
-            height: 100%;
-        }
-
-        body {
-            font-family: 'Poppins', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            font-size: 16px;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -webkit-tap-highlight-color: transparent;
-            overscroll-behavior-y: none;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-        input,
-        textarea,
-        button {
-            font-family: inherit;
-        }
-
-        input,
-        textarea {
-            user-select: text;
-            -webkit-user-select: text;
-        }
-
-        button {
-            cursor: pointer;
-            border: 0;
-            background: none;
-            color: inherit;
-        }
-
-        a {
-            color: inherit;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* ---------- Visibility by auth state ---------- */
-        body.auth-pending #appScreen,
-        body.auth-pending #authScreen,
-        body.auth-pending .bottom-nav {
-            display: none !important;
-        }
-
-        #appScreen,
-        #authScreen,
-        .bottom-nav {
-            display: none;
-        }
-
-        body.is-authed #appScreen {
-            display: block;
-        }
-
-        body.is-authed .bottom-nav {
-            display: grid;
-        }
-
-        body.is-guest #authScreen {
-            display: flex;
-        }
-
-        body.is-authed .when-guest,
-        body.is-guest .when-authed {
-            display: none !important;
-        }
-
-        /* ---------- Header ---------- */
-        .app-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            height: calc(var(--header-h) + var(--safe-top));
-            padding: var(--safe-top) 8px 0;
-            background: var(--brand);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .app-header .title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            letter-spacing: 0.2px;
-        }
-
-        .icon-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            font-size: 1.2rem;
-            color: #fff;
-        }
-
-        .icon-btn:active {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        /* ---------- Drawer ---------- */
-        .scrim {
-            position: fixed;
-            inset: 0;
-            background: rgba(16, 24, 40, 0.45);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s ease;
-            z-index: 200;
-        }
-
-        .scrim.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .drawer {
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            width: min(300px, 84vw);
-            background: #fff;
-            z-index: 300;
-            transform: translateX(-105%);
-            transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
-            padding-top: var(--safe-top);
-            padding-bottom: var(--safe-bottom);
-        }
-
-        .drawer.open {
-            transform: translateX(0);
-        }
-
-        .drawer-head {
-            background: var(--brand);
-            color: #fff;
-            padding: 24px 20px 20px;
-        }
-
-        .drawer-avatar {
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: grid;
-            place-items: center;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .drawer-name {
-            font-weight: 600;
-            font-size: 1.05rem;
-            overflow-wrap: anywhere;
-        }
-
-        .drawer-email {
-            font-size: 0.82rem;
-            opacity: 0.85;
-            overflow-wrap: anywhere;
-        }
-
-        .drawer-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 4px 8px 16px;
-        }
-
-        .drawer-section {
-            font-size: 0.72rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--muted);
-            font-weight: 600;
-            padding: 16px 12px 6px;
-        }
-
-        .drawer-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            width: 100%;
-            padding: 13px 12px;
-            border-radius: 12px;
-            text-align: left;
-            text-decoration: none;
-            font-size: 0.98rem;
-            font-weight: 500;
-            color: var(--text);
-        }
-
-        .drawer-item i {
-            width: 22px;
-            text-align: center;
-            color: var(--brand);
-            font-size: 1.05rem;
-        }
-
-        .drawer-item:active {
-            background: var(--brand-soft);
-        }
-
-        .drawer-item.danger,
-        .drawer-item.danger i {
-            color: var(--danger);
-        }
-
-        .drawer-foot {
-            padding: 12px 20px;
-            font-size: 0.75rem;
-            color: var(--muted);
-            border-top: 1px solid #eaecf0;
-        }
-
-        .drawer-foot a {
-            color: #197afe;
-            text-decoration: none;
-        }
-
-        /* ---------- Guest / Login screen ---------- */
-        #authScreen {
-            min-height: 100vh;
-            min-height: 100dvh;
-            background: var(--brand);
-            color: #fff;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: calc(var(--header-h) + var(--safe-top) + 24px) 24px calc(var(--safe-bottom) + 32px);
-        }
-
-        .auth-icon {
-            width: 96px;
-            height: 96px;
-            border-radius: 22px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-            margin-bottom: 24px;
-        }
-
-        .auth-title {
-            font-size: 1.9rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .auth-text {
-            opacity: 0.9;
-            margin-bottom: 32px;
-            max-width: 320px;
-        }
-
-        .auth-screen-inner {
-            width: 100%;
-            max-width: 340px;
-        }
-
-        /* ---------- Main app screen ---------- */
-        .screen {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: calc(var(--header-h) + var(--safe-top) + 16px) 16px calc(var(--nav-h) + var(--safe-bottom) + 32px);
-        }
-
-        .greet {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            width: fit-content;
-            max-width: 100%;
-            padding: 6px 14px;
-            border-radius: 999px;
-            background: var(--brand-soft);
-            color: var(--brand);
-            font-size: 0.88rem;
-            margin-bottom: 16px;
-        }
-
-        .greet strong {
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .install-card {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #fff;
-            border-radius: var(--radius);
-            padding: 12px 14px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 12px rgba(16, 24, 40, 0.06);
-        }
-
-        .install-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            flex-shrink: 0;
-        }
-
-        .install-text {
-            flex: 1;
-            min-width: 0;
-            font-size: 0.85rem;
-            line-height: 1.3;
-        }
-
-        .install-text strong {
-            display: block;
-            font-size: 0.95rem;
-        }
-
-        .install-text span {
-            color: var(--muted);
-        }
-
-        .btn-small {
-            background: var(--brand);
-            color: #fff;
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-size: 0.88rem;
-            font-weight: 600;
-        }
-
-        .btn-dismiss {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            color: var(--muted);
-            display: grid;
-            place-items: center;
-            flex-shrink: 0;
-        }
-
-        .card {
-            background: var(--card);
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 12px rgba(16, 24, 40, 0.06);
-        }
-
-        .card-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .card-title i {
-            color: var(--brand);
-        }
-
-        .card-sub {
-            color: var(--muted);
-            font-size: 0.86rem;
-            margin-bottom: 20px;
-        }
-
-        .field {
-            margin-bottom: 18px;
-        }
-
-        .field > label,
-        .label {
-            display: block;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #344054;
-            margin-bottom: 6px;
-        }
-
-        .hint {
-            font-size: 0.78rem;
-            color: var(--muted);
-            margin-top: 6px;
-        }
-
-        .input,
-        .field textarea {
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            background: #fff;
-            color: var(--text);
-            font-size: 16px; /* prevents iOS zoom on focus */
-            transition: border-color 0.15s, box-shadow 0.15s;
-        }
-
-        .input {
-            height: 50px;
-            padding: 0 14px;
-        }
-
-        .field textarea {
-            min-height: 130px;
-            padding: 12px 14px;
-            resize: vertical;
-            line-height: 1.5;
-        }
-
-        .input:focus,
-        .field textarea:focus,
-        .date-wrap input:focus {
-            outline: none;
-            border-color: var(--brand);
-            box-shadow: 0 0 0 3px rgba(7, 94, 84, 0.15);
-        }
-
-        /* Date input: large, clickable across the whole field */
-        .date-wrap {
-            position: relative;
-        }
-
-        .date-wrap input[type="date"] {
-            position: relative;
-            width: 100%;
-            height: 50px;
-            padding: 0 44px 0 14px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            background: #fff;
-            color: var(--text);
-            font-size: 16px;
-            min-width: 0;
-            appearance: none;
-            -webkit-appearance: none;
-            cursor: pointer;
-        }
-
-        .date-wrap input[type="date"]::-webkit-calendar-picker-indicator {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .cal-icon {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--brand);
-            pointer-events: none;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        @media (max-width: 420px) {
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Segmented control for Single / Multi day */
-        .segmented {
-            position: relative;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4px;
-            padding: 4px;
-            background: #f2f4f7;
-            border-radius: 12px;
-            margin-bottom: 18px;
-        }
-
-        .segmented input {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .segmented label {
-            text-align: center;
-            padding: 10px;
-            border-radius: 9px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--muted);
-            cursor: pointer;
-            transition: background 0.2s, color 0.2s;
-        }
-
-        .segmented input:checked + label {
-            background: #fff;
-            color: var(--brand);
-            font-weight: 600;
-            box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
-        }
-
-        .segmented input:focus-visible + label {
-            outline: 2px solid var(--brand);
-        }
-
-        /* Buttons */
-        .btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            height: 52px;
-            border-radius: 14px;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: transform 0.08s ease, opacity 0.2s ease;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn:disabled {
-            cursor: default;
-            opacity: 0.8;
-        }
-
-        .btn-primary {
-            background: var(--brand);
-            color: #fff;
-        }
-
-        .btn-light {
-            background: #fff;
-            color: var(--brand);
-        }
-
-        .spinner {
-            width: 18px;
-            height: 18px;
-            border: 2.5px solid rgba(255, 255, 255, 0.4);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Bottom tab bar */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 600px;
-            height: calc(var(--nav-h) + var(--safe-bottom));
-            padding-bottom: var(--safe-bottom);
-            background: #fff;
-            grid-template-columns: 1fr 1fr;
-            border-top: 1px solid #e4e7ec;
-            z-index: 90;
-        }
-
-        .bnav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: var(--muted);
-        }
-
-        .bnav-item i {
-            font-size: 1.25rem;
-        }
-
-        .bnav-item.active {
-            color: var(--brand);
-            font-weight: 600;
-        }
-
-        .bnav-item.active::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            width: 36px;
-            height: 3px;
-            border-radius: 0 0 3px 3px;
-            background: var(--brand);
-        }
-
-        .bnav-item {
-            position: relative;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            left: 50%;
-            bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px);
-            transform: translate(-50%, 16px);
-            opacity: 0;
-            pointer-events: none;
-            background: #1d2939;
-            color: #fff;
-            padding: 12px 18px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            max-width: calc(100% - 32px);
-            text-align: center;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-            transition: opacity 0.25s ease, transform 0.25s ease;
-            z-index: 400;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translate(-50%, 0);
-        }
-
-        .toast.success {
-            background: var(--success);
-        }
-
-        .toast.error {
-            background: var(--danger);
-        }
-
-        /* Wider screens */
-        @media (min-width: 768px) {
-            .screen {
-                padding-top: calc(var(--header-h) + 32px);
-            }
-
-            .card {
-                padding: 28px;
-            }
-
-            .bottom-nav {
-                border-radius: 16px 16px 0 0;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                transition: none !important;
-                animation-duration: 0.01ms !important;
-            }
-        }
-    </style>
+    <script src="/apps/uesi/staff-work/assets/scripts/boom.js?v={{ site.github.build_revision }}" defer></script>
 </head>
 
 <body class="auth-pending">
 
     <!-- App bar -->
     <header class="app-header">
-        <button class="icon-btn" id="menuBtn" aria-label="Open menu">
+        <button class="icon-btn ripple" data-drawer-open aria-label="Open menu">
             <i class="fas fa-bars"></i>
         </button>
         <span class="title">UESI Staff Work</span>
     </header>
 
     <!-- Side drawer -->
-    <div class="scrim" id="scrim"></div>
-    <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="scrim" id="scrim" data-drawer-close></div>
+    <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Main menu">
         <div class="drawer-head">
             <div class="drawer-avatar" id="drawerInitial">?</div>
             <div class="drawer-name" id="drawerName">Not logged in</div>
@@ -751,63 +53,65 @@
         </div>
 
         <nav class="drawer-body">
-            <div class="drawer-section when-authed">View data</div>
-            <button class="drawer-item when-authed" data-nav="/apps/uesi/staff-work/view/field-report">
+            <div class="drawer-section needs-auth">View data</div>
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/view/field-report">
                 <i class="fas fa-eye"></i><span>Field Report</span>
             </button>
-            <button class="drawer-item when-authed" data-nav="/apps/uesi/staff-work/view/itinerary">
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/view/itinerary">
                 <i class="fas fa-route"></i><span>Itinerary</span>
             </button>
 
-            <div class="drawer-section when-authed">Generate report</div>
-            <button class="drawer-item when-authed" data-nav="/apps/uesi/staff-work/gen/field-report">
-                <i class="fas fa-file-alt"></i><span>Field Report</span>
+            <div class="drawer-section needs-auth">Generate report</div>
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/gen/field-report">
+                <i class="fas fa-file-lines"></i><span>Field Report</span>
             </button>
-            <button class="drawer-item when-authed" data-nav="/apps/uesi/staff-work/gen/itinerary">
-                <i class="fas fa-file-alt"></i><span>Itinerary</span>
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/gen/itinerary">
+                <i class="fas fa-file-lines"></i><span>Itinerary</span>
             </button>
 
             <div class="drawer-section">More</div>
-            <button class="drawer-item" data-action="share">
+            <button class="drawer-item ripple" data-action="share">
                 <i class="fas fa-share-nodes"></i><span>Share App</span>
             </button>
-            <a class="drawer-item" href="https://www.sajeevavahini.com/bible?booknumber=1&chapterid=1&b1=43&b2=1&showleft=0&showref=0&showtelugu=1&showdict=0" target="_blank" rel="noopener">
+            <a class="drawer-item ripple" href="https://www.sajeevavahini.com/bible?booknumber=1&chapterid=1&b1=43&b2=1&showleft=0&showref=0&showtelugu=1&showdict=0"
+               target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">
                 <i class="fas fa-book-open"></i><span>Commentary</span>
             </a>
-            <a class="drawer-item" href="mailto:mrahul.eu@gmail.com">
+            <a class="drawer-item ripple" href="mailto:mrahul.eu@gmail.com">
                 <i class="fas fa-envelope"></i><span>Report an issue</span>
             </a>
 
             <div class="drawer-section">Account</div>
-            <button class="drawer-item when-guest" data-action="login">
+            <button class="drawer-item ripple needs-guest" data-action="login">
                 <i class="fas fa-right-to-bracket"></i><span>Login</span>
             </button>
-            <button class="drawer-item danger when-authed" data-action="logout">
+            <button class="drawer-item ripple danger needs-auth" data-action="logout">
                 <i class="fas fa-right-from-bracket"></i><span>Logout</span>
             </button>
         </nav>
 
         <div class="drawer-foot">
-            App version 1.0 · crafted by <a href="https://melamrahul.github.io/">Rahul</a>
+            App version 1.0 · crafted by
+            <a href="https://melamrahul.github.io/" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Rahul</a>
         </div>
     </aside>
 
     <!-- Logged-out screen -->
-    <section id="authScreen">
-        <img src="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" alt="UESI logo" class="auth-icon" />
-        <div class="auth-screen-inner">
+    <section id="authScreen" class="auth-screen needs-guest">
+        <img src="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" alt="" class="auth-icon" />
+        <div class="auth-inner">
             <h1 class="auth-title">UESI Staff Work</h1>
             <p class="auth-text">Your dedicated app for seamless daily reporting.</p>
-            <button class="btn btn-light" id="loginBtn">
+            <button class="btn btn-light ripple" id="loginBtn" type="button">
                 <i class="fas fa-right-to-bracket"></i> Login to continue
             </button>
         </div>
     </section>
 
     <!-- Logged-in screen -->
-    <main class="screen" id="appScreen">
+    <main class="page needs-auth" id="appScreen">
         <div class="greet">
-            <span>Hello,</span> <strong id="greetName">Staff</strong> ✨
+            <span>Hello,</span> <strong id="greetName">Staff</strong>
         </div>
 
         <div class="install-card hidden" id="installCard">
@@ -816,8 +120,8 @@
                 <strong>Install UESI Staff Work</strong>
                 <span>Add it to your home screen for quick access</span>
             </div>
-            <button class="btn-small" id="installBtn">Install</button>
-            <button class="btn-dismiss" id="installDismiss" aria-label="Dismiss">
+            <button class="btn btn-primary btn-sm ripple" id="installBtn" type="button">Install</button>
+            <button class="btn-dismiss ripple" id="installDismiss" type="button" aria-label="Dismiss">
                 <i class="fas fa-xmark"></i>
             </button>
         </div>
@@ -828,19 +132,19 @@
                 <div class="card-title"><i class="fas fa-file-signature"></i> Field Report</div>
                 <div class="card-sub">Log the zone and purpose of your visit.</div>
 
-                <form id="fieldReportForm" autocomplete="off">
+                <form id="fieldReportForm" novalidate autocomplete="off">
                     <div class="label">Date type</div>
                     <div class="segmented">
-                        <input type="radio" id="date1_single" name="dateType1" value="single" checked>
+                        <input type="radio" id="date1_single" name="dateType1" value="single" checked />
                         <label for="date1_single">Single day</label>
-                        <input type="radio" id="date1_multi" name="dateType1" value="multi">
+                        <input type="radio" id="date1_multi" name="dateType1" value="multi" />
                         <label for="date1_multi">Multi-day</label>
                     </div>
 
                     <div class="field" id="date1_single_fields">
-                        <label for="date1_start_single">Date</label>
+                        <label class="label" for="date1_start_single">Date</label>
                         <div class="date-wrap">
-                            <input type="date" id="date1_start_single" required>
+                            <input class="date-input" type="date" id="date1_start_single" />
                             <i class="fas fa-calendar-day cal-icon"></i>
                         </div>
                     </div>
@@ -848,16 +152,16 @@
                     <div class="field hidden" id="date1_multi_fields">
                         <div class="grid-2">
                             <div>
-                                <label for="date1_start_multi">Start date</label>
+                                <label class="label" for="date1_start_multi">Start date</label>
                                 <div class="date-wrap">
-                                    <input type="date" id="date1_start_multi">
+                                    <input class="date-input" type="date" id="date1_start_multi" />
                                     <i class="fas fa-calendar-day cal-icon"></i>
                                 </div>
                             </div>
                             <div>
-                                <label for="date1_end_multi">End date</label>
+                                <label class="label" for="date1_end_multi">End date</label>
                                 <div class="date-wrap">
-                                    <input type="date" id="date1_end_multi">
+                                    <input class="date-input" type="date" id="date1_end_multi" />
                                     <i class="fas fa-calendar-day cal-icon"></i>
                                 </div>
                             </div>
@@ -865,17 +169,17 @@
                     </div>
 
                     <div class="field">
-                        <label for="zone1">Zone / Division</label>
-                        <input class="input" type="text" id="zone1" placeholder="e.g. Hyderabad Zone" required />
+                        <label class="label" for="zone1">Zone / Division</label>
+                        <input class="input" type="text" id="zone1" placeholder="e.g. Hyderabad Zone" autocapitalize="words" />
                     </div>
 
                     <div class="field">
-                        <label for="purpose1">Purpose</label>
-                        <textarea id="purpose1" rows="6" placeholder="Write each point on a new line" required></textarea>
+                        <label class="label" for="purpose1">Purpose</label>
+                        <textarea class="textarea" id="purpose1" rows="6" placeholder="Write each point on a new line"></textarea>
                         <div class="hint">Each new line becomes a separate point.</div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary submit-btn">Submit</button>
+                    <button type="submit" class="btn btn-primary ripple submit-btn">Submit</button>
                 </form>
             </div>
         </section>
@@ -886,19 +190,19 @@
                 <div class="card-title"><i class="fas fa-route"></i> Itinerary</div>
                 <div class="card-sub">Plan the zone and purpose for upcoming days.</div>
 
-                <form id="itineraryForm" autocomplete="off">
+                <form id="itineraryForm" novalidate autocomplete="off">
                     <div class="label">Date type</div>
                     <div class="segmented">
-                        <input type="radio" id="date2_single" name="dateType2" value="single" checked>
+                        <input type="radio" id="date2_single" name="dateType2" value="single" checked />
                         <label for="date2_single">Single day</label>
-                        <input type="radio" id="date2_multi" name="dateType2" value="multi">
+                        <input type="radio" id="date2_multi" name="dateType2" value="multi" />
                         <label for="date2_multi">Multi-day</label>
                     </div>
 
                     <div class="field" id="date2_single_fields">
-                        <label for="date2_start_single">Date</label>
+                        <label class="label" for="date2_start_single">Date</label>
                         <div class="date-wrap">
-                            <input type="date" id="date2_start_single" required>
+                            <input class="date-input" type="date" id="date2_start_single" />
                             <i class="fas fa-calendar-day cal-icon"></i>
                         </div>
                     </div>
@@ -906,16 +210,16 @@
                     <div class="field hidden" id="date2_multi_fields">
                         <div class="grid-2">
                             <div>
-                                <label for="date2_start_multi">Start date</label>
+                                <label class="label" for="date2_start_multi">Start date</label>
                                 <div class="date-wrap">
-                                    <input type="date" id="date2_start_multi">
+                                    <input class="date-input" type="date" id="date2_start_multi" />
                                     <i class="fas fa-calendar-day cal-icon"></i>
                                 </div>
                             </div>
                             <div>
-                                <label for="date2_end_multi">End date</label>
+                                <label class="label" for="date2_end_multi">End date</label>
                                 <div class="date-wrap">
-                                    <input type="date" id="date2_end_multi">
+                                    <input class="date-input" type="date" id="date2_end_multi" />
                                     <i class="fas fa-calendar-day cal-icon"></i>
                                 </div>
                             </div>
@@ -923,452 +227,38 @@
                     </div>
 
                     <div class="field">
-                        <label for="zone2">Zone / Division</label>
-                        <input class="input" type="text" id="zone2" placeholder="e.g. Hyderabad Zone" required />
+                        <label class="label" for="zone2">Zone / Division</label>
+                        <input class="input" type="text" id="zone2" placeholder="e.g. Hyderabad Zone" autocapitalize="words" />
                     </div>
 
                     <div class="field">
-                        <label for="purpose2">Purpose</label>
-                        <textarea id="purpose2" rows="4" placeholder="Write each point on a new line" required></textarea>
+                        <label class="label" for="purpose2">Purpose</label>
+                        <textarea class="textarea" id="purpose2" rows="6" placeholder="Write each point on a new line"></textarea>
                         <div class="hint">Each new line becomes a separate point.</div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary submit-btn">Submit</button>
+                    <button type="submit" class="btn btn-primary ripple submit-btn">Submit</button>
                 </form>
             </div>
         </section>
     </main>
 
     <!-- Bottom tab bar -->
-    <nav class="bottom-nav" id="bottomNav">
-        <button class="bnav-item active" data-tab="field">
+    <nav class="bottom-nav needs-auth" aria-label="Forms">
+        <button class="bnav-item ripple active" data-tab="field">
             <i class="fas fa-file-signature"></i><span>Field Report</span>
         </button>
-        <button class="bnav-item" data-tab="itinerary">
+        <button class="bnav-item ripple" data-tab="itinerary">
             <i class="fas fa-route"></i><span>Itinerary</span>
         </button>
     </nav>
-
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    <script>
-        (() => {
-            'use strict';
-
-            // ---------- Config & constants ----------
-            const $ = (id) => document.getElementById(id);
-            const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            const LOGIN_URL = 'https://uesiap.github.io/apps/uesi/staff-work/login';
-            const APP_URL = 'https://uesiap.github.io/apps/uesi/staff-work/';
-            const DB_ROOT = 'apps/uesi/staff-work/users';
-            const MAX_RANGE_DAYS = 62;
-            const SAVE_TIMEOUT_MS = 20000;
-            const PUSH_ENDPOINT = 'https://rahul.serv00.net/apps/web-push/apps/sample/save-subscription.php';
-            const VAPID_PUBLIC_KEY = 'BMEz2RWWPeRNP5_7f_UaBSSmLclANhlwIA0hZf7KsKuTZakj89IpglnFRKhfVKsMveEgXTx10z4vvbwSCsYVLfI';
-
-            firebase.initializeApp({
-                apiKey: '0AzyPiDT3wSi6WAuNX7YzbyJcvUgV0nyoxMwahn0',
-                authDomain: 'uesi-ap-default-rtdb.firebaseio.com',
-                databaseURL: 'https://uesi-ap-default-rtdb.firebaseio.com',
-                projectId: 'uesi-ap'
-            });
-
-            let session = null;
-            let pushAttempted = false;
-            let deferredPrompt = null;
-            let toastTimer = null;
-            const dateToggles = {};
-
-            // ---------- Helpers ----------
-            const initialsOf = (name) =>
-                name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('') || '?';
-
-            const toYMD = (d) =>
-                `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-            function datesBetween(startStr, endStr) {
-                const out = [];
-                const cur = new Date(startStr + 'T12:00:00');
-                const end = new Date(endStr + 'T12:00:00');
-                while (cur <= end) {
-                    out.push(toYMD(cur));
-                    cur.setDate(cur.getDate() + 1);
-                }
-                return out;
-            }
-
-            function splitPurposeIntoPoints(rawText) {
-                return rawText
-                    .split('\n')
-                    .map((line) => line.trim().replace(/^[\*\-•]\s*/, ''))
-                    .filter((line) => line.length > 0);
-            }
-
-            function withTimeout(promise, ms) {
-                let timer;
-                const timeout = new Promise((_, reject) => {
-                    timer = setTimeout(() => reject(new Error('timeout')), ms);
-                });
-                return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
-            }
-
-            function toast(message, type = 'info') {
-                const el = $('toast');
-                el.textContent = message;
-                el.className = `toast show ${type}`;
-                clearTimeout(toastTimer);
-                toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
-            }
-
-            // ---------- Auth state (single source of truth, no polling) ----------
-            function readSession() {
-                const email = (localStorage.getItem('bbsRole') || '').trim();
-                const name = (localStorage.getItem('bbsName') || '').trim();
-                if (!name || !EMAIL_RE.test(email)) return null;
-                return { email, name };
-            }
-
-            function applyAuthState() {
-                session = readSession();
-                const body = document.body;
-                body.classList.remove('auth-pending', 'is-authed', 'is-guest');
-                body.classList.add(session ? 'is-authed' : 'is-guest');
-
-                if (session) {
-                    $('greetName').textContent = session.name;
-                    $('drawerName').textContent = session.name;
-                    $('drawerEmail').textContent = session.email;
-                    $('drawerInitial').textContent = initialsOf(session.name);
-                    enablePush();
-                } else {
-                    $('drawerName').textContent = 'Not logged in';
-                    $('drawerEmail').textContent = '';
-                    $('drawerInitial').textContent = '?';
-                    closeDrawer();
-                }
-            }
-
-            function logout() {
-                localStorage.removeItem('bbsRole');
-                localStorage.removeItem('bbsName');
-                closeDrawer();
-                applyAuthState();
-                toast('You have been logged out');
-            }
-
-            function goToLogin() {
-                window.location.href = LOGIN_URL;
-            }
-
-            // ---------- Drawer ----------
-            function openDrawer() {
-                $('drawer').classList.add('open');
-                $('drawer').setAttribute('aria-hidden', 'false');
-                $('scrim').classList.add('show');
-            }
-
-            function closeDrawer() {
-                $('drawer').classList.remove('open');
-                $('drawer').setAttribute('aria-hidden', 'true');
-                $('scrim').classList.remove('show');
-            }
-
-            function openPage(path) {
-                if (!session) {
-                    toast('Please login first', 'error');
-                    return;
-                }
-                const params = new URLSearchParams();
-                params.append('name', encodeURIComponent(session.name));
-                params.append('email', encodeURIComponent(session.email));
-                window.location.href = `${path}?${params.toString()}`;
-            }
-
-            async function shareApp() {
-                const data = {
-                    title: 'UESI Staff Work',
-                    text: 'UESI Staff Work App: Submit, Edit, Generate Report',
-                    url: APP_URL
-                };
-                if (navigator.share) {
-                    try { await navigator.share(data); } catch (_) { /* user cancelled */ }
-                    return;
-                }
-                try {
-                    await navigator.clipboard.writeText(APP_URL);
-                    toast('App link copied');
-                } catch {
-                    toast('Sharing is not supported here', 'error');
-                }
-            }
-
-            // ---------- Tabs ----------
-            function showTab(name, { updateHash = true } = {}) {
-                document.querySelectorAll('.tab-panel').forEach((panel) => {
-                    panel.classList.toggle('hidden', panel.dataset.tab !== name);
-                });
-                document.querySelectorAll('.bnav-item').forEach((btn) => {
-                    btn.classList.toggle('active', btn.dataset.tab === name);
-                });
-                if (updateHash) {
-                    history.replaceState(null, '', name === 'itinerary' ? '#ItineraryForm' : '#FieldReport');
-                }
-            }
-
-            // ---------- Date & form setup ----------
-            function setupForm(n) {
-                const singleBox = $(`date${n}_single_fields`);
-                const multiBox = $(`date${n}_multi_fields`);
-                const singleIn = $(`date${n}_start_single`);
-                const startIn = $(`date${n}_start_multi`);
-                const endIn = $(`date${n}_end_multi`);
-
-                const apply = () => {
-                    const checked = document.querySelector(`input[name="dateType${n}"]:checked`);
-                    const multi = checked && checked.value === 'multi';
-                    singleBox.classList.toggle('hidden', multi);
-                    multiBox.classList.toggle('hidden', !multi);
-                    // Disabled inputs are skipped by validation and are not read on submit
-                    singleIn.disabled = multi;
-                    startIn.disabled = !multi;
-                    endIn.disabled = !multi;
-                };
-
-                document.querySelectorAll(`input[name="dateType${n}"]`).forEach((r) => {
-                    r.addEventListener('change', apply);
-                });
-                dateToggles[n] = apply;
-                apply();
-
-                $(`zone${n}`).addEventListener('blur', (e) => {
-                    const v = e.target.value.trim();
-                    e.target.value = v ? v.charAt(0).toUpperCase() + v.slice(1) : '';
-                });
-            }
-
-            function setDefaults(n) {
-                if (n === 1) $('date1_start_single').value = toYMD(new Date());
-            }
-
-            function collectDates(n) {
-                const checked = document.querySelector(`input[name="dateType${n}"]:checked`);
-                if (!checked || checked.value !== 'multi') {
-                    const d = $(`date${n}_start_single`).value;
-                    if (!d) throw new Error('Please select a date.');
-                    return [d];
-                }
-                const s = $(`date${n}_start_multi`).value;
-                const e = $(`date${n}_end_multi`).value;
-                if (!s || !e) throw new Error('Please select both start and end dates.');
-                if (s > e) throw new Error('Start date cannot be after end date.');
-                const dates = datesBetween(s, e);
-                if (dates.length > MAX_RANGE_DAYS) {
-                    throw new Error(`Please keep the range within ${MAX_RANGE_DAYS} days.`);
-                }
-                return dates;
-            }
-
-            function setSubmitting(btn, on) {
-                btn.disabled = on;
-                btn.innerHTML = on
-                    ? '<span class="spinner" aria-hidden="true"></span><span>Submitting...</span>'
-                    : 'Submit';
-            }
-
-            function saveFormData(type, email, dates, purpose, zone) {
-                const safeEmail = email.replace(/\./g, '_');
-                const updates = {};
-                dates.forEach((date) => {
-                    const [year, month] = date.split('-');
-                    const path = `${DB_ROOT}/${safeEmail}/userData/${type}/${year}/${month}/${date}`;
-                    updates[path] = {
-                        day: new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' }),
-                        purpose,
-                        zone
-                    };
-                });
-                // One atomic multi-path write instead of one request per date
-                return withTimeout(firebase.database().ref().update(updates), SAVE_TIMEOUT_MS);
-            }
-
-            function bindForm(n, type) {
-                const form = $(n === 1 ? 'fieldReportForm' : 'itineraryForm');
-
-                form.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const btn = form.querySelector('.submit-btn');
-                    if (btn.disabled) return;
-
-                    if (!session) {
-                        toast('Please login to submit your data', 'error');
-                        return;
-                    }
-                    const email = session.email;
-
-                    let dates;
-                    try {
-                        dates = collectDates(n);
-                    } catch (err) {
-                        toast(err.message, 'error');
-                        return;
-                    }
-
-                    const zone = $(`zone${n}`).value.trim();
-                    const purpose = splitPurposeIntoPoints($(`purpose${n}`).value);
-                    if (!zone || purpose.length === 0) {
-                        toast('Please fill in zone and purpose', 'error');
-                        return;
-                    }
-
-                    setSubmitting(btn, true);
-                    try {
-                        await saveFormData(type, email, dates, purpose, zone);
-                        toast(`Saved ${dates.length} day${dates.length > 1 ? 's' : ''} successfully`, 'success');
-                        form.reset();
-                        setDefaults(n);
-                        dateToggles[n]();
-                    } catch (err) {
-                        console.error('Save failed:', err);
-                        const msg = err.message === 'timeout'
-                            ? 'No response from server. Check your connection and try again.'
-                            : 'Could not save. Please try again.';
-                        toast(msg, 'error');
-                    } finally {
-                        setSubmitting(btn, false);
-                    }
-                });
-            }
-
-            // ---------- Install prompt (phones only) ----------
-            const isStandalone = () =>
-                window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-
-            const isPhone = () =>
-                window.matchMedia('(max-width: 768px)').matches && window.matchMedia('(pointer: coarse)').matches;
-
-            function showInstallIfEligible() {
-                if (!deferredPrompt || isStandalone() || !isPhone()) return;
-                if (localStorage.getItem('installDismissed')) return;
-                $('installCard').classList.remove('hidden');
-            }
-
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                showInstallIfEligible();
-            });
-
-            window.addEventListener('appinstalled', () => {
-                $('installCard').classList.add('hidden');
-            });
-
-            // ---------- Push notifications (once per session, after login) ----------
-            function urlBase64ToUint8Array(base64String) {
-                const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-                const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-                const raw = atob(base64);
-                return Uint8Array.from(raw, (c) => c.charCodeAt(0));
-            }
-
-            async function enablePush() {
-                if (pushAttempted) return;
-                pushAttempted = true;
-                if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
-                if (Notification.permission === 'denied') return;
-
-                try {
-                    const registration = await navigator.serviceWorker.ready;
-                    if (Notification.permission !== 'granted') {
-                        const result = await Notification.requestPermission();
-                        if (result !== 'granted') return;
-                    }
-                    let subscription = await registration.pushManager.getSubscription();
-                    if (subscription) return;
-
-                    subscription = await registration.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-                    });
-                    await fetch(PUSH_ENDPOINT, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(subscription)
-                    });
-                } catch (err) {
-                    console.warn('Push setup skipped:', err);
-                }
-            }
-
-            // ---------- Event wiring ----------
-            $('menuBtn').addEventListener('click', openDrawer);
-            $('scrim').addEventListener('click', closeDrawer);
-            $('loginBtn').addEventListener('click', goToLogin);
-
-            $('drawer').addEventListener('click', (e) => {
-                const navItem = e.target.closest('[data-nav]');
-                if (navItem) {
-                    closeDrawer();
-                    openPage(navItem.dataset.nav);
-                    return;
-                }
-                const actionItem = e.target.closest('[data-action]');
-                if (!actionItem) return;
-                const action = actionItem.dataset.action;
-                if (action === 'share') shareApp();
-                if (action === 'logout') logout();
-                if (action === 'login') goToLogin();
-            });
-
-            document.querySelectorAll('.bnav-item').forEach((btn) => {
-                btn.addEventListener('click', () => showTab(btn.dataset.tab));
-            });
-
-            $('installBtn').addEventListener('click', async () => {
-                if (!deferredPrompt) return;
-                deferredPrompt.prompt();
-                try { await deferredPrompt.userChoice; } catch (_) { /* ignore */ }
-                deferredPrompt = null;
-                $('installCard').classList.add('hidden');
-            });
-
-            $('installDismiss').addEventListener('click', () => {
-                localStorage.setItem('installDismissed', '1');
-                $('installCard').classList.add('hidden');
-            });
-
-            // Auth re-checks: no polling. Runs on cross-tab change, returning to the page, and tab focus.
-            window.addEventListener('storage', (e) => {
-                if (e.key === null || e.key === 'bbsRole' || e.key === 'bbsName') applyAuthState();
-            });
-            window.addEventListener('pageshow', applyAuthState);
-            document.addEventListener('visibilitychange', () => {
-                if (!document.hidden) applyAuthState();
-            });
-
-            // ---------- Boot ----------
-            setupForm(1);
-            setupForm(2);
-            setDefaults(1);
-            bindForm(1, 'Field_Report');
-            bindForm(2, 'Itinerary_Form');
-
-            document.querySelectorAll('input[type="date"]').forEach((input) => {
-                input.setAttribute('autocomplete', 'off');
-            });
-
-            showTab(window.location.hash === '#ItineraryForm' ? 'itinerary' : 'field', { updateHash: false });
-            applyAuthState();
-
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker
-                    .register('/apps/uesi/staff-work/service-worker.js')
-                    .catch((err) => console.error('Service worker registration failed:', err));
-            }
-        })();
-    </script>
+    <!-- Shared, then page-specific -->
+    <script src="/apps/uesi/staff-work/assets/scripts/common.js"></script>
+    <script src="/apps/uesi/staff-work/assets/scripts/index.js"></script>
 </body>
 </html>
