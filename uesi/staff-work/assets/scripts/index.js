@@ -4,8 +4,8 @@
 
     const { $, Session, Drawer, notify, confirm: askConfirm, setLoading } = window.UI;
 
-    const APP_URL = 'https://uesi.ruvs.in/apps/staff/work/';
-    const SW_PATH = '/apps/staff/work/service-worker.js';
+    const APP_URL = 'https://uesiap.github.io/apps/uesi/staff-work/';
+    const SW_PATH = '/apps/uesi/staff-work/service-worker.js';
     const DB_ROOT = 'apps/uesi/staff-work/users';
     const MAX_RANGE_DAYS = 62;
     const SAVE_TIMEOUT_MS = 20000;

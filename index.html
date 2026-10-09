@@ -104,13 +104,5 @@
     &copy; 2025 My PWA. All rights reserved.
   </footer>
 
-  <!-- Register Service Worker -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => console.log('Service Worker registered ✅', reg.scope))
-        .catch(err => console.error('Service Worker registration failed ❌', err));
-    }
-  </script>
 </body>
 </html>
