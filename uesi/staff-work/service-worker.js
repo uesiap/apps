@@ -1,10 +1,10 @@
 const CACHE_NAME = 'my-cache-v1';
 const urlsToCache = [
-  '/',
-  '/apps/uesi/staff-work/',
-  'https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg',
-  '/vidhyarthi-geethavali/Icon512.jpg',
-  '/vidhyarthi-geethavali/uesisongsmain.jpg'  // Add the splash screen image to the cache
+  'https://uesiap.github.io/',
+  'https://uesiap.github.io/apps/uesi/staff-work/',
+  'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg',
+  'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/icon512.jpg',
+  'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesiSplash.jpg'  // Add the splash screen image to the cache
 ];
 
 // Install event
@@ -86,7 +86,7 @@ self.addEventListener('push', event => {
   const title = data.title || 'New Message';
   const options = {
     body: data.body || '',
-    icon: 'https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg',
+    icon: 'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg',
     badge: 'https://whatpwacando.today/src/img/icons/notification.png',
     data: data.url || '/'
   };

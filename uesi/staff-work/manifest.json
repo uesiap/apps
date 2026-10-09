@@ -8,12 +8,12 @@
   "theme_color": "#075E54",
   "icons": [
     {
-      "src": "https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg",
+      "src": "https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg",
       "sizes": "192x192",
       "type": "image/jpeg"
     },
     {
-      "src": "/vidhyarthi-geethavali/Icon512.jpg",
+      "src": "https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg",
       "sizes": "512x512",
       "type": "image/jpeg"
     }
@@ -21,7 +21,7 @@
   "splash_pages": null,
   "screens": [
     {
-      "src": "/vidhyarthi-geethavali/uesisongsmain.jpg",
+      "src": "https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi512.jpg",
       "sizes": "640x1136",
       "type": "image/jpeg",
       "orientation": "portrait"

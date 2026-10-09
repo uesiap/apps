@@ -11,7 +11,7 @@
     const kind = KINDS[document.body.dataset.kind] || KINDS.field;
 
     const DB_ROOT = 'apps/uesi/staff-work/users';
-    const LOGO = 'https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg';
+    const LOGO = 'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg';
     const SPECIAL_WORDS = ['day off', 'preparation', 'holidays', 'leave', 'sick'];
     const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
     const LOAD_TIMEOUT_MS = 20000;
