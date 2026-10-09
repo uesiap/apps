@@ -5,7 +5,7 @@ const urlsToCache = [
   'https://uesiap.github.io/',
   APP_URL,
   'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg',
-  'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/icon512.jpg',
+  'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi512.jpg',
   'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesiSplash.jpg'
 ];
 
