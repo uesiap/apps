@@ -2,77 +2,7 @@
 <html lang="en">
 
 <head>
-    <script>
-        (function () {
-            // Keys to retain in localStorage
-            const keysToRetain = ["bbsRole", "bbsName"];
-
-            // Retrieve the values of the keys to retain
-            const valuesToRetain = {};
-            keysToRetain.forEach((key) => {
-                const value = localStorage.getItem(key);
-                if (value !== null) {
-                    valuesToRetain[key] = value;
-                }
-            });
-
-            // Clear all keys in localStorage except the specified keys
-            Object.keys(localStorage).forEach((key) => {
-                if (!keysToRetain.includes(key)) {
-                    localStorage.removeItem(key);
-                }
-            });
-
-            // Restore the retained key-value pairs
-            Object.keys(valuesToRetain).forEach((key) => {
-                localStorage.setItem(key, valuesToRetain[key]);
-            });
-
-            console.log("LocalStorage cleared except for:", keysToRetain);
-
-            // Clear sessionStorage
-            sessionStorage.clear();
-            console.log("SessionStorage cleared.");
-
-            // Clear IndexedDB data
-            const clearIndexedDB = () => {
-                if (!window.indexedDB) {
-                    console.warn("IndexedDB is not supported by this browser.");
-                    return;
-                }
-                indexedDB.databases().then((databases) => {
-                    databases.forEach((db) => {
-                        indexedDB.deleteDatabase(db.name);
-                        console.log(`Deleted IndexedDB: ${db.name}`);
-                    });
-                }).catch((error) => {
-                    console.error("Error clearing IndexedDB:", error);
-                });
-            };
-
-            // Clear browser cache
-            const clearCache = () => {
-                if ("caches" in window) {
-                    caches.keys().then((cacheNames) => {
-                        cacheNames.forEach((cacheName) => {
-                            caches.delete(cacheName);
-                            console.log(`Deleted Cache: ${cacheName}`);
-                        });
-                    }).catch((error) => {
-                        console.error("Error clearing cache:", error);
-                    });
-                } else {
-                    console.warn("Cache API is not supported by this browser.");
-                }
-            };
-
-            // Execute cleanup functions
-            clearIndexedDB();
-            clearCache();
-
-            console.log(`All data cleared except for ${keysToRetain.join(", ")} in localStorage.`);
-        })();
-    </script>
+    
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -82,15 +12,15 @@
     <meta name="theme-color" content="#075E54" />
     <meta name="background-color" content="#ffffff" />
 
-    <link rel="icon" href="/vidhyarthi-geethavali/Icon192.jpg" type="image/png">
-    <link rel="apple-touch-icon" href="/vidhyarthi-geethavali/Icon-192.jpg">
+    <link rel="icon" href="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" type="image/png">
+    <link rel="apple-touch-icon" href="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg">
 
     <link rel="manifest" href="https://uesiap.github.io/apps/uesi/staff-work/manifest.json" />
     <link rel="canonical" href="https://uesiap.github.io/apps/uesi/staff-work/" />
 
     <meta property="og:title" content="UESI STAFF WORK App" />
     <meta property="og:description" content="Submit, Edit, Generate Field Report and Itinerary Reports using UESI Staff Work App." />
-    <meta property="og:image" content="https://uesiap.github.io/vidhyarthi-geethavali/Icon192.jpg" />
+    <meta property="og:image" content="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" />
     <meta property="og:url" content="https://uesiap.github.io/apps/uesi/staff-work/" />
     <meta property="og:type" content="website" />
 
@@ -100,8 +30,8 @@
     <title>UESI STAFF WORK App</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="/vidhyarthi-geethavali/assets/scripts/boom.js?v={{ site.github.build_revision }}" defer></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -387,7 +317,7 @@
         <div class="app-header" id="app-banner" style="display: none">
             <div class="app-info">
                 <span style="display: flex;">
-                    <img src="https://uesiap.github.io/vidhyarthi-geethavali/Icon192.jpg" alt="App Icon"
+                    <img src="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" alt="App Icon"
                         class="app-icon" />
                     <span style="display: grid;">
                         <div class="app-title-head">UESI Staff Work App</div>
@@ -401,7 +331,7 @@
         <div class="app-header" id="app-banner-open" style="display: none">
             <div class="app-info">
                 <span style="display: flex;">
-                    <img src="https://uesiap.github.io/vidhyarthi-geethavali/Icon192.jpg" alt="App Icon"
+                    <img src="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" alt="App Icon"
                         class="app-icon" />
                     <span style="display: grid;">
                         <div class="app-title-head">UESI Staff Work App</div>
@@ -416,7 +346,7 @@
         <div class="app-header" id="app-banner-installed" style="display: none">
             <div class="app-info">
                 <span style="display: flex;">
-                    <img src="https://uesiap.github.io/vidhyarthi-geethavali/Icon192.jpg" alt="App Icon"
+                    <img src="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" alt="App Icon"
                         class="app-icon" />
                     <span style="display: grid;">
                         <div class="app-title-head">UESI Staff Work App</div>

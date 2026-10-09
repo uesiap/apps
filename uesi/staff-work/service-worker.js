@@ -2,7 +2,7 @@ const CACHE_NAME = 'my-cache-v1';
 const urlsToCache = [
   '/',
   '/apps/uesi/staff-work/',
-  '/vidhyarthi-geethavali/Icon192.jpg',
+  'https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg',
   '/vidhyarthi-geethavali/Icon512.jpg',
   '/vidhyarthi-geethavali/uesisongsmain.jpg'  // Add the splash screen image to the cache
 ];
@@ -86,7 +86,7 @@ self.addEventListener('push', event => {
   const title = data.title || 'New Message';
   const options = {
     body: data.body || '',
-    icon: '/vidhyarthi-geethavali/Icon192.jpg',
+    icon: 'https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg',
     badge: 'https://whatpwacando.today/src/img/icons/notification.png',
     data: data.url || '/'
   };

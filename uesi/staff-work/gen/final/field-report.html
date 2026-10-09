@@ -2,77 +2,7 @@
 <html lang="en">
 
 <head>
-    <script>
-        (function () {
-            // Keys to retain in localStorage
-            const keysToRetain = ["bbsRole", "bbsName"];
 
-            // Retrieve the values of the keys to retain
-            const valuesToRetain = {};
-            keysToRetain.forEach((key) => {
-                const value = localStorage.getItem(key);
-                if (value !== null) {
-                    valuesToRetain[key] = value;
-                }
-            });
-
-            // Clear all keys in localStorage except the specified keys
-            Object.keys(localStorage).forEach((key) => {
-                if (!keysToRetain.includes(key)) {
-                    localStorage.removeItem(key);
-                }
-            });
-
-            // Restore the retained key-value pairs
-            Object.keys(valuesToRetain).forEach((key) => {
-                localStorage.setItem(key, valuesToRetain[key]);
-            });
-
-            console.log("LocalStorage cleared except for:", keysToRetain);
-
-            // Clear sessionStorage
-            sessionStorage.clear();
-            console.log("SessionStorage cleared.");
-
-            // Clear IndexedDB data
-            const clearIndexedDB = () => {
-                if (!window.indexedDB) {
-                    console.warn("IndexedDB is not supported by this browser.");
-                    return;
-                }
-                indexedDB.databases().then((databases) => {
-                    databases.forEach((db) => {
-                        indexedDB.deleteDatabase(db.name);
-                        console.log(`Deleted IndexedDB: ${db.name}`);
-                    });
-                }).catch((error) => {
-                    console.error("Error clearing IndexedDB:", error);
-                });
-            };
-
-            // Clear browser cache
-            const clearCache = () => {
-                if ("caches" in window) {
-                    caches.keys().then((cacheNames) => {
-                        cacheNames.forEach((cacheName) => {
-                            caches.delete(cacheName);
-                            console.log(`Deleted Cache: ${cacheName}`);
-                        });
-                    }).catch((error) => {
-                        console.error("Error clearing cache:", error);
-                    });
-                } else {
-                    console.warn("Cache API is not supported by this browser.");
-                }
-            };
-
-            // Execute cleanup functions
-            clearIndexedDB();
-            clearCache();
-
-            console.log(`All data cleared except for ${keysToRetain.join(", ")} in localStorage.`);
-        })();
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generated Field Report</title>
@@ -83,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
+    <script src="/vidhyarthi-geethavali/assets/scripts/boom.js?v={{ site.github.build_revision }}" defer></script>
     <style>
         :root {
             --primary-color: #075E54;
@@ -430,6 +361,26 @@
         .export-dialog-close:hover {
             background-color: #c82333;
         }
+
+        /* Taller header row to fit the icon */
+.report-table thead tr.report-main-header td {
+    padding: 14px 10px;
+}
+
+.header-with-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 72px;
+}
+
+.header-icon {
+    height: 56px;
+    width: 56px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
     </style>
 </head>
 
@@ -448,7 +399,13 @@
             <table class="report-table" id="fieldReportTable">
                 <thead>
                     <tr class="report-main-header">
-                        <td colspan="5">Union of Evangelical Students of India - <span id="staffState"></span></td>
+                        <td colspan="5">
+                            <div class="header-with-icon">
+                                <img src="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg"
+                                    alt="UESI Logo" class="header-icon">
+                                <span>Union of Evangelical Students of India - <span id="staffState"></span></span>
+                            </div>
+                        </td>
                     </tr>
                     <tr class="report-title-row">
                         <td colspan="5" id="reportGeneratedTitle">FIELD REPORT - [MONTH] [YEAR]</td>
@@ -729,29 +686,29 @@
         function generatePDF() {
             showExportLoading();
             try {
-                const { jsPDF } = window.jspdf;
+                const {jsPDF} = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'a4');
-        
+
                 // Match these to your table's actual body font settings
                 doc.setFont('times', 'normal');
                 doc.setFontSize(9);
-        
+
                 const CELL_PADDING = 2;
                 const PURPOSE_COL_WIDTH = 104; // must match columnStyles[4].cellWidth below
-        
+
                 // Builds hanging-indent text: wrapped/continuation lines align under the text, not the number
                 function formatPurposeForPDF(p) {
                     if (!Array.isArray(p)) return p;
                     const maxWidth = PURPOSE_COL_WIDTH - (CELL_PADDING * 2);
                     const spaceWidth = doc.getTextWidth(' ');
                     const lines = [];
-        
+
                     p.forEach((point, idx) => {
                         const prefix = `${idx + 1}. `;
                         const indent = doc.getTextWidth(prefix);
                         const wrapWidth = maxWidth - indent;
                         const wrapped = doc.splitTextToSize(point, wrapWidth);
-        
+
                         wrapped.forEach((line, li) => {
                             if (li === 0) {
                                 lines.push(prefix + line);
@@ -761,15 +718,15 @@
                             }
                         });
                     });
-        
+
                     return lines.join('\n');
                 }
-        
+
                 function fmtDate(dateStr) {
                     const d = new Date(dateStr + 'T12:00:00');
                     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
                 }
-        
+
                 const body = [];
                 processedTableDataForExport.forEach(item => {
                     if (item.type === 'firstInGroup') {
@@ -777,21 +734,21 @@
                             item.slNoStart,
                             fmtDate(item.date),
                             item.day,
-                            { content: item.zone, rowSpan: item.count },
-                            { content: formatPurposeForPDF(item.purpose), rowSpan: item.count }
+                            {content: item.zone, rowSpan: item.count},
+                            {content: formatPurposeForPDF(item.purpose), rowSpan: item.count}
                         ]);
                     } else {
                         body.push([item.slNo, fmtDate(item.date), item.day]);
                     }
                 });
-        
+
                 const head = [
-                    [{ content: `Union of Evangelical Students of India - ${userState}`, colSpan: 5 }],
-                    [{ content: `FIELD REPORT - ${monthName ? monthName.toUpperCase() : ''} ${selectedYear}`, colSpan: 5 }],
-                    [{ content: `NAME: ${userName}      Base: ${userBase}`, colSpan: 5 }],
+                    [{content: `Union of Evangelical Students of India - ${userState}`, colSpan: 5}],
+                    [{content: `FIELD REPORT - ${monthName ? monthName.toUpperCase() : ''} ${selectedYear}`, colSpan: 5}],
+                    [{content: `NAME: ${userName}      Base: ${userBase}`, colSpan: 5}],
                     ['Sl. No', 'Date', 'Day', 'Zone / Division', 'Purpose']
                 ];
-        
+
                 doc.autoTable({
                     startY: 12,
                     head,
@@ -815,11 +772,11 @@
                         lineWidth: 0.2
                     },
                     columnStyles: {
-                        0: { cellWidth: 12 },
-                        1: { cellWidth: 20 },
-                        2: { cellWidth: 22 },
-                        3: { cellWidth: 28 },
-                        4: { halign: 'left', cellWidth: PURPOSE_COL_WIDTH }
+                        0: {cellWidth: 12},
+                        1: {cellWidth: 20},
+                        2: {cellWidth: 22},
+                        3: {cellWidth: 28},
+                        4: {halign: 'left', cellWidth: PURPOSE_COL_WIDTH}
                     },
                     rowPageBreak: 'avoid',
                     didParseCell: function (data) {
@@ -845,7 +802,7 @@
                         }
                     }
                 });
-        
+
                 doc.save(`${userName} Field Report ${monthName} ${selectedYear}.pdf`);
             } catch (error) {
                 console.error("Error generating PDF:", error);
@@ -866,15 +823,15 @@
 
                 // Add main header rows with colspan and styles for Excel
                 ws_data.push([`Union of Evangelical Students of India - ${userState}`]);
-                merges.push({ s: { r: currentRowIndex, c: 0 }, e: { r: currentRowIndex, c: 4 } }); // Merge across 5 columns
+                merges.push({s: {r: currentRowIndex, c: 0}, e: {r: currentRowIndex, c: 4}}); // Merge across 5 columns
                 currentRowIndex++;
 
                 ws_data.push([`FIELD REPORT - ${monthName ? monthName.toUpperCase() : ''} ${selectedYear}`]);
-                merges.push({ s: { r: currentRowIndex, c: 0 }, e: { r: currentRowIndex, c: 4 } });
+                merges.push({s: {r: currentRowIndex, c: 0}, e: {r: currentRowIndex, c: 4}});
                 currentRowIndex++;
 
                 ws_data.push([`NAME: ${userName}      Base: ${userBase}`]);
-                merges.push({ s: { r: currentRowIndex, c: 0 }, e: { r: currentRowIndex, c: 4 } });
+                merges.push({s: {r: currentRowIndex, c: 0}, e: {r: currentRowIndex, c: 4}});
                 currentRowIndex++;
 
                 ws_data.push([]); // Empty row as separator
@@ -893,13 +850,13 @@
                         const formattedDate = new Date(item.date + 'T12:00:00');
                         rowData.push(`${String(formattedDate.getDate()).padStart(2, '0')}/${String(formattedDate.getMonth() + 1).padStart(2, '0')}/${formattedDate.getFullYear()}`);
                         rowData.push(item.day);
-                        rowData.push(Array.isArray(item.purpose) ? item.purpose.map((x,i) => `${i+1}. ${x}`).join('\n') : item.purpose);
+                        rowData.push(Array.isArray(item.purpose) ? item.purpose.map((x, i) => `${i + 1}. ${x}`).join('\n') : item.purpose);
                         rowData.push(item.purpose);
 
                         // Add merge info for Zone and Purpose columns
                         if (item.count > 1) {
-                            merges.push({ s: { r: currentRowIndex, c: 3 }, e: { r: currentRowIndex + item.count - 1, c: 3 } }); // Zone column
-                            merges.push({ s: { r: currentRowIndex, c: 4 }, e: { r: currentRowIndex + item.count - 1, c: 4 } }); // Purpose column
+                            merges.push({s: {r: currentRowIndex, c: 3}, e: {r: currentRowIndex + item.count - 1, c: 3}}); // Zone column
+                            merges.push({s: {r: currentRowIndex, c: 4}, e: {r: currentRowIndex + item.count - 1, c: 4}}); // Purpose column
                         }
                     } else { // subsequentInGroup
                         rowData.push(item.slNo);
@@ -924,11 +881,11 @@
                 // Set column widths based on your specific request (converted to Excel's wch)
                 // 8% for Sl.No, 12% for Date, 12% for Day, 18% for Zone/Division, 50% for Purpose
                 ws['!cols'] = [
-                    { wch: 6 },  // Sl. No (approx 8%)
-                    { wch: 9 }, // Date (approx 12%)
-                    { wch: 9 }, // DAY (approx 12%)
-                    { wch: 14 }, // Zone / Division (approx 18%)
-                    { wch: 38 }  // Purpose (approx 50%)
+                    {wch: 6},  // Sl. No (approx 8%)
+                    {wch: 9}, // Date (approx 12%)
+                    {wch: 9}, // DAY (approx 12%)
+                    {wch: 14}, // Zone / Division (approx 18%)
+                    {wch: 38}  // Purpose (approx 50%)
                 ];
 
 
@@ -936,58 +893,58 @@
                 const range = XLSX.utils.decode_range(ws['!ref']);
                 for (let R = range.s.r; R <= range.e.r; ++R) {
                     for (let C = range.s.c; C <= range.e.c; ++C) {
-                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                        const cellAddress = XLSX.utils.encode_cell({r: R, c: C});
                         if (!ws[cellAddress]) continue;
 
                         if (!ws[cellAddress].s) ws[cellAddress].s = {};
 
                         // Apply Times New Roman font to all cells
-                        ws[cellAddress].s.font = { name: 'Times New Roman' };
+                        ws[cellAddress].s.font = {name: 'Times New Roman'};
 
                         // Main Report Headers (rows 0, 1, 2)
                         if (R >= 0 && R <= 2) {
                             // Increase font size slightly for these headers in Excel
                             ws[cellAddress].s.font.bold = true;
                             ws[cellAddress].s.font.sz = R === 1 ? 18 : 15; // Report title larger, others slightly larger
-                            ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'center' };
+                            ws[cellAddress].s.alignment = {horizontal: 'center', vertical: 'center'};
                             ws[cellAddress].s.border = {
-                                top: { style: "thin", color: { rgb: "444444" } },
-                                bottom: { style: "thin", color: { rgb: "444444" } },
-                                left: { style: "thin", color: { rgb: "444444" } },
-                                right: { style: "thin", color: { rgb: "444444" } }
+                                top: {style: "thin", color: {rgb: "444444"}},
+                                bottom: {style: "thin", color: {rgb: "444444"}},
+                                left: {style: "thin", color: {rgb: "444444"}},
+                                right: {style: "thin", color: {rgb: "444444"}}
                             };
-                            if (R === 1) ws[cellAddress].s.font.color = { rgb: "075E54" }; // Apply primary color to main title
+                            if (R === 1) ws[cellAddress].s.font.color = {rgb: "075E54"}; // Apply primary color to main title
                         }
                         // Table Headers (row `tableHeaderRowIndex`)
                         else if (R === tableHeaderRowIndex) {
                             ws[cellAddress].s.font.bold = true;
                             ws[cellAddress].s.font.sz = 12; // Adjusted table header font size
-                            ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'center' };
-                            ws[cellAddress].s.fill = { fgColor: { rgb: "F2F2F2" } }; // Light gray background
+                            ws[cellAddress].s.alignment = {horizontal: 'center', vertical: 'center'};
+                            ws[cellAddress].s.fill = {fgColor: {rgb: "F2F2F2"}}; // Light gray background
                             ws[cellAddress].s.border = {
-                                top: { style: "thin", color: { rgb: "444444" } },
-                                bottom: { style: "thin", color: { rgb: "444444" } },
-                                left: { style: "thin", color: { rgb: "444444" } },
-                                right: { style: "thin", color: { rgb: "444444" } }
+                                top: {style: "thin", color: {rgb: "444444"}},
+                                bottom: {style: "thin", color: {rgb: "444444"}},
+                                left: {style: "thin", color: {rgb: "444444"}},
+                                right: {style: "thin", color: {rgb: "444444"}}
                             };
                         }
                         // Table Data Rows
                         else if (R > tableHeaderRowIndex) {
                             ws[cellAddress].s.font.sz = 10; // Adjusted table data font size
                             ws[cellAddress].s.border = {
-                                top: { style: "thin", color: { rgb: "444444" } },
-                                bottom: { style: "thin", color: { rgb: "444444" } },
-                                left: { style: "thin", color: { rgb: "444444" } },
-                                right: { style: "thin", color: { rgb: "444444" } }
+                                top: {style: "thin", color: {rgb: "444444"}},
+                                bottom: {style: "thin", color: {rgb: "444444"}},
+                                left: {style: "thin", color: {rgb: "444444"}},
+                                right: {style: "thin", color: {rgb: "444444"}}
                             };
 
                             // Alignment for data cells
                             if (C >= 0 && C <= 2) { // Sl. No, Date, Day
-                                ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'top' };
+                                ws[cellAddress].s.alignment = {horizontal: 'center', vertical: 'top'};
                             } else if (C === 3) { // Zone / Division
-                                ws[cellAddress].s.alignment = { horizontal: 'center', vertical: 'top' };
+                                ws[cellAddress].s.alignment = {horizontal: 'center', vertical: 'top'};
                             } else if (C === 4) { // Purpose
-                                ws[cellAddress].s.alignment = { horizontal: 'left', vertical: 'top', wrapText: true };
+                                ws[cellAddress].s.alignment = {horizontal: 'left', vertical: 'top', wrapText: true};
                             }
                         }
                     }
@@ -997,7 +954,7 @@
                 merges.forEach(merge => {
                     // Only apply if it's a merge on columns 3 or 4 and it's a data row
                     if ((merge.s.c === 3 || merge.s.c === 4) && merge.s.r > tableHeaderRowIndex) {
-                        const firstCellAddress = XLSX.utils.encode_cell({ r: merge.s.r, c: merge.s.c });
+                        const firstCellAddress = XLSX.utils.encode_cell({r: merge.s.r, c: merge.s.c});
                         if (ws[firstCellAddress] && ws[firstCellAddress].s) {
                             ws[firstCellAddress].s.alignment.vertical = 'center';
                         }
@@ -1215,7 +1172,7 @@
                 document.getElementById('exportReportBtn').style.display = 'none';
 
                 fieldReportRef
-                        .once('value', function (snapshot) {
+                    .once('value', function (snapshot) {
                         document.getElementById('loader').style.display = 'none';
 
                         const rawData = [];
