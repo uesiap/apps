@@ -186,3 +186,22 @@
 .sheet-opt.word i {
     color: #2b579a;
 }
+
+.rpt {
+    min-width: 680px;
+}
+
+.rpt .rpt-brand {
+    min-height: 64px;
+}
+
+.rpt td:first-child {
+    white-space: nowrap;
+}
+
+.rpt-staff-line {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2.5rem;
+}

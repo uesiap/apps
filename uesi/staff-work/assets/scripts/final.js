@@ -6,7 +6,7 @@
 
     const KINDS = {
         field: { path: 'Field_Report', title: 'FIELD REPORT', label: 'Field Report', sheet: 'Field Report', dayHead: 'Day' },
-        itinerary: { path: 'Itinerary_Form', title: 'ITINERARY', label: 'Itinerary', sheet: 'Itinerary Report', dayHead: 'DAY' }
+        itinerary: { path: 'Itinerary_Form', title: 'ITINERARY', label: 'Itinerary Report', sheet: 'Itinerary Report', dayHead: 'DAY' }
     };
     const kind = KINDS[document.body.dataset.kind] || KINDS.field;
 
@@ -15,11 +15,21 @@
     const SPECIAL_WORDS = ['day off', 'preparation', 'holidays', 'leave', 'sick'];
     const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
     const LOAD_TIMEOUT_MS = 20000;
+    const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
     const MONTHS = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
     const COLS = ['Sl. No', 'Date', kind.dayHead, 'Zone / Division', 'Purpose'];
+
+    // Column widths: preview (percent), PDF (mm, total 182), Word (twips, total 10466)
+    const COL_PCT = ['9%', '12%', '13%', '18%', '48%'];
+    const COL_MM = [14, 20, 22, 30, 96];
+    const COL_TW = [900, 1250, 1300, 1900, 5116];
+
+    const LOGO_MM = 12;        // logo size in PDF
+    const LOGO_EMU = 548640;   // logo size in Word (0.6 inch)
+    const NAME_GAP = '            ';
 
     if (!firebase.apps.length) {
         firebase.initializeApp({
@@ -100,6 +110,40 @@
         return r;
     };
 
+    const staffLine = (m, gap) => `NAME: ${m.name}${gap}Base: ${m.base}`;
+    const brandText = (m) => `Union of Evangelical Students of India - ${m.state}`;
+    const fileBase = (m) => safeName(`${m.name} ${kind.label} - ${m.monthName} ${m.year}`);
+
+    /* ---------- Logo (fetched once, reused by PDF and Word) ---------- */
+    let logoPromise = null;
+
+    function loadLogo() {
+        if (!logoPromise) {
+            logoPromise = fetch(LOGO, { cache: 'force-cache' })
+                .then((r) => {
+                    if (!r.ok) throw new Error('logo request failed');
+                    return r.blob();
+                })
+                .then((blob) => new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve({
+                        dataUrl: reader.result,
+                        base64: String(reader.result).split(',')[1],
+                        isPng: /png/i.test(blob.type),
+                        fmt: /png/i.test(blob.type) ? 'PNG' : 'JPEG',
+                        ext: /png/i.test(blob.type) ? 'png' : 'jpeg'
+                    });
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                }))
+                .catch((err) => {
+                    console.warn('Logo unavailable for export:', err);
+                    return null;
+                });
+        }
+        return logoPromise;
+    }
+
     /* ---------- Build report rows (same grouping rules as before) ---------- */
     function buildRows(entries) {
         const rows = [];
@@ -149,8 +193,6 @@
         };
     }
 
-    const fileBase = (m) => safeName(`${m.name} ${kind.label} ${m.monthName} ${m.year}`);
-
     /* ---------- Data ---------- */
     async function load() {
         const key = view.key;
@@ -191,22 +233,39 @@
     }
 
     /* ---------- Paper (on-screen preview) ---------- */
+    function buildColgroup() {
+        const cg = el('colgroup');
+        COL_PCT.forEach((w) => {
+            const c = el('col');
+            c.style.width = w;
+            cg.append(c);
+        });
+        return cg;
+    }
+
     function buildHead(m) {
         const brand = el('div', 'rpt-brand');
         const logo = el('img', 'rpt-logo');
         logo.src = LOGO;
         logo.alt = '';
-        brand.append(logo, el('span', '', `Union of Evangelical Students of India - ${m.state}`));
+        brand.append(logo, el('span', '', brandText(m)));
 
         const brandCell = el('td');
         brandCell.colSpan = 5;
         brandCell.append(brand);
 
+        const staff = el('div', 'rpt-staff-line');
+        staff.append(el('span', '', `NAME: ${m.name}`), el('span', '', `Base: ${m.base}`));
+
+        const staffCell = el('td');
+        staffCell.colSpan = 5;
+        staffCell.append(staff);
+
         const thead = el('thead');
         thead.append(
             tr('rpt-main', [brandCell]),
             tr('rpt-title', [cell(m.title, 5)]),
-            tr('rpt-staff', [cell(`NAME: ${m.name}    Base: ${m.base}`, 5)]),
+            tr('rpt-staff', [staffCell]),
             tr('', COLS.map((c) => el('th', '', c)))
         );
         return thead;
@@ -245,7 +304,7 @@
 
     function renderPaper(m) {
         const table = el('table', 'rpt');
-        table.append(buildHead(m), buildBody(m.rows));
+        table.append(buildColgroup(), buildHead(m), buildBody(m.rows));
 
         const scroll = el('div', 'rpt-scroll');
         scroll.append(table);
@@ -304,7 +363,7 @@
     }
 
     /* ---------- PDF ---------- */
-    function exportPdf(m) {
+    function exportPdf(m, logo) {
         if (!window.jspdf || !window.jspdf.jsPDF) throw new Error('jsPDF not loaded');
 
         const { jsPDF } = window.jspdf;
@@ -313,7 +372,7 @@
         doc.setFontSize(9);
 
         const PAD = 2;
-        const PURPOSE_W = 100; // 12 + 20 + 22 + 28 + 100 = 182mm, fits A4 with 14mm margins
+        const PURPOSE_W = COL_MM[4];
 
         // Hanging indent: wrapped lines line up under the text, not the number
         const hanging = (points) => {
@@ -345,11 +404,18 @@
         });
 
         const head = [
-            [{ content: `Union of Evangelical Students of India - ${m.state}`, colSpan: 5, styles: { fontSize: 12, fontStyle: 'bold' } }],
+            // Brand row is empty here; the logo and text are drawn in didDrawCell
+            [{ content: '', colSpan: 5, styles: { minCellHeight: 16 } }],
             [{ content: m.title, colSpan: 5, styles: { fontSize: 15, fontStyle: 'bold', textColor: [7, 94, 84] } }],
-            [{ content: `NAME: ${m.name}      Base: ${m.base}`, colSpan: 5, styles: { fontSize: 12, fontStyle: 'bold' } }],
+            [{ content: staffLine(m, NAME_GAP), colSpan: 5, styles: { fontSize: 12, fontStyle: 'bold' } }],
             COLS.map((c) => ({ content: c, styles: { fontSize: 10, fontStyle: 'bold', fillColor: [242, 242, 242] } }))
         ];
+
+        const columnStyles = {};
+        COL_MM.forEach((w, i) => {
+            columnStyles[i] = { cellWidth: w };
+        });
+        columnStyles[4].halign = 'left';
 
         doc.autoTable({
             startY: 12,
@@ -375,14 +441,27 @@
                 lineWidth: 0.2,
                 halign: 'center'
             },
-            columnStyles: {
-                0: { cellWidth: 12 },
-                1: { cellWidth: 20 },
-                2: { cellWidth: 22 },
-                3: { cellWidth: 28 },
-                4: { halign: 'left', cellWidth: PURPOSE_W }
-            },
-            rowPageBreak: 'avoid'
+            columnStyles,
+            rowPageBreak: 'avoid',
+            didDrawCell(data) {
+                if (data.section !== 'head' || data.row.index !== 0 || data.column.index !== 0) return;
+
+                const text = brandText(m);
+                doc.setFont('times', 'bold');
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+
+                const gap = 3;
+                const textW = doc.getTextWidth(text);
+                const total = logo ? LOGO_MM + gap + textW : textW;
+                const x0 = data.cell.x + (data.cell.width - total) / 2;
+                const cy = data.cell.y + data.cell.height / 2;
+
+                if (logo) {
+                    doc.addImage(logo.dataUrl, logo.fmt, x0, cy - LOGO_MM / 2, LOGO_MM, LOGO_MM);
+                }
+                doc.text(text, x0 + (logo ? LOGO_MM + gap : 0), cy, { baseline: 'middle' });
+            }
         });
 
         doc.save(`${fileBase(m)}.pdf`);
@@ -392,11 +471,10 @@
     function exportExcel(m) {
         if (typeof XLSX === 'undefined') throw new Error('SheetJS not loaded');
 
-        const HEADER_ROW = 4;
         const aoa = [
-            [`Union of Evangelical Students of India - ${m.state}`],
+            [brandText(m)],
             [m.title],
-            [`NAME: ${m.name}      Base: ${m.base}`],
+            [staffLine(m, NAME_GAP)],
             [],
             COLS
         ];
@@ -428,63 +506,170 @@
         const ws = XLSX.utils.aoa_to_sheet(aoa);
         ws['!merges'] = merges;
         ws['!cols'] = [{ wch: 8 }, { wch: 12 }, { wch: 12 }, { wch: 18 }, { wch: 60 }];
+        ws['!rows'] = [{ hpt: 44 }, { hpt: 30 }, { hpt: 26 }];
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, kind.sheet);
         XLSX.writeFile(wb, `${fileBase(m)}.xlsx`);
     }
 
-    /* ---------- Word (HTML saved as .doc) ---------- */
-    function exportWord(m) {
-        const rowsHtml = m.rows.map((row) => {
-            let html = `<tr><td>${row.sl}</td><td class="nw">${fmtDate(row.date)}</td><td class="nw">${escapeHtml(row.day)}</td>`;
+    /* ---------- Word (.docx built directly, so Word opens it cleanly) ---------- */
+    function docxRun(text, o = {}) {
+        const rPr = '<w:rPr>' +
+            '<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>' +
+            (o.b ? '<w:b/>' : '') +
+            (o.color ? `<w:color w:val="${o.color}"/>` : '') +
+            `<w:sz w:val="${o.sz || 20}"/><w:szCs w:val="${o.sz || 20}"/>` +
+            '</w:rPr>';
+        return `<w:r>${rPr}<w:t xml:space="preserve">${escapeHtml(text)}</w:t></w:r>`;
+    }
+
+    function docxPara(runs, o = {}) {
+        return '<w:p><w:pPr>' +
+            '<w:spacing w:before="0" w:after="0"/>' +
+            (o.hang ? '<w:ind w:left="284" w:hanging="284"/>' : '') +
+            (o.center ? '<w:jc w:val="center"/>' : '') +
+            '</w:pPr>' + runs + '</w:p>';
+    }
+
+    function docxCell(width, paragraphs, o = {}) {
+        let tcPr = `<w:tcW w:w="${width}" w:type="dxa"/>`;
+        if (o.span) tcPr += `<w:gridSpan w:val="${o.span}"/>`;
+        if (o.vm === 'restart') tcPr += '<w:vMerge w:val="restart"/>';
+        if (o.vm === 'cont') tcPr += '<w:vMerge/>';
+        if (o.shade) tcPr += '<w:shd w:val="clear" w:color="auto" w:fill="F2F2F2"/>';
+        tcPr += '<w:vAlign w:val="center"/>';
+        return `<w:tc><w:tcPr>${tcPr}</w:tcPr>${paragraphs}</w:tc>`;
+    }
+
+    function docxRow(cells, o = {}) {
+        const trPr = o.height ? `<w:trPr><w:trHeight w:val="${o.height}" w:hRule="atLeast"/></w:trPr>` : '';
+        return `<w:tr>${trPr}${cells.join('')}</w:tr>`;
+    }
+
+    function docxLogoRun(logo) {
+        const cx = LOGO_EMU;
+        return '<w:r><w:drawing>' +
+            '<wp:inline distT="0" distB="0" distL="0" distR="0">' +
+            `<wp:extent cx="${cx}" cy="${cx}"/>` +
+            '<wp:docPr id="1" name="UESI Logo"/>' +
+            '<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>' +
+            '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
+            '<pic:pic><pic:nvPicPr><pic:cNvPr id="1" name="logo"/><pic:cNvPicPr/></pic:nvPicPr>' +
+            '<pic:blipFill><a:blip r:embed="rIdLogo"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>' +
+            `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cx}"/></a:xfrm>` +
+            '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>' +
+            '</a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
+    }
+
+    function buildDocumentXml(m, logo) {
+        const TEXT_W = COL_TW.reduce((a, b) => a + b, 0);
+        const grid = COL_TW.map((w) => `<w:gridCol w:w="${w}"/>`).join('');
+
+        const brandRuns = (logo ? docxLogoRun(logo) + docxRun('  ') : '') +
+            docxRun(brandText(m), { b: true, sz: 24 });
+
+        const rows = [];
+
+        rows.push(docxRow([
+            docxCell(TEXT_W, docxPara(brandRuns, { center: true }), { span: 5 })
+        ], { height: 900 }));
+
+        rows.push(docxRow([
+            docxCell(TEXT_W, docxPara(docxRun(m.title, { b: true, sz: 30, color: '075E54' }), { center: true }), { span: 5 })
+        ]));
+
+        rows.push(docxRow([
+            docxCell(TEXT_W, docxPara(docxRun(staffLine(m, NAME_GAP), { b: true, sz: 24 }), { center: true }), { span: 5 })
+        ]));
+
+        rows.push(docxRow(COLS.map((c, i) =>
+            docxCell(COL_TW[i], docxPara(docxRun(c, { b: true }), { center: true }), { shade: true })
+        )));
+
+        m.rows.forEach((row) => {
+            const cells = [
+                docxCell(COL_TW[0], docxPara(docxRun(String(row.sl)), { center: true })),
+                docxCell(COL_TW[1], docxPara(docxRun(fmtDate(row.date)), { center: true })),
+                docxCell(COL_TW[2], docxPara(docxRun(row.day), { center: true }))
+            ];
+
             if (row.span > 0) {
-                const points = row.purpose.map((p) => `<li>${escapeHtml(p)}</li>`).join('');
-                html += `<td rowspan="${row.span}" class="mid">${escapeHtml(row.zone)}</td>` +
-                    `<td rowspan="${row.span}" class="mid" style="text-align:left;"><ol style="margin:0;padding-left:1.2em;">${points}</ol></td>`;
+                cells.push(
+                    docxCell(COL_TW[3], docxPara(docxRun(row.zone), { center: true }), { vm: 'restart' }),
+                    docxCell(
+                        COL_TW[4],
+                        row.purpose.map((p, i) =>
+                            docxPara(docxRun(`${i + 1}.`) + '<w:r><w:tab/></w:r>' + docxRun(p), { hang: true })
+                        ).join('') || docxPara(''),
+                        { vm: 'restart' }
+                    )
+                );
+            } else {
+                cells.push(
+                    docxCell(COL_TW[3], docxPara(''), { vm: 'cont' }),
+                    docxCell(COL_TW[4], docxPara(''), { vm: 'cont' })
+                );
             }
-            return html + '</tr>';
-        }).join('');
+            rows.push(docxRow(cells));
+        });
 
-        const headCells = COLS.map((c) => `<th>${escapeHtml(c)}</th>`).join('');
+        const border = (side) => `<w:${side} w:val="single" w:sz="4" w:space="0" w:color="444444"/>`;
+        const table = '<w:tbl><w:tblPr>' +
+            `<w:tblW w:w="${TEXT_W}" w:type="dxa"/>` +
+            '<w:tblBorders>' + ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(border).join('') + '</w:tblBorders>' +
+            '<w:tblLayout w:type="fixed"/>' +
+            `</w:tblPr><w:tblGrid>${grid}</w:tblGrid>${rows.join('')}</w:tbl>`;
 
-        const html = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>${escapeHtml(fileBase(m))}</title>
-<style>
-body { font-family: 'Times New Roman', Times, serif; color: #000; }
-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-td, th { border: 1px solid #444; padding: 6px; text-align: center; vertical-align: top; font-family: 'Times New Roman', Times, serif; font-size: 12px; }
-th { background: #f2f2f2; font-weight: bold; }
-.main td { font-weight: bold; font-size: 15px; }
-.title td { font-weight: bold; font-size: 18px; color: #075E54; }
-.staff td { font-weight: bold; font-size: 15px; }
-.nw { white-space: nowrap; }
-.mid { vertical-align: middle; }
-</style>
-</head>
-<body>
-<table>
-<colgroup>
-<col style="width:8%"><col style="width:12%"><col style="width:12%"><col style="width:18%"><col style="width:50%">
-</colgroup>
-<thead>
-<tr class="main"><td colspan="5">Union of Evangelical Students of India - ${escapeHtml(m.state)}</td></tr>
-<tr class="title"><td colspan="5">${escapeHtml(m.title)}</td></tr>
-<tr class="staff"><td colspan="5">NAME: ${escapeHtml(m.name)} &nbsp;&nbsp;&nbsp;&nbsp; Base: ${escapeHtml(m.base)}</td></tr>
-<tr>${headCells}</tr>
-</thead>
-<tbody>${rowsHtml}</tbody>
-</table>
-</body>
-</html>`;
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<w:document ' +
+            'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ' +
+            'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ' +
+            'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" ' +
+            'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ' +
+            'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
+            '<w:body>' + table + docxPara('') +
+            '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/>' +
+            '<w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="360" w:footer="360" w:gutter="0"/>' +
+            '</w:sectPr></w:body></w:document>';
+    }
 
-        saveBlob(
-            new Blob(['\ufeff', html], { type: 'application/msword' }),
-            `${fileBase(m)}.doc`
-        );
+    async function exportDocx(m, logo) {
+        if (typeof JSZip === 'undefined') throw new Error('JSZip not loaded');
+
+        const zip = new JSZip();
+        const ext = logo ? logo.ext : 'jpeg';
+
+        zip.file('[Content_Types].xml',
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+            '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+            '<Default Extension="xml" ContentType="application/xml"/>' +
+            '<Default Extension="jpeg" ContentType="image/jpeg"/>' +
+            '<Default Extension="png" ContentType="image/png"/>' +
+            '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+            '</Types>');
+
+        zip.file('_rels/.rels',
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+            '</Relationships>');
+
+        zip.file('word/_rels/document.xml.rels',
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+            (logo
+                ? `<Relationship Id="rIdLogo" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.${ext}"/>`
+                : '') +
+            '</Relationships>');
+
+        zip.file('word/document.xml', buildDocumentXml(m, logo));
+
+        if (logo) zip.file(`word/media/logo.${ext}`, logo.base64, { base64: true });
+
+        const blob = await zip.generateAsync({ type: 'blob', mimeType: DOCX_MIME, compression: 'DEFLATE' });
+        saveBlob(blob, `${fileBase(m)}.docx`);
     }
 
     /* ---------- Export runner ---------- */
@@ -497,12 +682,14 @@ th { background: #f2f2f2; font-weight: bold; }
         closeSheet();
         const btn = $('exportBtn');
         setLoading(btn, true, 'Preparing...');
-        await new Promise((r) => setTimeout(r, 50)); // let the spinner paint
 
         try {
-            if (type === 'pdf') exportPdf(model);
+            const logo = await loadLogo();
+            await new Promise((r) => setTimeout(r, 50)); // let the spinner paint
+
+            if (type === 'pdf') exportPdf(model, logo);
             if (type === 'excel') exportExcel(model);
-            if (type === 'word') exportWord(model);
+            if (type === 'word') await exportDocx(model, logo);
         } catch (err) {
             console.error(`${type} export failed:`, err);
             notify(`Could not create the ${type.toUpperCase()} file. Please try again.`, 'error');
@@ -560,5 +747,6 @@ th { background: #f2f2f2; font-weight: bold; }
         setLoading($('exportBtn'), false);
     });
 
+    loadLogo(); // start fetching the logo early so exports are ready
     Session.watch(onAuth);
 })();

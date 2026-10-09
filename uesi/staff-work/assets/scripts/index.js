@@ -35,8 +35,6 @@
     const pad = (n) => String(n).padStart(2, '0');
     const toYMD = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     const weekdayOf = (ymd) => new Date(ymd + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
-    const initialsOf = (name) =>
-        name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('') || '?';
 
     function datesBetween(startStr, endStr) {
         const out = [];
@@ -72,7 +70,6 @@
 
         $('drawerName').textContent = session ? session.name : 'Not logged in';
         $('drawerEmail').textContent = session ? session.email : '';
-        $('drawerInitial').textContent = session ? initialsOf(session.name) : '?';
 
         if (session) {
             $('greetName').textContent = session.name;

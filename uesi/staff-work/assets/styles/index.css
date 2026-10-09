@@ -1,7 +1,4 @@
-/* =========================================================
-   index.css - home page only.
-   Shared theme and components live in common.css.
-   ========================================================= */
+
 
 /* ---------- Login gate ---------- */
 .auth-screen {
@@ -107,4 +104,18 @@
     display: grid;
     place-items: center;
     flex-shrink: 0;
+}
+
+.drawer-avatar-img {
+    background: #fff;
+    padding: 4px;
+    overflow: hidden;
+}
+
+.drawer-avatar-img img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
 }
