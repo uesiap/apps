@@ -557,7 +557,7 @@ body:not(.is-guest) .needs-guest {
 
 .drawer-foot {
     padding: 12px 20px;
-    font-size: 0.75rem;
+    font-size: 0.95rem;
     color: var(--muted);
     border-top: 1px solid var(--line-2);
 }
