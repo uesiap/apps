@@ -1,7 +1,4 @@
-/* =========================================================
-   index.js - home page: login gate, forms, install prompt, push setup.
-   Depends on common.js (window.UI) and the Firebase compat scripts.
-   ========================================================= */
+
 (() => {
     'use strict';
 
@@ -12,8 +9,8 @@
     const DB_ROOT = 'apps/uesi/staff-work/users';
     const MAX_RANGE_DAYS = 62;
     const SAVE_TIMEOUT_MS = 20000;
-    const PUSH_ENDPOINT = 'https://rahul.serv00.net/apps/web-push/apps/sample/save-subscription.php';
-    const VAPID_PUBLIC_KEY = 'BMEz2RWWPeRNP5_7f_UaBSSmLclANhlwIA0hZf7KsKuTZakj89IpglnFRKhfVKsMveEgXTx10z4vvbwSCsYVLfI';
+    const PUSH_ENDPOINT = 'https://uesi.ruvs.in/apps/staff/work/api/subscribe';
+    const VAPID_PUBLIC_KEY = 'BPHR6KT0pldq-HrY0PvrnhodCx0Qpb8OHCBHdM9RbfpyhywI1Tl3QW67_o42zCnl1nkpy30kjvJmzZf8AfzsGg0';
 
     // Each form is described once. Adding a form means adding one entry here.
     const FORMS = {
@@ -308,12 +305,21 @@
         return Uint8Array.from(raw, (c) => c.charCodeAt(0));
     }
 
+    
     async function enablePush() {
         if (pushAttempted) return;
         pushAttempted = true;
 
-        if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
+        if (
+            !('serviceWorker' in navigator) ||
+            !('PushManager' in window) ||
+            !('Notification' in window)
+        ) return;
+
         if (Notification.permission === 'denied') return;
+
+        const session = Session.read();
+        if (!session?.email) return;
 
         try {
             const registration = await navigator.serviceWorker.ready;
@@ -323,22 +329,35 @@
                 if (result !== 'granted') return;
             }
 
-            if (await registration.pushManager.getSubscription()) return;
+            let subscription = await registration.pushManager.getSubscription();
 
-            const subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-            });
+            if (!subscription) {
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+                });
+            }
 
-            await fetch(PUSH_ENDPOINT, {
+            const response = await fetch(PUSH_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(subscription)
+                body: JSON.stringify({
+                    email: session.email,
+                    name: session.name || '',
+                    subscription: subscription.toJSON()
+                })
             });
+
+            if (!response.ok) {
+                throw new Error(`Subscription API returned HTTP ${response.status}`);
+            }
+
+            console.log('Push subscription registered successfully.');
         } catch (err) {
-            console.warn('Push setup skipped:', err);
+            console.warn('Push setup failed:', err);
         }
     }
+
 
     /* ---------- Drawer actions ---------- */
     $('drawer').addEventListener('click', (e) => {
