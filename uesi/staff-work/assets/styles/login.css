@@ -1,0 +1,95 @@
+
+body.checking .login-wrap {
+    visibility: hidden;
+}
+
+.app-header.centered {
+    justify-content: center;
+}
+
+.login-hero {
+    background: var(--brand);
+    color: #fff;
+    text-align: center;
+    padding: calc(var(--header-h) + var(--safe-top) + 28px) 24px 64px;
+    border-radius: 0 0 28px 28px;
+}
+
+.login-logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    margin-bottom: 14px;
+}
+
+.login-hero h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.login-hero p {
+    font-size: 0.92rem;
+    opacity: 0.9;
+}
+
+.login-wrap {
+    max-width: 420px;
+    margin: -40px auto 0;
+    padding: 0 16px calc(var(--safe-bottom) + 32px);
+}
+
+.login-card {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-1);
+}
+
+.login-card .field:last-of-type {
+    margin-bottom: 24px;
+}
+
+/* Password field with show/hide toggle */
+.pw-wrap {
+    position: relative;
+}
+
+.pw-wrap .input {
+    padding-right: 56px;
+}
+
+.pw-toggle {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+}
+
+.login-foot {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 20px;
+}
+
+.login-foot a {
+    color: #197afe;
+}
+
+@media (min-width: 768px) {
+    .login-wrap {
+        margin-top: -48px;
+    }
+
+    .login-card {
+        padding: 28px;
+    }
+}

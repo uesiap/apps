@@ -1,497 +1,90 @@
+---
+---
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UESI STAFF WORK - LOGIN</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/6ff5af2422.js" crossorigin="anonymous"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="/vidhyarthi-geethavali/assets/scripts/boom.js?v={{ site.github.build_revision }}" defer></script> <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <style>
-        :root {
-            --primary-color: #075E54;
-            /* From your index.html */
-            --primary-dark: #075E54;
-            /* From your index.html */
-            --text-light: #ffffff;
-            /* From your index.html */
-            --text-dark: #333333;
-            /* From your index.html */
-            --text-gray: #666666;
-            /* From your index.html */
-            --bg-light: #f8f9fa;
-            /* Changed to match your body bg */
-            --bg-white: #ffffff;
-            /* From your index.html */
-            --border-light: #eeeeee;
-            /* From your index.html */
-            --shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-            /* From your index.html */
-            --transition: all 0.3s ease;
-            /* From your index.html */
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-            /* Dark mode colors - Re-evaluate if you need dark mode toggling here */
-            --bg-color-dark: #171c20;
-            --text-color-dark: #f8f9fa;
-            --container-bg-dark: #1f252b;
-            /* Slightly lighter dark container */
-            --input-bg-dark: #2e353c;
-            /* Darker input background */
-        }
+    <!-- Keep staff pages out of search results and stop URLs leaking via referrer -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet" />
+    <meta name="referrer" content="no-referrer" />
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-            /* Consistent font */
-        }
+    <meta name="theme-color" content="#075E54" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="UESI Staff Work" />
 
-        body {
-            background-color: var(--bg-light);
-            color: var(--text-dark);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
+    <link rel="icon" href="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" type="image/png" />
+    <link rel="apple-touch-icon" href="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" />
 
-        body.dark-mode {
-            background-color: var(--bg-color-dark);
-            color: var(--text-color-dark);
-        }
+    <title>Login - UESI Staff Work</title>
 
-        .container {
-            margin-top: 3rem;
-            max-width: 450px;
-            /* Adjusted for better form appearance */
-            width: 100%;
-            background-color: var(--bg-white);
-            /* Matches your index.html containers */
-            border: 1px solid var(--primary-color);
-            /* Consistent border */
-            padding: 30px;
-            border-radius: 8px;
-            /* Consistent border-radius */
-            box-shadow: var(--shadow);
-            /* Consistent shadow */
-        }
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v={{ site.github.build_revision }}" rel="stylesheet" />
 
-        body.dark-mode .container {
-            background-color: var(--container-bg-dark);
-            border-color: #5a46a1;
-        }
+    <link rel="stylesheet" href="/apps/uesi/staff-work/assets/styles/common.css?v={{ site.github.build_revision }}" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/assets/styles/login.css?v={{ site.github.build_revision }}" />
 
-        h3.card-title {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px dotted var(--primary-color);
-        }
-
-        body.dark-mode h3.card-title {
-            color: #90caf9;
-            border-bottom-color: #90caf9;
-        }
-
-        p {
-            font-size: 1rem;
-            color: var(--text-gray);
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        body.dark-mode p {
-            color: #ccc;
-        }
-
-
-        .form-control {
-            width: 100%;
-            padding: 10px;
-            font-size: 1.1rem;
-            border: 2px solid #999;
-            /* Consistent border style */
-            border-radius: 5px;
-            /* Consistent border-radius */
-            box-sizing: border-box;
-            margin-bottom: 15px;
-            background-color: var(--input-bg-light);
-            color: var(--text-dark);
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-color);
-            /* Consistent focus color */
-            box-shadow: 0 0 5px rgba(7, 94, 84, 0.5);
-            /* Consistent glow */
-            outline: none;
-        }
-
-        body.dark-mode .form-control {
-            background-color: var(--input-bg-dark);
-            color: var(--text-color-dark);
-            border-color: #555;
-        }
-
-        body.dark-mode .form-control:focus {
-            border-color: #90caf9;
-            box-shadow: 0 0 5px rgba(144, 202, 249, 0.5);
-        }
-
-        .btn-outline-primary {
-            display: block;
-            width: 100%;
-            padding: 12px 20px;
-            background-color: var(--primary-color);
-            /* Primary color fill */
-            color: var(--text-light);
-            /* White text */
-            border: 2px solid var(--primary-color);
-            /* Solid border in primary color */
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: 500;
-            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-        }
-
-        .btn-outline-primary:hover {
-            background-color: #054a43;
-            /* Slightly darker on hover */
-            border-color: #054a43;
-            color: var(--text-light);
-        }
-
-        body.dark-mode .btn-outline-primary {
-            background-color: #5a46a1;
-            border-color: #5a46a1;
-            color: var(--text-light);
-        }
-
-        body.dark-mode .btn-outline-primary:hover {
-            background-color: #4a3880;
-            border-color: #4a3880;
-        }
-
-
-        /* Loader Styles */
-        #loaderContainer {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            /* Darker overlay */
-            z-index: 9999;
-            flex-direction: column;
-        }
-
-        #loader .spinner {
-            border: 6px solid #f3f3f3;
-            border-top: 6px solid var(--primary-color);
-            /* Use primary color for spinner */
-            border-radius: 50%;
-            width: 60px;
-            /* Slightly larger spinner */
-            height: 60px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-
-        body.dark-mode #loader .spinner {
-            border-top-color: #90caf9;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Success Message Container */
-        #thanksContainer {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-light); /* Match body background */
-            z-index: 999; /* Below loader */
-            flex-direction: column;
-            text-align: center;
-            padding: 20px;
-        }
-
-        body.dark-mode #thanksContainer {
-            background-color: var(--bg-color-dark);
-        }
-
-        #thanksContainer .card {
-            background-color: var(--bg-white);
-            border: 1px solid #28a745;
-            /* Green border for success */
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: var(--shadow);
-            max-width: 400px;
-            width: 100%;
-        }
-
-        body.dark-mode #thanksContainer .card {
-            background-color: var(--container-bg-dark);
-            border-color: #28a745; /* Still green border */
-        }
-
-
-        #thanksContainer .card-title {
-            font-size: 1.6rem;
-            font-weight: 600;
-            color: #28a745;
-            /* Success green */
-            margin-bottom: 10px;
-        }
-
-        body.dark-mode #thanksContainer .card-title {
-            color: #8bc34a; /* Lighter green for dark mode */
-        }
-
-
-        #thanksContainer p {
-            font-size: 1.1rem;
-            color: var(--text-gray);
-        }
-
-
-        /* Error Dialog (Refined) */
-        #dialog {
-            display: none;
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fff;
-            border: 2px solid #dc3545;
-            /* Error red */
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            max-width: 350px;
-            width: 90%;
-            z-index: 10000;
-        }
-
-        body.dark-mode #dialog {
-            background-color: var(--container-bg-dark);
-        }
-
-        #dialog h5 {
-            font-size: 1.3rem;
-            color: #dc3545;
-            margin-bottom: 10px;
-        }
-
-        #dialog-message {
-            color: var(--text-dark);
-            font-size: 1rem;
-            margin-bottom: 20px;
-        }
-
-        body.dark-mode #dialog-message {
-            color: var(--text-color-dark);
-        }
-
-
-        #dialog .close {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 1.8rem;
-            cursor: pointer;
-            color: #888;
-            transition: color 0.2s;
-        }
-
-        #dialog .close:hover {
-            color: #333;
-        }
-
-        body.dark-mode #dialog .close:hover {
-            color: #eee;
-        }
-
-        .action-bar {
-            background: var(--primary-color);
-            color: var(--text-light);
-            padding: 0.75rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center; /* Center the title */
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            height: 3.5rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        }
-
-        .app-title {
-            font-size: 1.75rem;
-            font-weight: 600;
-            color: white;
-            letter-spacing: 0.025rem;
-        }
-    </style>
+    <script src="/apps/uesi/staff-work/assets/scripts/boom.js?v={{ site.github.build_revision }}" defer></script>
 </head>
-<body class="bg-gray-100" style="margin-left: 0px; margin-right: 0px">
-    <div class="action-bar">
-        <span class="app-title">UESI Staff Work</span>
-    </div>
-    <div class="action-bar" style="position: absolute; top: 0; width: 100%;">
-        <div style="display: flex; align-items: center; width: 100%;">
-            <span class="app-title" style="color: white; text-align: center; flex-grow: 1;">UESI Staff Work</span>
+
+<body class="checking">
+
+    <header class="app-header centered">
+        <span class="title">UESI Staff Work</span>
+    </header>
+
+    <section class="login-hero">
+        <img src="https://uesiap.github.io/vidhyarthi-geethavali/assets/Icons/uesi192.jpg" alt="" class="login-logo" />
+        <h1>Staff Login</h1>
+        <p>Sign in to submit and manage your reports.</p>
+    </section>
+
+    <main class="login-wrap">
+        <div class="login-card">
+            <form id="loginForm" novalidate autocomplete="on">
+                <div class="field">
+                    <label class="label" for="email">Email</label>
+                    <input class="input" type="email" id="email" name="email"
+                           placeholder="name@example.com" autocomplete="username"
+                           inputmode="email" autocapitalize="off" spellcheck="false" />
+                </div>
+
+                <div class="field">
+                    <label class="label" for="password">Password</label>
+                    <div class="pw-wrap">
+                        <input class="input" type="password" id="password" name="password"
+                               placeholder="Enter your password" autocomplete="current-password" />
+                        <button class="pw-toggle ripple" id="pwToggle" type="button"
+                                aria-label="Show password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary ripple" id="loginSubmit">
+                    <i class="fas fa-right-to-bracket"></i> <span>Login</span>
+                </button>
+            </form>
         </div>
-    </div>
-    <br><br><br> <div id="loaderContainer" style="display: none;">
-        <div class="spinner"></div>
-        <p style="color: white; font-size: 1.2rem; margin-top: 20px;">Logging in...</p>
-    </div>
 
-    <div id="thanksContainer" style="display: none;">
-        <div class="card">
-            <div class="card-body">
-                <h3 class="card-title">
-                    ✅ Login Successful.
-                </h3>
-                <p>Redirecting to Home Screen...</p>
-            </div>
-        </div>
-    </div>
+        <p class="login-foot">
+            App crafted by
+            <a href="https://melamrahul.github.io/" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Rahul</a>
+        </p>
+    </main>
 
-    <div id="dialog" style="display: none;">
-        <span class="close" onclick="closeDialog()">&times;</span>
-        <h5>Error</h5>
-        <p id="dialog-message"></p>
-    </div>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    <div class="container" id="formContainer" style="margin-top: 1rem">
-        <h3 class="card-title">UESI STAFF LOGIN</h3>
-        <p style="color: green">Please enter your credentials</p>
-        <form id="loginForm">
-            <div class="mb-3">
-                <label for="email">Email:</label>
-                <input type="email" id="email" class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="password">Password:</label>
-                <input type="password" id="password" class="form-control" required>
-            </div>
-
-            <button type="submit" class="btn btn-outline-primary">Login</button>
-        </form>
-    </div>
-
-    <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "0AzyPiDT3wSi6WAuNX7YzbyJcvUgV0nyoxMwahn0",
-            authDomain: "uesi-ap-default-rtdb.firebaseio.com",
-            projectId: "uesi-ap",
-            storageBucket: "uesi-ap.appspot.com",
-            databaseURL: "https://uesi-ap-default-rtdb.firebaseio.com" // Added databaseURL
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        // Handle Login
-        document.getElementById('loginForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            document.getElementById('loaderContainer').style.display = 'flex'; // Use flex for centering
-
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-
-            if (!email || !password) {
-                openDialog('Please fill in both email and password.');
-                document.getElementById('loaderContainer').style.display = 'none';
-                return;
-            }
-
-            // Sanitize email for Firebase path
-            const safeEmail = email.replace(/\./g, '_');
-            const userRef = database.ref(`apps/uesi/staff-work/users/${safeEmail}`); // Assuming user data is under /users/
-
-            userRef.once('value')
-                .then(snapshot => {
-                    document.getElementById('loaderContainer').style.display = 'none';
-
-                    if (snapshot.exists()) {
-                        const userData = snapshot.val();
-
-                        if (userData.password === password) {
-                            // Set localStorage values
-                            localStorage.setItem('bbsName', userData.name || '');
-                            localStorage.setItem('bbsRole', email); // Store actual email, not sanitized for local storage
-
-                            document.getElementById('formContainer').style.display = 'none';
-                            document.getElementById('thanksContainer').style.display = 'flex'; // Use flex for centering
-
-                            setTimeout(() => {
-                                window.location.replace('/apps/uesi/staff-work/');
-                            }, 1500);
-                        } else {
-                            openDialog('Incorrect password.');
-                        }
-                    } else {
-                        openDialog('User not found. Please check your email.');
-                    }
-                })
-                .catch(error => {
-                    openDialog('Database error: ' + error.message);
-                    document.getElementById('loaderContainer').style.display = 'none';
-                });
-        });
-
-        // Dialog handlers
-        function openDialog(message) {
-            document.getElementById('dialog-message').innerText = message;
-            document.getElementById('dialog').style.display = 'block';
-        }
-
-        function closeDialog() {
-            document.getElementById('dialog').style.display = 'none';
-        }
-    </script>
-
+    <!-- Shared, then page-specific -->
+    <script src="/apps/uesi/staff-work/assets/scripts/common.js?v={{ site.github.build_revision }}"></script>
+    <script src="/apps/uesi/staff-work/assets/scripts/login.js?v={{ site.github.build_revision }}"></script>
 </body>
-
 </html>
