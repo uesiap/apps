@@ -10,13 +10,29 @@ const urlsToCache = [
 ];
 
 // Install event
+
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+      .then(async cache => {
+        for (const url of urlsToCache) {
+          try {
+            const response = await fetch(url);
+
+            if (response.ok) {
+              await cache.put(url, response);
+            } else {
+              console.warn('Cache skipped:', url, response.status);
+            }
+          } catch (error) {
+            console.warn('Cache skipped:', url, error);
+          }
+        }
+      })
       .then(() => self.skipWaiting())
   );
 });
+
 
 // Activate event
 self.addEventListener('activate', event => {
