@@ -92,11 +92,11 @@ self.addEventListener('push', event => {
     };
   }
 
-  const title = data.title || 'UESI Staff Work Reminder';
+  const title = data.title || 'UESI Staff';
   const options = {
-    body: data.body || 'Please open Staff Work to check your reminder.',
+    body: data.body || "Please submit your today's field report in the App.",
     icon: 'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg',
-    badge: 'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg',
+    badge: 'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/badge.png',
     data: {
       url: data.url || APP_URL
     }
