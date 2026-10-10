@@ -305,6 +305,22 @@
         return Uint8Array.from(raw, (c) => c.charCodeAt(0));
     }
 
+
+    async function deviceLabel() {
+        let platform = '', model = '', brand = '';
+        try {
+            const u = navigator.userAgentData;
+            if (u) {
+                platform = u.platform || '';
+                const real = (u.brands || []).filter((b) => !/not.?a.?brand/i.test(b.brand));
+                brand = (real.find((b) => b.brand !== 'Chromium') || real[0] || {}).brand || '';
+                model = (await u.getHighEntropyValues(['model'])).model || '';
+            }
+        } catch (_) { /* label stays partial */ }
+        if (!platform) platform = navigator.platform || '';
+        return [platform, model, brand, `${screen.width}x${screen.height}`].join('|').slice(0, 200);
+    }
+
     
     async function enablePush() {
         if (pushAttempted) return;
@@ -341,9 +357,10 @@
             const response = await fetch(PUSH_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                    body: JSON.stringify({
                     email: session.email,
                     name: session.name || '',
+                    device: await deviceLabel(),
                     subscription: subscription.toJSON()
                 })
             });

@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'uesi-staff-work-cache-v2';
+const CACHE_NAME = 'uesi-staff-work-cache-v3';
 const APP_URL = 'https://uesiap.github.io/apps/uesi/staff-work/';
 const urlsToCache = [
   'https://uesiap.github.io/',
