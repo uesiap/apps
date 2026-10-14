@@ -16,7 +16,7 @@ const SHELL = [
     '/apps/uesi/staff-work/v1/gen/final/itinerary',
     '/apps/uesi/staff-work/v1/settings/kra',
     '/apps/uesi/staff-work/v1/settings/reflection',
-    '/apps/uesi/staff-work/v1/assets/styles/common.css?v={{ site.github.build_revision }}',
+    '/apps/uesi/staff-work/v1/assets/styles/common.css',
     '/apps/uesi/staff-work/v1/assets/styles/index.css',
     '/apps/uesi/staff-work/v1/assets/styles/login.css',
     '/apps/uesi/staff-work/v1/assets/styles/gen.css',
