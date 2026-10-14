@@ -1,3 +1,4 @@
+// /apps/uesi/staff-work/assets/scripts/gen.js
 
 (() => {
     'use strict';

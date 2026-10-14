@@ -1,5 +1,5 @@
 /* =========================================================
-   common.js - shared by every staff-work page.
+   /apps/uesi/staff-work/assets/scripts/common.js - shared by every staff-work page.
    Owns: touch feedback, drawer, dialogs, loading buttons, session.
    Exposed as window.UI.
    ========================================================= */

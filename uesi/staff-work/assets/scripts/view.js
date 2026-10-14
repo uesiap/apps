@@ -1,3 +1,4 @@
+// /apps/uesi/staff-work/assets/scripts/view.js
 
 (() => {
     'use strict';
