@@ -51,6 +51,8 @@
         const safeEmail = session.email.replace(/\./g, '_');
         const path = `${DB_ROOT}/${safeEmail}/userData/KRA_Objectives/${year}`;
 
+        $('loadState').hidden = false;
+
         try {
             const snap = await withTimeout(db.ref(path).once('value'), TIMEOUT_MS);
             if (token !== loadToken) return;
@@ -63,6 +65,8 @@
             if (token !== loadToken) return;
             console.error('KRA load failed:', err);
             notify('Could not load the KRA objectives. Please try again.', 'error');
+        } finally {
+            if (token === loadToken) $('loadState').hidden = true;
         }
     }
 

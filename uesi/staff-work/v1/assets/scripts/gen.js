@@ -5,8 +5,8 @@
     const { $, Session, notify, setLoading } = window.UI;
 
     const TARGETS = {
-        field:     '/apps/uesi/staff-work/v1/gen/final/field-report.html',
-        itinerary: '/apps/uesi/staff-work/v1/gen/final/itinerary.html'
+        field:     '/apps/uesi/staff-work/v1/gen/final/field-report',
+        itinerary: '/apps/uesi/staff-work/v1/gen/final/itinerary'
     };
 
     const BASE_KEY = 'reportBase_v1';

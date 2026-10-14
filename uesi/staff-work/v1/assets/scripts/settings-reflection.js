@@ -71,6 +71,8 @@
         const path =
             `${DB_ROOT}/${safeEmail}/userData/Monthly_Reflection/${year}/${pad(month)}`;
 
+        $('loadState').hidden = false;
+
         try {
             const snap = await withTimeout(db.ref(path).once('value'), TIMEOUT_MS);
             if (token !== loadToken) return;
@@ -82,6 +84,8 @@
             if (token !== loadToken) return;
             console.error('Reflection load failed:', err);
             notify('Could not load the reflection. Please try again.', 'error');
+        } finally {
+            if (token === loadToken) $('loadState').hidden = true;
         }
     }
 
