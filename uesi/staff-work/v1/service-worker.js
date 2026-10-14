@@ -1,13 +1,12 @@
 // /apps/uesi/staff-work/v1/service-worker.js
 
-const VERSION = 'uesi-staff-v1-2026-10-14-1';
+const VERSION = 'uesi-staff-v1-2026-10-14-3';
 const SHELL_CACHE = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
 const SHELL = [
     '/apps/uesi/staff-work/v1/',
-    '/apps/uesi/staff-work/v1/index.html',
-    '/apps/uesi/staff-work/v1/login.html',
+    '/apps/uesi/staff-work/v1/login',
     '/apps/uesi/staff-work/v1/view/field-report',
     '/apps/uesi/staff-work/v1/view/itinerary',
     '/apps/uesi/staff-work/v1/gen/field-report',
@@ -45,6 +44,10 @@ const BYPASS_HOSTS = [
     'fonts.gstatic.com'
 ];
 
+const NOTIFICATION_ICON = 'https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg';
+const DEFAULT_URL = '/apps/uesi/staff-work/v1/';
+
+/* ---------- Install ---------- */
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(SHELL_CACHE)
@@ -53,6 +56,7 @@ self.addEventListener('install', (event) => {
     );
 });
 
+/* ---------- Activate ---------- */
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys()
@@ -64,19 +68,16 @@ self.addEventListener('activate', (event) => {
     );
 });
 
+/* ---------- Fetch ---------- */
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     if (request.method !== 'GET') return;
 
     const url = new URL(request.url);
 
-    // Let the network handle Firebase, fonts, CDNs — never cache them
     if (BYPASS_HOSTS.some((host) => url.hostname.includes(host))) return;
-
-    // Only handle our own /v1/ origin
     if (!url.pathname.startsWith('/apps/uesi/staff-work/v1/')) return;
 
-    // Network-first for HTML so updates land quickly
     if (request.mode === 'navigate' || request.destination === 'document') {
         event.respondWith(
             fetch(request)
@@ -90,7 +91,6 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Cache-first for static assets
     event.respondWith(
         caches.match(request).then((cached) => {
             if (cached) return cached;
@@ -102,5 +102,47 @@ self.addEventListener('fetch', (event) => {
                 return res;
             });
         })
+    );
+});
+
+/* ---------- Push ---------- */
+self.addEventListener('push', (event) => {
+    let data = {};
+    try {
+        data = event.data ? event.data.json() : {};
+    } catch (_) {
+        try { data = { body: event.data ? event.data.text() : '' }; } catch (_) {}
+    }
+
+    const title = data.title || 'UESI Staff Work';
+    const options = {
+        body: data.body || '',
+        icon: data.icon || NOTIFICATION_ICON,
+        badge: data.badge || NOTIFICATION_ICON,
+        tag: data.tag || 'uesi-general',
+        renotify: Boolean(data.tag),
+        data: { url: data.url || DEFAULT_URL }
+    };
+
+    event.waitUntil(self.registration.showNotification(title, options));
+});
+
+/* ---------- Notification click ---------- */
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const target = event.notification.data?.url || DEFAULT_URL;
+
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then((clientList) => {
+                for (const client of clientList) {
+                    if (client.url.startsWith('/apps/uesi/staff-work/v1/') && 'focus' in client) {
+                        return client.focus();
+                    }
+                }
+                if (self.clients.openWindow) {
+                    return self.clients.openWindow(target);
+                }
+            })
     );
 });
