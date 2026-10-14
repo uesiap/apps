@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#075E54" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="UESI Staff Work v1" />
+    <link rel="canonical" href="https://uesiap.github.io/apps/uesi/staff-work/v1/login" />
+    <link rel="icon" href="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" type="image/png" />
+    <link rel="apple-touch-icon" href="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" />
+    <title>Login - UESI Staff Work v1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/v1/assets/styles/common.css" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/v1/assets/styles/login.css" />
+</head>
+
+<body class="checking">
+    <header class="app-header centered">
+        <span class="title">UESI Staff Work v1</span>
+    </header>
+
+    <section class="login-hero">
+        <img src="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" alt="" class="login-logo" />
+        <h1>Staff Login</h1>
+        <p>Sign in to submit and manage your reports.</p>
+    </section>
+
+    <main class="login-wrap">
+        <div class="login-card">
+            <form id="loginForm" novalidate autocomplete="on">
+                <div class="field">
+                    <label class="label" for="email">Email</label>
+                    <input class="input" type="email" id="email" name="email"
+                           placeholder="name@example.com" autocomplete="username"
+                           inputmode="email" autocapitalize="off" spellcheck="false" />
+                </div>
+
+                <div class="field">
+                    <label class="label" for="password">Password</label>
+                    <div class="pw-wrap">
+                        <input class="input" type="password" id="password" name="password"
+                               placeholder="Enter your password" autocomplete="current-password" />
+                        <button class="pw-toggle ripple" id="pwToggle" type="button"
+                                aria-label="Show password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary ripple" id="loginSubmit">
+                    <i class="fas fa-right-to-bracket"></i> <span>Login</span>
+                </button>
+            </form>
+        </div>
+
+        <p class="login-foot">
+            App crafted by
+            <a href="https://melamrahul.github.io/" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Rahul</a>
+        </p>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="/apps/uesi/staff-work/v1/assets/scripts/common.js"></script>
+    <script src="/apps/uesi/staff-work/v1/assets/scripts/login.js"></script>
+</body>
+</html>

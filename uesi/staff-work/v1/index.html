@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="description" content="UESI Staff Work v1: submit, view and generate KRA-based field reports and itineraries." />
+    <meta name="theme-color" content="#075E54" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="UESI Staff Work v1" />
+    <link rel="canonical" href="https://uesiap.github.io/apps/uesi/staff-work/v1/" />
+    <link rel="icon" href="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" type="image/png" />
+    <link rel="apple-touch-icon" href="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" />
+    <link rel="manifest" href="https://uesiap.github.io/apps/uesi/staff-work/v1/manifest.json" />
+    <title>UESI Staff Work v1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/v1/assets/styles/common.css" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/v1/assets/styles/index.css" />
+</head>
+
+<body class="auth-pending">
+
+    <!-- App bar -->
+    <header class="app-header">
+        <button class="icon-btn ripple" data-drawer-open aria-label="Open menu">
+            <i class="fas fa-bars"></i>
+        </button>
+        <span class="title">UESI Staff Work v1</span>
+    </header>
+
+    <!-- Drawer -->
+    <div class="scrim" id="scrim" data-drawer-close></div>
+    <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Main menu">
+        <div class="drawer-head">
+            <div class="drawer-avatar"><img src="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" alt="" /></div>
+            <div class="drawer-name" id="drawerName">Not logged in</div>
+            <div class="drawer-email" id="drawerEmail"></div>
+        </div>
+
+        <nav class="drawer-body">
+            <div class="drawer-section needs-auth">View data</div>
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/view/field-report.html">
+                <i class="fas fa-eye"></i><span>Field Report</span>
+            </button>
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/view/itinerary.html">
+                <i class="fas fa-route"></i><span>Itinerary</span>
+            </button>
+
+            <div class="drawer-section needs-auth">Generate</div>
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/gen/field-report.html">
+                <i class="fas fa-file-lines"></i><span>Field Report</span>
+            </button>
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/gen/itinerary.html">
+                <i class="fas fa-file-lines"></i><span>Itinerary</span>
+            </button>
+
+            <div class="drawer-section needs-auth">Settings</div>
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/settings/kra.html">
+                <i class="fas fa-bullseye"></i><span>KRA Objectives</span>
+            </button>
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/settings/reflection.html">
+                <i class="fas fa-hands-praying"></i><span>Praise &amp; Prayer</span>
+            </button>
+
+            <div class="drawer-section">More</div>
+            <button class="drawer-item ripple" data-action="share">
+                <i class="fas fa-share-nodes"></i><span>Share App</span>
+            </button>
+            <a class="drawer-item ripple" href="mailto:mrahul.eu@gmail.com">
+                <i class="fas fa-envelope"></i><span>Report an issue</span>
+            </a>
+
+            <div class="drawer-section">Account</div>
+            <button class="drawer-item ripple needs-guest" data-action="login">
+                <i class="fas fa-right-to-bracket"></i><span>Login</span>
+            </button>
+            <button class="drawer-item ripple danger needs-auth" data-action="logout">
+                <i class="fas fa-right-from-bracket"></i><span>Logout</span>
+            </button>
+        </nav>
+
+        <div class="drawer-foot">
+            App v1 · crafted by
+            <a href="https://melamrahul.github.io/" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Rahul</a>
+        </div>
+    </aside>
+
+    <!-- Logged-out screen -->
+    <section id="authScreen" class="auth-screen needs-guest">
+        <img src="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" alt="" class="auth-icon" />
+        <div class="auth-inner">
+            <h1 class="auth-title">UESI Staff Work</h1>
+            <p class="auth-text">Your dedicated app for KRA-based reporting.</p>
+            <button class="btn btn-light ripple" id="loginBtn" type="button">
+                <i class="fas fa-right-to-bracket"></i> Login to continue
+            </button>
+        </div>
+    </section>
+
+    <!-- Logged-in screen -->
+    <main class="page needs-auth" id="appScreen">
+        <div class="greet">
+            <span>Hello,</span> <strong id="greetName">Staff</strong> ✨
+        </div>
+
+        <!-- Field Report -->
+        <section class="tab-panel" data-tab="field" id="panelField">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-file-signature"></i> Field Report Entry</div>
+                <div class="card-sub">Log what you did against a KRA (or as an "Other than KRA" entry).</div>
+
+                <form id="fieldForm" novalidate autocomplete="off">
+                    <div class="label">Date type</div>
+                    <div class="segmented">
+                        <input type="radio" id="f_single" name="f_dateType" value="single" checked />
+                        <label for="f_single">Single day</label>
+                        <input type="radio" id="f_multi" name="f_dateType" value="multi" />
+                        <label for="f_multi">Multi-day</label>
+                    </div>
+
+                    <div class="field" id="f_single_fields">
+                        <label class="label" for="f_date_single">Date</label>
+                        <div class="date-wrap">
+                            <input class="date-input" type="date" id="f_date_single" />
+                            <i class="fas fa-calendar-day cal-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="field hidden" id="f_multi_fields">
+                        <div class="grid-2">
+                            <div>
+                                <label class="label" for="f_start_multi">Start date</label>
+                                <div class="date-wrap">
+                                    <input class="date-input" type="date" id="f_start_multi" />
+                                    <i class="fas fa-calendar-day cal-icon"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="label" for="f_end_multi">End date</label>
+                                <div class="date-wrap">
+                                    <input class="date-input" type="date" id="f_end_multi" />
+                                    <i class="fas fa-calendar-day cal-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label" for="f_kra">KRA</label>
+                        <select class="select" id="f_kra">
+                            <option value="1">1 — First KRA</option>
+                            <option value="2">2 — Second KRA</option>
+                            <option value="3">3 — Third KRA</option>
+                            <option value="4">4 — Fourth KRA</option>
+                            <option value="5">5 — Fifth KRA</option>
+                            <option value="0">Other than KRA (Section 12)</option>
+                        </select>
+                        <div class="hint">Pick "Other than KRA" for day off, meetings, camps, etc.</div>
+                    </div>
+
+                    <div class="field" id="f_place_field">
+                        <label class="label" for="f_place">Place</label>
+                        <input class="input" type="text" id="f_place" placeholder="e.g. Ghatkesar" autocapitalize="words" />
+                        <div class="hint">Only required for "Other than KRA" entries.</div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label" for="f_activity">Activity details</label>
+                        <textarea class="textarea" id="f_activity" rows="5"
+                                  placeholder="Write a short narrative of what happened."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary ripple submit-btn">Submit</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Itinerary -->
+        <section class="tab-panel hidden" data-tab="itinerary" id="panelItinerary">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-route"></i> Itinerary Entry</div>
+                <div class="card-sub">Plan the place, purpose and activities for upcoming days.</div>
+
+                <form id="itineraryForm" novalidate autocomplete="off">
+                    <div class="label">Date type</div>
+                    <div class="segmented">
+                        <input type="radio" id="i_single" name="i_dateType" value="single" checked />
+                        <label for="i_single">Single day</label>
+                        <input type="radio" id="i_multi" name="i_dateType" value="multi" />
+                        <label for="i_multi">Multi-day</label>
+                    </div>
+
+                    <div class="field" id="i_single_fields">
+                        <label class="label" for="i_date_single">Date</label>
+                        <div class="date-wrap">
+                            <input class="date-input" type="date" id="i_date_single" />
+                            <i class="fas fa-calendar-day cal-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="field hidden" id="i_multi_fields">
+                        <div class="grid-2">
+                            <div>
+                                <label class="label" for="i_start_multi">Start date</label>
+                                <div class="date-wrap">
+                                    <input class="date-input" type="date" id="i_start_multi" />
+                                    <i class="fas fa-calendar-day cal-icon"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="label" for="i_end_multi">End date</label>
+                                <div class="date-wrap">
+                                    <input class="date-input" type="date" id="i_end_multi" />
+                                    <i class="fas fa-calendar-day cal-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label" for="i_place">Place &amp; Purpose</label>
+                        <input class="input" type="text" id="i_place"
+                               placeholder="e.g. Kompally or Day off" autocapitalize="words" />
+                    </div>
+
+                    <div class="field">
+                        <label class="label" for="i_activity">Activities with details</label>
+                        <textarea class="textarea" id="i_activity" rows="4"
+                                  placeholder="e.g. Attend the West divisional committee meeting."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary ripple submit-btn">Submit</button>
+                </form>
+            </div>
+        </section>
+
+        <p class="end-note">“Serve the Lord wholeheartedly.” — Eph. 6:7</p>
+    </main>
+
+    <!-- Bottom tab bar -->
+    <nav class="bottom-nav needs-auth" aria-label="Forms">
+        <button class="bnav-item ripple active" data-tab="field">
+            <i class="fas fa-file-signature"></i><span>Field Report</span>
+        </button>
+        <button class="bnav-item ripple" data-tab="itinerary">
+            <i class="fas fa-route"></i><span>Itinerary</span>
+        </button>
+    </nav>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="/apps/uesi/staff-work/v1/assets/scripts/common.js"></script>
+    <script src="/apps/uesi/staff-work/v1/assets/scripts/index.js"></script>
+</body>
+</html>
