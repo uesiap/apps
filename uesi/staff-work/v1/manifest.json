@@ -1,6 +1,6 @@
 {
-    "name": "UESI Staff Work v1",
-    "short_name": "Staff Work v1",
+    "name": "UESI Staff Work",
+    "short_name": "Staff Work",
     "description": "Submit, view and generate KRA-based field reports and itineraries.",
     "start_url": "/apps/uesi/staff-work/v1/",
     "scope": "/apps/uesi/staff-work/v1/",
