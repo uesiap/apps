@@ -7,6 +7,10 @@
     const DB_ROOT = 'apps/uesi/staff-work/v1/users';
     const TIMEOUT_MS = 20000;
     const YEAR_SPAN = 2;
+    const MONTHS = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
 
     if (!firebase.apps.length) {
         firebase.initializeApp({
@@ -17,6 +21,8 @@
         });
     }
     const db = firebase.database();
+
+    const pad = (n) => String(n).padStart(2, '0');
 
     function withTimeout(promise, ms) {
         let timer;
@@ -29,14 +35,24 @@
     let session = null;
     let loadToken = 0;
 
-    /* ---------- Year options ---------- */
-    function fillYears() {
+    /* ---------- Month / Year options ---------- */
+    function fillSelects() {
         const now = new Date();
+
+        $('monthSelect').replaceChildren(
+            ...MONTHS.map((name, i) =>
+                new Option(name, String(i + 1), false, i === now.getMonth())
+            )
+        );
+
         const y = now.getFullYear();
         const years = [];
         for (let year = y - YEAR_SPAN; year <= y + YEAR_SPAN; year++) years.push(year);
+
         $('yearSelect').replaceChildren(
-            ...years.map((year) => new Option(String(year), String(year), false, year === y))
+            ...years.map((year) =>
+                new Option(String(year), String(year), false, year === y)
+            )
         );
     }
 
@@ -46,10 +62,12 @@
 
         const token = ++loadToken;
         const year = $('yearSelect').value;
-        if (!year) return;
+        const month = $('monthSelect').value;
+        if (!year || !month) return;
 
         const safeEmail = session.email.replace(/\./g, '_');
-        const path = `${DB_ROOT}/${safeEmail}/userData/KRA_Objectives/${year}`;
+        const path =
+            `${DB_ROOT}/${safeEmail}/userData/KRA_Objectives/${year}/${pad(month)}`;
 
         $('loadState').hidden = false;
 
@@ -80,6 +98,7 @@
         }
 
         const year = $('yearSelect').value;
+        const month = pad($('monthSelect').value);
         const payload = {};
         let filledCount = 0;
 
@@ -95,13 +114,15 @@
         }
 
         const safeEmail = session.email.replace(/\./g, '_');
-        const path = `${DB_ROOT}/${safeEmail}/userData/KRA_Objectives/${year}`;
+        const path =
+            `${DB_ROOT}/${safeEmail}/userData/KRA_Objectives/${year}/${month}`;
 
         const btn = e.target.querySelector('.submit-btn');
         setLoading(btn, true, 'Saving…');
         try {
             await withTimeout(db.ref(path).set(payload), TIMEOUT_MS);
-            notify(`KRA objectives saved for ${year}.`, 'success', 'Saved');
+            const monthName = MONTHS[Number(month) - 1];
+            notify(`KRA objectives saved for ${monthName} ${year}.`, 'success', 'Saved');
         } catch (err) {
             console.error('KRA save failed:', err);
             notify(
@@ -121,10 +142,11 @@
         else location.href = Session.HOME_URL;
     });
     $('loginBtn').addEventListener('click', () => Session.login());
+    $('monthSelect').addEventListener('change', load);
     $('yearSelect').addEventListener('change', load);
     $('kraForm').addEventListener('submit', onSubmit);
 
-    fillYears();
+    fillSelects();
 
     Session.watch((s) => {
         const body = document.body;

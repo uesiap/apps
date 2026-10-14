@@ -85,21 +85,24 @@
         });
     }
 
-    /* ---------- KRA hint ---------- */
+    /* ---------- KRA hint (per month now) ---------- */
     async function checkKraHint() {
         if (!session) return;
         const year = $('yearSelect').value;
-        if (!year) return;
+        const month = $('monthSelect').value;
+        if (!year || !month) return;
 
         const safeEmail = session.email.replace(/\./g, '_');
-        const path = `${DB_ROOT}/${safeEmail}/userData/KRA_Objectives/${year}`;
+        const path =
+            `${DB_ROOT}/${safeEmail}/userData/KRA_Objectives/${year}/${pad(month)}`;
 
         try {
             const snap = await withTimeout(db.ref(path).once('value'), TIMEOUT_MS);
             const data = snap.val() || {};
             const hasAny = Object.values(data).some((v) => String(v || '').trim());
             $('kraHint').hidden = hasAny;
-            $('kraHintYear').textContent = year;
+            $('kraHintYear').textContent =
+                `${MONTHS[Number(month) - 1]} ${year}`;
         } catch {
             $('kraHint').hidden = true;
         }
@@ -187,10 +190,7 @@
         const praising = parsePoints($('praising').value);
         const prayer = parsePoints($('prayer').value);
 
-        // If the summary is showing, nothing to save
         if ($('reflectionEditor').hidden) return;
-
-        // If both are empty, skip silently
         if (praising.length === 0 && prayer.length === 0) return;
 
         const year = $('yearSelect').value;
@@ -265,7 +265,10 @@
     persist('regionInput', REGION_KEY);
 
     if (kind === 'field') {
-        $('monthSelect').addEventListener('change', loadReflection);
+        $('monthSelect').addEventListener('change', () => {
+            checkKraHint();
+            loadReflection();
+        });
         $('yearSelect').addEventListener('change', () => {
             checkKraHint();
             loadReflection();

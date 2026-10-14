@@ -202,7 +202,7 @@
         const entriesPath =
             `${DB_ROOT}/${safeEmail}/userData/${kind.path}/${request.year}/${month}`;
         const kraPath =
-            `${DB_ROOT}/${safeEmail}/userData/KRA_Objectives/${request.year}`;
+            `${DB_ROOT}/${safeEmail}/userData/KRA_Objectives/${request.year}/${month}`;
         const refPath =
             `${DB_ROOT}/${safeEmail}/userData/Monthly_Reflection/${request.year}/${month}`;
 
@@ -317,7 +317,7 @@
 
         const list = el('ol', 'rpt-kra-list');
         if (m.kraObjectives.length === 0) {
-            list.append(el('li', '', 'No KRA objectives were set for this year.'));
+            list.append(el('li', '', 'No KRA objectives were set for this month.'));
         } else {
             // Fill 1..5 slots, show only ones set
             m.kraObjectives.forEach((k) => {
@@ -572,7 +572,7 @@
 
             let objBody = [];
             if (m.kraObjectives.length === 0) {
-                objBody = [[{ content: 'No KRA objectives were set for this year.', colSpan: 3, styles: { halign: 'left' } }]];
+                objBody = [[{ content: 'No KRA objectives were set for this month.', colSpan: 3, styles: { halign: 'left' } }]];
             } else {
                 objBody = m.kraObjectives.map((k) => ([
                     { content: '', styles: { cellWidth: 4, lineWidth: 0, cellPadding: 0 } },
@@ -762,7 +762,7 @@
         if (kind.isField) {
             pushMerged('KRA (KEY RESULTING AREA) OBJECTIVES:', true);
             if (m.kraObjectives.length === 0) {
-                pushMerged('No KRA objectives were set for this year.');
+                pushMerged('No KRA objectives were set for this month.');
             } else {
                 m.kraObjectives.forEach((k) => {
                     const r = aoa.length;
@@ -925,7 +925,7 @@
 
             if (m.kraObjectives.length === 0) {
                 rows.push(docxRow([
-                    docxCell(MAIN_W, docxPara(docxRun('No KRA objectives were set for this year.'), { left: true }), { span: 3 })
+                    docxCell(MAIN_W, docxPara(docxRun('No KRA objectives were set for this month.'), { left: true }), { span: 3 })
                 ]));
             } else {
                 m.kraObjectives.forEach((k) => {
