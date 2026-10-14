@@ -1,0 +1,394 @@
+/* /apps/uesi/staff-work/v1/x-admin/admin.css */
+
+/* Hide focus rings a bit for a "quiet" page */
+:focus-visible { outline: 2px solid #075E54; }
+
+/* ---------- Body ---------- */
+.admin-body {
+    background: #0f1115;
+    color: #e6e8eb;
+    min-height: 100vh;
+    font-family: 'Poppins', system-ui, sans-serif;
+    padding: 24px 16px 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ---------- Gate ---------- */
+.admin-gate {
+    min-height: 100vh;
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gate-card {
+    width: 100%;
+    background: #171a20;
+    border: 1px solid #242830;
+    border-radius: 20px;
+    padding: 28px 24px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.gate-icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: #1e2530;
+    color: #7cd4c9;
+    display: grid;
+    place-items: center;
+    font-size: 1.4rem;
+    margin: 0 auto 16px;
+}
+
+.gate-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.gate-sub {
+    color: #8a92a0;
+    font-size: 0.9rem;
+    margin-bottom: 22px;
+}
+
+.gate-card .field {
+    text-align: left;
+    margin-bottom: 14px;
+}
+
+.gate-card .label {
+    color: #b3bac7;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.admin-body .input,
+.admin-body .textarea {
+    background: #0f1115;
+    border: 1px solid #2a3038;
+    color: #e6e8eb;
+}
+
+.admin-body .input:focus,
+.admin-body .textarea:focus {
+    border-color: #075E54;
+    box-shadow: 0 0 0 3px rgba(7, 94, 84, 0.25);
+}
+
+.gate-card .btn { margin-top: 6px; }
+
+.gate-hint {
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin-top: 14px;
+    line-height: 1.5;
+}
+
+/* ---------- Panel ---------- */
+.admin-panel {
+    width: 100%;
+    max-width: 720px;
+}
+
+.admin-head {
+    margin-bottom: 20px;
+}
+
+.admin-head-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.admin-head h1 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.admin-head h1 i { color: #7cd4c9; }
+
+.admin-sub {
+    color: #8a92a0;
+    font-size: 0.84rem;
+    margin-top: 4px;
+}
+.admin-sub code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    background: #1a1e26;
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: #a5b3c7;
+}
+
+/* ---------- Toolbar ---------- */
+.toolbar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.count-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+.count {
+    font-size: 0.78rem;
+    color: #6b7280;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ---------- States ---------- */
+.state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 40px 16px;
+    text-align: center;
+    color: #8a92a0;
+}
+.state i { font-size: 2rem; color: #7cd4c9; opacity: 0.7; }
+.state.error i { color: #ff7a6c; opacity: 1; }
+.state .spinner { width: 30px; height: 30px; color: #7cd4c9; }
+
+/* ---------- User list ---------- */
+.user-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.user-row {
+    background: #171a20;
+    border: 1px solid #242830;
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+}
+
+.user-row:hover { border-color: #2e3540; }
+
+.user-info { min-width: 0; }
+
+.user-name {
+    font-weight: 600;
+    color: #fff;
+    font-size: 0.98rem;
+    overflow-wrap: anywhere;
+}
+
+.user-email {
+    font-size: 0.82rem;
+    color: #8a92a0;
+    overflow-wrap: anywhere;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.user-key {
+    font-size: 0.72rem;
+    color: #6b7280;
+    margin-top: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    overflow-wrap: anywhere;
+}
+
+.user-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.icon-action {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #2a3038;
+    color: #b3bac7;
+    background: #1a1e26;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.icon-action:hover {
+    background: #222833;
+    color: #fff;
+    border-color: #3a4250;
+}
+.icon-action.danger {
+    color: #ff7a6c;
+    border-color: #4a2a28;
+}
+.icon-action.danger:hover {
+    background: #2a1a19;
+    color: #ff9a8c;
+}
+
+/* ---------- Danger zone ---------- */
+.danger-zone {
+    margin-top: 32px;
+    padding: 20px;
+    border: 1px solid #3a2426;
+    border-radius: 16px;
+    background: #1c1516;
+}
+.danger-zone h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ff9a8c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.danger-zone p {
+    color: #a89a99;
+    font-size: 0.84rem;
+    margin-bottom: 14px;
+    line-height: 1.5;
+}
+.danger-zone code {
+    font-family: 'IBM Plex Mono', monospace;
+    background: #2a1c1c;
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+/* ---------- Editor dialog ---------- */
+.editor-scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 400;
+    animation: fade 0.18s ease;
+}
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+.editor {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(460px, calc(100vw - 32px));
+    max-height: calc(100vh - 48px);
+    overflow: auto;
+    background: #171a20;
+    border: 1px solid #242830;
+    border-radius: 20px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+    z-index: 401;
+    animation: pop 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes pop {
+    from { opacity: 0; transform: translate(-50%, -46%) scale(0.96); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.editor-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 6px;
+}
+.editor-head h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.editor-body {
+    padding: 8px 20px 4px;
+}
+.editor-body .field { margin-bottom: 14px; }
+.editor-body .label {
+    color: #b3bac7;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.editor-body .hint {
+    color: #6b7280;
+    font-size: 0.76rem;
+    margin-top: 4px;
+}
+.editor-body .hint code,
+.key-preview {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.76rem;
+    background: #0f1115;
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: #a5b3c7;
+}
+.key-preview {
+    display: block;
+    padding: 10px 12px;
+    border: 1px dashed #2a3038;
+    background: #0f1115;
+    color: #7cd4c9;
+    overflow-wrap: anywhere;
+}
+
+.editor-body .pw-wrap { position: relative; }
+.editor-body .pw-wrap .input { padding-right: 56px; }
+.editor-body .pw-toggle {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #8a92a0;
+}
+
+.editor-foot {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 20px 20px;
+}
+.editor-foot .btn { min-height: 48px; }
+.admin-body .btn-outline {
+    background: transparent;
+    color: #e6e8eb;
+    border-color: #2a3038;
+}
+.admin-body .btn-primary {
+    background: #075E54;
+    color: #fff;
+}
+.admin-body .btn-danger {
+    background: #2a1a19;
+    color: #ff9a8c;
+    border-color: #4a2a28;
+}
+.admin-body .btn-danger:hover { background: #3a1f1d; }
+
+/* Mobile */
+@media (max-width: 480px) {
+    .user-row { grid-template-columns: 1fr; }
+    .user-actions { justify-content: flex-end; }
+}

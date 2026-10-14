@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#1d2939" />
+    <link rel="icon" href="data:," />
+    <title>·</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/v1/assets/styles/common.css" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/v1/x-admin/admin.css" />
+</head>
+
+<body class="admin-body">
+
+    <!-- ---------- Gate ---------- -->
+    <section class="admin-gate" id="gate">
+        <form class="gate-card" id="gateForm" novalidate autocomplete="off">
+            <div class="gate-icon"><i class="fas fa-lock"></i></div>
+            <h1 class="gate-title" id="gateTitle">Admin access</h1>
+            <p class="gate-sub" id="gateSub">Enter the admin passphrase.</p>
+
+            <div class="field">
+                <label class="label" for="passInput" id="passLabel">Passphrase</label>
+                <input class="input" type="password" id="passInput"
+                       autocomplete="current-password" autocapitalize="off" spellcheck="false" />
+            </div>
+
+            <div class="field hidden" id="confirmField">
+                <label class="label" for="passConfirm">Confirm passphrase</label>
+                <input class="input" type="password" id="passConfirm"
+                       autocomplete="new-password" autocapitalize="off" spellcheck="false" />
+            </div>
+
+            <button type="submit" class="btn btn-primary ripple" id="gateBtn">
+                <i class="fas fa-unlock"></i> <span id="gateBtnLabel">Unlock</span>
+            </button>
+
+            <p class="gate-hint" id="gateHint">
+                First visit? Choose a passphrase to protect this page.
+            </p>
+        </form>
+    </section>
+
+    <!-- ---------- Admin panel ---------- -->
+    <section class="admin-panel" id="panel" hidden>
+        <header class="admin-head">
+            <div class="admin-head-row">
+                <h1><i class="fas fa-user-shield"></i> User Admin</h1>
+                <button class="btn btn-outline btn-sm ripple" id="lockBtn" type="button">
+                    <i class="fas fa-lock"></i> Lock
+                </button>
+            </div>
+            <p class="admin-sub">
+                Direct writes to
+                <code>apps/uesi/staff-work/v1/users/</code>
+            </p>
+        </header>
+
+        <div class="toolbar">
+            <input class="input" type="search" id="searchInput"
+                   placeholder="Search name or email…" autocapitalize="off" spellcheck="false" />
+            <button class="btn btn-primary btn-sm ripple" id="addBtn" type="button">
+                <i class="fas fa-plus"></i> Add user
+            </button>
+        </div>
+
+        <div class="count-row">
+            <span class="count" id="countLabel">—</span>
+        </div>
+
+        <div id="loadState" class="state" role="status">
+            <span class="spinner" aria-hidden="true"></span>
+            <p>Loading users…</p>
+        </div>
+
+        <div id="errorState" class="state error" hidden>
+            <i class="fas fa-triangle-exclamation"></i>
+            <p id="errorText">Could not load users. Check your connection and DB rules.</p>
+            <button class="btn btn-outline btn-sm ripple" id="retryBtn" type="button">
+                <i class="fas fa-rotate-right"></i> Retry
+            </button>
+        </div>
+
+        <div id="emptyState" class="state" hidden>
+            <i class="fas fa-inbox"></i>
+            <p>No users yet.</p>
+        </div>
+
+        <ul class="user-list" id="userList" hidden></ul>
+
+        <div class="danger-zone">
+            <h2><i class="fas fa-triangle-exclamation"></i> Danger zone</h2>
+            <p>Wipe every user under the v1 tree. Existing data under <code>userData/</code> for each user is <strong>also deleted</strong>.</p>
+            <button class="btn btn-danger ripple" id="wipeBtn" type="button">
+                <i class="fas fa-trash-can"></i> Delete all users
+            </button>
+        </div>
+    </section>
+
+    <!-- ---------- Editor dialog ---------- -->
+    <div class="editor-scrim" id="editorScrim" hidden></div>
+    <div class="editor" id="editor" role="dialog" aria-modal="true" hidden>
+        <form id="editorForm" novalidate autocomplete="off">
+            <header class="editor-head">
+                <h2 id="editorTitle">Add user</h2>
+                <button class="icon-btn ripple" id="editorClose" type="button" aria-label="Close">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </header>
+
+            <div class="editor-body">
+                <div class="field">
+                    <label class="label" for="editName">Full name</label>
+                    <input class="input" type="text" id="editName"
+                           placeholder="e.g. B. Balaji" autocapitalize="words" />
+                </div>
+
+                <div class="field">
+                    <label class="label" for="editEmail">Email</label>
+                    <input class="input" type="email" id="editEmail"
+                           placeholder="name@example.com"
+                           inputmode="email" autocapitalize="off" spellcheck="false" />
+                    <div class="hint" id="emailHint">
+                        Stored as a Firebase key with <code>.</code> replaced by <code>_</code>.
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label" for="editPassword">Password</label>
+                    <div class="pw-wrap">
+                        <input class="input" type="password" id="editPassword"
+                               autocomplete="new-password" />
+                        <button class="pw-toggle ripple" id="pwToggle" type="button"
+                                aria-label="Show password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="hint">Stored as plain text — same scheme as the app.</div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Key preview</label>
+                    <code class="key-preview" id="keyPreview">—</code>
+                </div>
+            </div>
+
+            <footer class="editor-foot">
+                <button class="btn btn-outline ripple" id="editorCancel" type="button">Cancel</button>
+                <button class="btn btn-primary ripple" id="editorSave" type="submit">
+                    <i class="fas fa-floppy-disk"></i> <span id="editorSaveLabel">Save</span>
+                </button>
+            </footer>
+        </form>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="/apps/uesi/staff-work/v1/x-admin/admin.js"></script>
+</body>
+</html>
