@@ -1,0 +1,52 @@
+/* /apps/uesi/staff-work/v1/assets/styles/index.css */
+
+.auth-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--brand);
+    color: #fff;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: calc(var(--header-h) + var(--safe-top) + 24px) 24px calc(var(--safe-bottom) + 32px);
+    display: flex;
+}
+.auth-icon {
+    width: 96px; height: 96px;
+    border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    margin-bottom: 24px;
+}
+.auth-title { font-size: 1.9rem; font-weight: 700; margin-bottom: 8px; }
+.auth-text { opacity: 0.9; margin-bottom: 32px; }
+.auth-inner { width: 100%; max-width: 340px; }
+
+.greet {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
+    max-width: 100%;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--brand-50);
+    color: var(--brand);
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+}
+.greet strong {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.end-note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 24px;
+}
+.end-note a { color: #197afe; }

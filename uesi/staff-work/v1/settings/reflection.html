@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#075E54" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="UESI Staff Work v1" />
+    <link rel="canonical" href="https://uesiap.github.io/apps/uesi/staff-work/v1/settings/reflection" />
+    <link rel="icon" href="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" type="image/png" />
+    <link rel="apple-touch-icon" href="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" />
+    <title>Praise &amp; Prayer - UESI Staff Work v1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/v1/assets/styles/common.css" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/v1/assets/styles/settings.css" />
+</head>
+
+<body class="auth-pending">
+
+    <header class="app-header">
+        <button class="icon-btn ripple" id="backBtn" type="button" aria-label="Go back">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <span class="title">Praise &amp; Prayer</span>
+    </header>
+
+    <section class="guest-gate needs-guest">
+        <div class="gate-icon"><i class="fas fa-lock"></i></div>
+        <h1>Login required</h1>
+        <p>Login to edit your monthly reflection.</p>
+        <button class="btn btn-primary ripple" id="loginBtn" type="button">
+            <i class="fas fa-right-to-bracket"></i> Login to continue
+        </button>
+    </section>
+
+    <main class="page needs-auth">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-hands-praying"></i> Praise &amp; Prayer Points</div>
+            <div class="card-sub">One point per line. These appear in a two-column box at the bottom of the Field Report.</div>
+
+            <form id="reflectionForm" novalidate autocomplete="off">
+                <div class="grid-2">
+                    <div class="field">
+                        <label class="label" for="monthSelect">Month</label>
+                        <select class="select" id="monthSelect"></select>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="yearSelect">Year</label>
+                        <select class="select" id="yearSelect"></select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label" for="praising">Praising Points</label>
+                    <textarea class="textarea" id="praising" rows="5"
+                              placeholder="Praise God for…&#10;One point per line"></textarea>
+                </div>
+
+                <div class="field">
+                    <label class="label" for="prayer">Prayer Points</label>
+                    <textarea class="textarea" id="prayer" rows="5"
+                              placeholder="Pray for…&#10;One point per line"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary ripple submit-btn">
+                    <i class="fas fa-floppy-disk"></i> <span>Save reflection</span>
+                </button>
+            </form>
+        </div>
+
+        <div id="loadState" class="state" role="status">
+            <span class="spinner" aria-hidden="true"></span>
+            <p>Loading…</p>
+        </div>
+
+        <p class="end-note">“Serve the Lord wholeheartedly.” — Eph. 6:7</p>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="/apps/uesi/staff-work/v1/assets/scripts/common.js"></script>
+    <script src="/apps/uesi/staff-work/v1/assets/scripts/settings-reflection.js"></script>
+</body>
+</html>

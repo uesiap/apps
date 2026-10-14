@@ -4,7 +4,7 @@
 
     const $ = (id) => document.getElementById(id);
     const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const LOGIN_URL = '/apps/uesi/staff-work/v1/login.html';
+    const LOGIN_URL = '/apps/uesi/staff-work/v1/login';
     const HOME_URL = '/apps/uesi/staff-work/v1/';
 
     const ready = (fn) =>

@@ -1,0 +1,41 @@
+/* /apps/uesi/staff-work/v1/assets/styles/settings.css */
+
+.page .card + .card { margin-top: 16px; }
+
+.state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 40px 16px;
+    text-align: center;
+    color: var(--muted);
+}
+.state i { font-size: 2.2rem; color: var(--brand); opacity: 0.7; }
+.state.error i { color: var(--danger); opacity: 1; }
+.state .spinner { width: 32px; height: 32px; color: var(--brand); }
+
+.end-note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 24px;
+}
+
+/* Point-based editor rows (used by reflection page if we switch to row editor) */
+.points-list { display: flex; flex-direction: column; gap: 8px; }
+.points-row { display: flex; gap: 8px; }
+.points-row .input { flex: 1; }
+.points-remove {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    background: #fff;
+    display: grid;
+    place-items: center;
+}
+.points-add {
+    margin-top: 8px;
+    min-height: 44px;
+}
