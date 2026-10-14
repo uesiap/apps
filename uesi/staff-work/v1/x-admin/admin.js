@@ -5,7 +5,7 @@
 
     const $ = (id) => document.getElementById(id);
     const DB_ROOT = 'apps/uesi/staff-work/v1/users';
-    const ADMIN_PATH = 'apps/uesi/staff-work/v1/.admin';
+    const ADMIN_PATH = 'apps/uesi/staff-work/v1/adminGate';
     const SESSION_KEY = 'uesi_admin_session_v1';
     const TIMEOUT_MS = 20000;
     const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -105,7 +105,7 @@
             : 'Enter the admin passphrase to continue.';
         $('gateHint').textContent = isSetup
             ? 'Only you should know this. It is stored as a hash in the database.'
-            : 'Forgot it? Clear apps/uesi/staff-work/v1/.admin/passHash in the Firebase console to reset.';
+            : 'Forgot it? Clear apps/uesi/staff-work/v1/adminGate/passHash in the Firebase console to reset.';
         $('gateBtnLabel').textContent = isSetup ? 'Set passphrase' : 'Unlock';
         $('confirmField').classList.toggle('hidden', !isSetup);
     }
