@@ -5,9 +5,13 @@
     const { $, Session, Drawer, notify, confirm: askConfirm, setLoading } = window.UI;
 
     const APP_URL = 'https://uesiap.github.io/apps/uesi/staff-work/v1/';
+    const SW_PATH = '/apps/uesi/staff-work/v1/service-worker.js';
     const DB_ROOT = 'apps/uesi/staff-work/v1/users';
     const MAX_RANGE_DAYS = 62;
     const SAVE_TIMEOUT_MS = 20000;
+
+    const PUSH_ENDPOINT = 'https://uesi.ruvs.in/apps/staff/work/api/subscribe';
+    const VAPID_PUBLIC_KEY = 'BPHR6KT0pldq-HrY0PvrnhodCx0Qpb8OHCBHdM9RbfpyhywI1Tl3QW67_o42zCnl1nkpy30kjvJmzZf8AfzsGg0';
 
     const FORMS = {
         field: {
@@ -72,6 +76,7 @@
 
         if (session) {
             $('greetName').textContent = session.name;
+            enablePush();
         } else {
             Drawer.close();
         }
@@ -302,6 +307,123 @@
         notify('You have been logged out.', 'info', 'Logged out');
     }
 
+    /* ---------- Install prompt (phones only) ---------- */
+    let deferredPrompt = null;
+
+    const isStandalone = () =>
+        window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+    const isPhone = () =>
+        window.matchMedia('(max-width: 768px)').matches &&
+        window.matchMedia('(pointer: coarse)').matches;
+
+    function showInstallIfEligible() {
+        if (!deferredPrompt || isStandalone() || !isPhone()) return;
+        if (localStorage.getItem('installDismissed_v1')) return;
+        $('installCard').classList.remove('hidden');
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showInstallIfEligible();
+    });
+
+    window.addEventListener('appinstalled', () => {
+        $('installCard').classList.add('hidden');
+    });
+
+    $('installBtn').addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        try { await deferredPrompt.userChoice; } catch (_) {}
+        deferredPrompt = null;
+        $('installCard').classList.add('hidden');
+    });
+
+    $('installDismiss').addEventListener('click', () => {
+        localStorage.setItem('installDismissed_v1', '1');
+        $('installCard').classList.add('hidden');
+    });
+
+    /* ---------- Push notifications ---------- */
+    let pushAttempted = false;
+
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+        const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const raw = atob(base64);
+        return Uint8Array.from(raw, (c) => c.charCodeAt(0));
+    }
+
+    async function deviceLabel() {
+        let platform = '', model = '', brand = '';
+        try {
+            const u = navigator.userAgentData;
+            if (u) {
+                platform = u.platform || '';
+                const real = (u.brands || []).filter((b) => !/not.?a.?brand/i.test(b.brand));
+                brand = (real.find((b) => b.brand !== 'Chromium') || real[0] || {}).brand || '';
+                model = (await u.getHighEntropyValues(['model'])).model || '';
+            }
+        } catch (_) { /* label stays partial */ }
+        if (!platform) platform = navigator.platform || '';
+        return [platform, model, brand, `${screen.width}x${screen.height}`].join('|').slice(0, 200);
+    }
+
+    async function enablePush() {
+        if (pushAttempted) return;
+        pushAttempted = true;
+
+        if (
+            !('serviceWorker' in navigator) ||
+            !('PushManager' in window) ||
+            !('Notification' in window)
+        ) return;
+
+        if (Notification.permission === 'denied') return;
+
+        const session = Session.read();
+        if (!session?.email) return;
+
+        try {
+            const registration = await navigator.serviceWorker.ready;
+
+            if (Notification.permission !== 'granted') {
+                const result = await Notification.requestPermission();
+                if (result !== 'granted') return;
+            }
+
+            let subscription = await registration.pushManager.getSubscription();
+
+            if (!subscription) {
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+                });
+            }
+
+            const response = await fetch(PUSH_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: session.email,
+                    name: session.name || '',
+                    device: await deviceLabel(),
+                    subscription: subscription.toJSON()
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Subscription API returned HTTP ${response.status}`);
+            }
+
+            console.log('Push subscription registered successfully.');
+        } catch (err) {
+            console.warn('Push setup failed:', err);
+        }
+    }
+
     /* ---------- Drawer actions ---------- */
     $('drawer').addEventListener('click', (e) => {
         const nav = e.target.closest('[data-nav]');
@@ -322,6 +444,14 @@
         btn.addEventListener('click', () => showTab(btn.dataset.tab));
     });
 
+    /* ---------- Service worker ---------- */
+    function registerServiceWorker() {
+        if (!('serviceWorker' in navigator)) return;
+        navigator.serviceWorker
+            .register(SW_PATH)
+            .catch((err) => console.error('SW registration failed:', err));
+    }
+
     /* ---------- Boot ---------- */
     setupForm('field');
     setupForm('itinerary');
@@ -331,14 +461,5 @@
 
     showTab(location.hash === '#ItineraryForm' ? 'itinerary' : 'field', false);
     Session.watch(renderAuth);
-
-    /* ---------- Service worker ---------- */
-    function registerServiceWorker() {
-        if (!('serviceWorker' in navigator)) return;
-        navigator.serviceWorker
-            .register('/apps/uesi/staff-work/v1/service-worker.js')
-            .catch((err) => console.error('SW registration failed:', err));
-    }
-
     registerServiceWorker();
 })();

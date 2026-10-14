@@ -1,6 +1,5 @@
 ---
----
-<!DOCTYPE html>
+---<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -47,26 +46,26 @@
 
         <nav class="drawer-body">
             <div class="drawer-section needs-auth">View data</div>
-            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/view/field-report">
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/view/field-report.html">
                 <i class="fas fa-eye"></i><span>Field Report</span>
             </button>
-            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/view/itinerary">
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/view/itinerary.html">
                 <i class="fas fa-route"></i><span>Itinerary</span>
             </button>
 
             <div class="drawer-section needs-auth">Generate</div>
-            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/gen/field-report">
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/gen/field-report.html">
                 <i class="fas fa-file-lines"></i><span>Field Report</span>
             </button>
-            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/gen/itinerary">
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/gen/itinerary.html">
                 <i class="fas fa-file-lines"></i><span>Itinerary</span>
             </button>
 
             <div class="drawer-section needs-auth">Settings</div>
-            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/settings/kra">
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/settings/kra.html">
                 <i class="fas fa-bullseye"></i><span>KRA Objectives</span>
             </button>
-            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/settings/reflection">
+            <button class="drawer-item ripple needs-auth" data-nav="/apps/uesi/staff-work/v1/settings/reflection.html">
                 <i class="fas fa-hands-praying"></i><span>Praise &amp; Prayer</span>
             </button>
 
@@ -109,6 +108,19 @@
     <main class="page needs-auth" id="appScreen">
         <div class="greet">
             <span>Hello,</span> <strong id="greetName">Staff</strong> ✨
+        </div>
+
+        <!-- Install card (Android/Chrome only) -->
+        <div class="install-card hidden" id="installCard">
+            <img src="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" alt="" class="install-icon" />
+            <div class="install-text">
+                <strong>Install UESI Staff Work</strong>
+                <span>Add it to your home screen for quick access</span>
+            </div>
+            <button class="btn btn-primary btn-sm ripple" id="installBtn" type="button">Install</button>
+            <button class="btn-dismiss ripple" id="installDismiss" type="button" aria-label="Dismiss">
+                <i class="fas fa-xmark"></i>
+            </button>
         </div>
 
         <!-- Field Report -->
@@ -242,7 +254,7 @@
             </div>
         </section>
 
-        <p class="end-note">“Serve the Lord wholeheartedly.” — Eph. 6:7</p>
+        <p class="end-note">"Serve the Lord wholeheartedly." — Eph. 6:7</p>
     </main>
 
     <!-- Bottom tab bar -->
