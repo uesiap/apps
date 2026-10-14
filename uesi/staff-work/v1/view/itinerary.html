@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#075E54" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="UESI Staff Work v1" />
+    <link rel="canonical" href="https://uesiap.github.io/apps/uesi/staff-work/v1/view/itinerary" />
+    <link rel="icon" href="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" type="image/png" />
+    <link rel="apple-touch-icon" href="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" />
+    <title>View Itinerary - UESI Staff Work v1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/v1/assets/styles/common.css" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/v1/assets/styles/view.css" />
+</head>
+
+<body class="auth-pending" data-kind="itinerary">
+
+    <header class="app-header">
+        <button class="icon-btn ripple" id="backBtn" type="button" aria-label="Go back">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <span class="title">View Itinerary</span>
+    </header>
+
+    <section class="guest-gate needs-guest">
+        <div class="gate-icon"><i class="fas fa-lock"></i></div>
+        <h1>Login required</h1>
+        <p>Login to view your itinerary.</p>
+        <button class="btn btn-primary ripple" id="loginBtn" type="button">
+            <i class="fas fa-right-to-bracket"></i> Login to continue
+        </button>
+    </section>
+
+    <main class="page wide needs-auth">
+        <div class="toolbar">
+            <select id="monthSelect" class="select" aria-label="Filter by month"></select>
+            <select id="yearSelect" class="select" aria-label="Filter by year"></select>
+            <button id="deleteMonthBtn" class="btn btn-danger btn-sm ripple" type="button" disabled>
+                <i class="fas fa-trash-can"></i> Delete selected month
+            </button>
+        </div>
+
+        <p class="summary" id="summary" aria-live="polite"></p>
+
+        <div id="loadState" class="state" role="status">
+            <span class="spinner" aria-hidden="true"></span>
+            <p>Loading your entries…</p>
+        </div>
+
+        <div id="errorState" class="state error" hidden>
+            <i class="fas fa-triangle-exclamation"></i>
+            <p>Could not load your entries. Check your connection.</p>
+            <button class="btn btn-outline btn-sm ripple" id="retryBtn" type="button">
+                <i class="fas fa-rotate-right"></i> Retry
+            </button>
+        </div>
+
+        <div id="emptyState" class="state" hidden>
+            <i class="fas fa-inbox"></i>
+            <p>No itinerary yet. Plan one from the home page to see it here.</p>
+        </div>
+
+        <div id="noMatch" class="state" hidden>
+            <i class="fas fa-calendar-xmark"></i>
+            <p>No entries for the selected month.</p>
+        </div>
+
+        <div id="list" class="list" hidden></div>
+
+        <p class="end-note">“Serve the Lord wholeheartedly.” — Eph. 6:7</p>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="/apps/uesi/staff-work/v1/assets/scripts/common.js"></script>
+    <script src="/apps/uesi/staff-work/v1/assets/scripts/view.js"></script>
+</body>
+</html>

@@ -331,4 +331,14 @@
 
     showTab(location.hash === '#ItineraryForm' ? 'itinerary' : 'field', false);
     Session.watch(renderAuth);
+
+    /* ---------- Service worker ---------- */
+    function registerServiceWorker() {
+        if (!('serviceWorker' in navigator)) return;
+        navigator.serviceWorker
+            .register('/apps/uesi/staff-work/v1/service-worker.js')
+            .catch((err) => console.error('SW registration failed:', err));
+    }
+
+    registerServiceWorker();
 })();

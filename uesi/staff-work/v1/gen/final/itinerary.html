@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#075E54" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="UESI Staff Work v1" />
+    <link rel="canonical" href="https://uesiap.github.io/apps/uesi/staff-work/v1/gen/final/itinerary" />
+    <link rel="icon" href="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" type="image/png" />
+    <link rel="apple-touch-icon" href="https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg" />
+    <title>Generated Itinerary - UESI Staff Work v1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/v1/assets/styles/common.css" />
+    <link rel="stylesheet" href="/apps/uesi/staff-work/v1/assets/styles/final.css" />
+</head>
+
+<body class="auth-pending" data-kind="itinerary">
+
+    <header class="app-header">
+        <button class="icon-btn ripple" id="backBtn" type="button" aria-label="Go back">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <span class="title">Generated Itinerary</span>
+    </header>
+
+    <section class="guest-gate needs-guest">
+        <div class="gate-icon"><i class="fas fa-lock"></i></div>
+        <h1>Login required</h1>
+        <p>Login to view this itinerary.</p>
+        <button class="btn btn-primary ripple" id="loginBtn" type="button">
+            <i class="fas fa-right-to-bracket"></i> Login to continue
+        </button>
+    </section>
+
+    <main class="page wide final needs-auth">
+        <div id="loadState" class="state" role="status">
+            <span class="spinner" aria-hidden="true"></span>
+            <p>Preparing your itinerary…</p>
+        </div>
+
+        <div id="errorState" class="state error" hidden>
+            <i class="fas fa-triangle-exclamation"></i>
+            <p id="errorText">Could not load the itinerary. Check your connection.</p>
+            <button class="btn btn-outline btn-sm ripple" id="retryBtn" type="button">
+                <i class="fas fa-rotate-right"></i> Retry
+            </button>
+        </div>
+
+        <div id="noData" class="state" hidden>
+            <i class="fas fa-inbox"></i>
+            <p>No itinerary data found for the selected period.</p>
+        </div>
+
+        <section class="paper" id="paper" hidden></section>
+    </main>
+
+    <div class="export-bar needs-auth" id="exportBar" hidden>
+        <button class="btn btn-primary ripple" id="exportBtn" type="button">
+            <i class="fas fa-share-square"></i> <span>Export / Share</span>
+        </button>
+    </div>
+
+    <div class="scrim" id="sheetScrim"></div>
+    <div class="sheet" id="exportSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" aria-hidden="true">
+        <div class="sheet-grip"></div>
+        <h2 class="sheet-title" id="sheetTitle">Export itinerary as</h2>
+        <div class="sheet-options">
+            <button class="sheet-opt ripple pdf" type="button" data-export="pdf">
+                <i class="fas fa-file-pdf"></i><span>PDF</span>
+            </button>
+            <button class="sheet-opt ripple excel" type="button" data-export="excel">
+                <i class="fas fa-file-excel"></i><span>Excel</span>
+            </button>
+            <button class="sheet-opt ripple word" type="button" data-export="word">
+                <i class="fas fa-file-word"></i><span>Word</span>
+            </button>
+        </div>
+        <button class="btn btn-outline ripple" id="sheetClose" type="button">Close</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="/apps/uesi/staff-work/v1/assets/scripts/common.js"></script>
+    <script src="/apps/uesi/staff-work/v1/assets/scripts/final.js"></script>
+</body>
+</html>

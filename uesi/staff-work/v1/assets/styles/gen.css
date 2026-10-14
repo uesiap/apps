@@ -1,0 +1,66 @@
+/* /apps/uesi/staff-work/v1/assets/styles/gen.css */
+
+.input-readonly {
+    background: #f9fafb;
+    color: var(--muted);
+    cursor: default;
+}
+
+.page .card + .card,
+.page .card + .notice { margin-top: 16px; }
+
+.submit-btn {
+    margin-top: 20px;
+}
+
+.end-note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 24px;
+}
+.end-note a { color: #197afe; }
+
+/* ---------- Notice ---------- */
+.notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    background: var(--warning-50);
+    color: var(--warning);
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+.notice i { font-size: 1.05rem; margin-top: 2px; }
+.notice a { color: var(--warning); text-decoration: underline; font-weight: 600; }
+
+/* ---------- Reflection summary (once saved) ---------- */
+.reflect-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+@media (max-width: 560px) {
+    .reflect-grid { grid-template-columns: 1fr; }
+}
+.reflect-grid h3 {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--brand);
+    margin-bottom: 8px;
+}
+.reflect-list {
+    margin: 0;
+    padding-left: 1.2em;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--ink-2);
+    line-height: 1.45;
+}
+.reflect-list li::marker { color: var(--brand); font-weight: 600; }

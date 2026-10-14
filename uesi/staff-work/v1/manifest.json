@@ -1,0 +1,32 @@
+{
+    "name": "UESI Staff Work v1",
+    "short_name": "Staff Work v1",
+    "description": "Submit, view and generate KRA-based field reports and itineraries.",
+    "start_url": "/apps/uesi/staff-work/v1/",
+    "scope": "/apps/uesi/staff-work/v1/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#075E54",
+    "theme_color": "#075E54",
+    "lang": "en",
+    "icons": [
+        {
+            "src": "https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg",
+            "sizes": "192x192",
+            "type": "image/jpeg",
+            "purpose": "any"
+        },
+        {
+            "src": "https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg",
+            "sizes": "512x512",
+            "type": "image/jpeg",
+            "purpose": "any"
+        },
+        {
+            "src": "https://uesiap.github.io/apps/uesi/staff-work/assets/icons/uesi192.jpg",
+            "sizes": "192x192",
+            "type": "image/jpeg",
+            "purpose": "maskable"
+        }
+    ]
+}
