@@ -268,15 +268,16 @@
     margin: 22px 4px 8px;
     font-size: 0.9rem;
     color: #000;
+    overflow-x: auto;
 }
 
-.sign-left,
-.sign-right {
-    flex: 1;
-    min-width: 0;
+.sign-left {
+    flex: 1 1 auto;
+    min-width: max-content;
 }
 
 .sign-right {
+    flex: 0 0 210px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -290,7 +291,7 @@
 .sign-line,
 .sign-name {
     margin: 0;
-    overflow-wrap: anywhere;
+    white-space: nowrap;
 }
 
 .sign-name {

@@ -547,16 +547,14 @@
        ===================================================== */
     function drawFooterPdf(doc, f, sig, startY) {
         const LEFT_X = 14;
-        const LEFT_W = 90;
-        const RIGHT_X = 120;
-        const RIGHT_W = 76;
+        const RIGHT_X = 128;
+        const RIGHT_W = 68;
 
         const sigH = sig ? Math.min(SIG_MAX_H_MM, (SIG_W_MM * sig.h) / sig.w) : 0;
-        const leftLines = f.copyTo.flatMap((line) => doc.splitTextToSize(line, LEFT_W));
         const roleLines = f.role ? doc.splitTextToSize(f.role, RIGHT_W) : [];
 
         const blockH = Math.max(
-            6 + leftLines.length * 5,
+            6 + f.copyTo.length * 5,
             6 + (sig ? sigH + 2 : 8) + 6 + roleLines.length * 5
         );
 
@@ -571,8 +569,10 @@
         doc.setFont('times', 'bold');
         doc.setFontSize(10);
         doc.text('Copy to,', LEFT_X, y);
+
+        // Copy to lines are not split, so each one stays on a single line
         doc.setFont('times', 'normal');
-        leftLines.forEach((line, i) => doc.text(line, LEFT_X, y + 6 + i * 5));
+        f.copyTo.forEach((line, i) => doc.text(line, LEFT_X, y + 6 + i * 5));
 
         doc.setFont('times', 'bold');
         doc.text('Submitted by,', RIGHT_X, y);
@@ -927,21 +927,22 @@
     };
 
     function docxFooter(f, sig, textW) {
-        const half = Math.floor(textW / 2);
-        const IND = 2600;
+        // Copy to gets 60% of the width, Submitted by takes the rest on the right
+        const leftW = Math.round(textW * 0.6);
+        const rightW = textW - leftW;
 
         const left = [docxPara(docxRun('Copy to,', { b: true }))]
             .concat(f.copyTo.map((line) => docxPara(docxRun(line))));
 
-        const right = [docxPara(docxRun('Submitted by,', { b: true }), { ind: IND })];
+        const right = [docxPara(docxRun('Submitted by,', { b: true }))];
         if (sig) {
             const { cx, cy } = sigEmu(sig);
-            right.push(docxPara(docxImage('rIdSig', cx, cy, 2, 'Signature'), { ind: IND }));
+            right.push(docxPara(docxImage('rIdSig', cx, cy, 2, 'Signature')));
         } else {
-            right.push(docxPara('', { ind: IND }));
+            right.push(docxPara(''));
         }
-        right.push(docxPara(docxRun(f.name, { b: true }), { ind: IND }));
-        if (f.role) right.push(docxPara(docxRun(f.role), { ind: IND }));
+        right.push(docxPara(docxRun(f.name, { b: true })));
+        if (f.role) right.push(docxPara(docxRun(f.role)));
 
         const none = '<w:tblBorders>' +
             ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map((s) => `<w:${s} w:val="nil"/>`).join('') +
@@ -950,10 +951,10 @@
         return '<w:tbl><w:tblPr>' +
             `<w:tblW w:w="${textW}" w:type="dxa"/>` + none +
             '<w:tblLayout w:type="fixed"/></w:tblPr>' +
-            `<w:tblGrid><w:gridCol w:w="${half}"/><w:gridCol w:w="${textW - half}"/></w:tblGrid>` +
+            `<w:tblGrid><w:gridCol w:w="${leftW}"/><w:gridCol w:w="${rightW}"/></w:tblGrid>` +
             '<w:tr>' +
-            docxCell(half, left.join(''), { vAlign: 'top' }) +
-            docxCell(textW - half, right.join(''), { vAlign: 'top' }) +
+            docxCell(leftW, left.join(''), { vAlign: 'top' }) +
+            docxCell(rightW, right.join(''), { vAlign: 'top' }) +
             '</w:tr></w:tbl>';
     }
 
