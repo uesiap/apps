@@ -305,6 +305,8 @@
     max-height: 56px;
     object-fit: contain;
     margin: 2px 0;
+    position: relative;
+    left: -10px;
 }
 
 .sign-space {

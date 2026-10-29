@@ -585,7 +585,7 @@
         doc.text('Submitted by,', RIGHT_X, y);
         let ry = y + 2;
         if (sig) {
-            doc.addImage(sig.dataUrl, sig.fmt, RIGHT_X, ry, SIG_W_MM, sigH);
+            doc.addImage(sig.dataUrl, sig.fmt, RIGHT_X - 6, ry, SIG_W_MM, sigH);
             ry += sigH + 2;
         } else {
             ry += 8;
@@ -948,7 +948,8 @@
         const right = [docxPara(docxRun('Submitted by,', { b: true }), { right: true })];
         if (sig) {
             const { cx, cy } = sigEmu(sig);
-            right.push(docxPara(docxImage('rIdSig', cx, cy, 2, 'Signature'), { right: true }));
+            right.push('<w:p><w:pPr><w:spacing w:before="0" w:after="0"/><w:ind w:right="300"/><w:jc w:val="right"/></w:pPr>' +
+            docxImage('rIdSig', cx, cy, 2, 'Signature') + '</w:p>');
         } else {
             right.push(docxPara('', { right: true }));
         }
