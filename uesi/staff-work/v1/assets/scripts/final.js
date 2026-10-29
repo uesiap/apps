@@ -547,15 +547,23 @@
        ===================================================== */
     function drawFooterPdf(doc, f, sig, startY) {
         const LEFT_X = 14;
-        const RIGHT_X = 128;
-        const RIGHT_W = 68;
+        const RIGHT_EDGE = 196;           // A4 width (210) minus the 14 mm margin
 
+        doc.setFontSize(10);
+
+        // Measure the widest item in the Submitted by block, then align that block to the right margin
+        doc.setFont('times', 'bold');
+        const labelW = doc.getTextWidth('Submitted by,');
+        const nameW = doc.getTextWidth(f.name);
+        doc.setFont('times', 'normal');
+        const roleW = f.role ? doc.getTextWidth(f.role) : 0;
         const sigH = sig ? Math.min(SIG_MAX_H_MM, (SIG_W_MM * sig.h) / sig.w) : 0;
-        const roleLines = f.role ? doc.splitTextToSize(f.role, RIGHT_W) : [];
+        const blockW = Math.max(labelW, nameW, roleW, sig ? SIG_W_MM : 0);
+        const RIGHT_X = RIGHT_EDGE - blockW;
 
         const blockH = Math.max(
             6 + f.copyTo.length * 5,
-            6 + (sig ? sigH + 2 : 8) + 6 + roleLines.length * 5
+            6 + (sig ? sigH + 2 : 8) + 6 + (f.role ? 5 : 0)
         );
 
         const pageH = doc.internal.pageSize.getHeight();
@@ -565,15 +573,14 @@
             y = 16;
         }
 
+        // Copy to (left)
         doc.setTextColor(0, 0, 0);
         doc.setFont('times', 'bold');
-        doc.setFontSize(10);
         doc.text('Copy to,', LEFT_X, y);
-
-        // Copy to lines are not split, so each one stays on a single line
         doc.setFont('times', 'normal');
         f.copyTo.forEach((line, i) => doc.text(line, LEFT_X, y + 6 + i * 5));
 
+        // Submitted by (right, flush to the margin)
         doc.setFont('times', 'bold');
         doc.text('Submitted by,', RIGHT_X, y);
         let ry = y + 2;
@@ -586,11 +593,10 @@
         doc.text(f.name, RIGHT_X, ry + 4);
         ry += 6;
 
-        doc.setFont('times', 'normal');
-        roleLines.forEach((line) => {
-            doc.text(line, RIGHT_X, ry + 4);
-            ry += 5;
-        });
+        if (f.role) {
+            doc.setFont('times', 'normal');
+            doc.text(f.role, RIGHT_X, ry + 4);
+        }
     }
 
     function exportPdf(m, logo, sig) {
@@ -843,12 +849,13 @@
 
         if (m.footer) {
             const f = m.footer;
+            const INDENT = '\u00A0'.repeat(46);   // pushes the Submitted by block toward the right edge
             const left = ['Copy to,', ...f.copyTo];
             const right = ['Submitted by,', '', f.name, ...(f.role ? [f.role] : [])];
             aoa.push([]);
             for (let i = 0; i < Math.max(left.length, right.length); i++) {
                 const r = aoa.length;
-                aoa.push([left[i] || '', '', right[i] || '']);
+                aoa.push([left[i] || '', '', right[i] ? INDENT + right[i] : '']);
                 merges.push({ s: { r, c: 0 }, e: { r, c: 1 } });
             }
         }
@@ -880,10 +887,14 @@
         let ind = '';
         if (o.hang) ind = '<w:ind w:left="284" w:hanging="284"/>';
         else if (o.ind) ind = `<w:ind w:left="${o.ind}"/>`;
+
+        let jc = '';
+        if (o.center) jc = '<w:jc w:val="center"/>';
+        else if (o.right) jc = '<w:jc w:val="right"/>';
+        else if (o.left) jc = '<w:jc w:val="left"/>';
+
         return '<w:p><w:pPr><w:spacing w:before="0" w:after="0"/>' +
-            ind +
-            (o.center ? '<w:jc w:val="center"/>' : '') +
-            (o.left ? '<w:jc w:val="left"/>' : '') +
+            ind + jc +
             '</w:pPr>' + runs + '</w:p>';
     }
 
@@ -927,22 +938,22 @@
     };
 
     function docxFooter(f, sig, textW) {
-        // Copy to gets 60% of the width, Submitted by takes the rest on the right
-        const leftW = Math.round(textW * 0.6);
-        const rightW = textW - leftW;
+        // Right column is a fixed width (about 67 mm), flush to the right margin
+        const rightW = 3800;
+        const leftW = textW - rightW;
 
         const left = [docxPara(docxRun('Copy to,', { b: true }))]
             .concat(f.copyTo.map((line) => docxPara(docxRun(line))));
 
-        const right = [docxPara(docxRun('Submitted by,', { b: true }))];
+        const right = [docxPara(docxRun('Submitted by,', { b: true }), { right: true })];
         if (sig) {
             const { cx, cy } = sigEmu(sig);
-            right.push(docxPara(docxImage('rIdSig', cx, cy, 2, 'Signature')));
+            right.push(docxPara(docxImage('rIdSig', cx, cy, 2, 'Signature'), { right: true }));
         } else {
-            right.push(docxPara(''));
+            right.push(docxPara('', { right: true }));
         }
-        right.push(docxPara(docxRun(f.name, { b: true })));
-        if (f.role) right.push(docxPara(docxRun(f.role)));
+        right.push(docxPara(docxRun(f.name, { b: true }), { right: true }));
+        if (f.role) right.push(docxPara(docxRun(f.role), { right: true }));
 
         const none = '<w:tblBorders>' +
             ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map((s) => `<w:${s} w:val="nil"/>`).join('') +
