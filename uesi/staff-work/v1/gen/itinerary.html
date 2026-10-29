@@ -6,6 +6,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet" />
     <meta name="referrer" content="no-referrer" />
     <meta name="theme-color" content="#075E54" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -45,12 +46,12 @@
     <main class="page needs-auth">
         <div class="card">
             <div class="card-title"><i class="fas fa-route"></i> Itinerary details</div>
-            <div class="card-sub">These fill the header of the Field Staff Itinerary.</div>
+            <div class="card-sub">These fill the header and the sign-off of the itinerary. Saved on this device.</div>
 
             <form id="reportForm" novalidate autocomplete="off">
                 <div class="field">
                     <label class="label" for="staffName">Staff name</label>
-                    <input class="input input-readonly" type="text" id="staffName" />
+                    <input class="input input-readonly" type="text" id="staffName" readonly />
                 </div>
 
                 <div class="field">
@@ -65,9 +66,15 @@
                 </div>
 
                 <div class="field">
+                    <label class="label" for="stateInput">State</label>
+                    <input class="input" type="text" id="stateInput"
+                           placeholder="e.g. Telangana" autocapitalize="words" />
+                </div>
+
+                <div class="field">
                     <label class="label" for="regionInput">Region</label>
                     <input class="input" type="text" id="regionInput"
-                           placeholder="e.g. Hyderabad (Central Telangana)" autocapitalize="words" />
+                           placeholder="e.g. Hyderabad" autocapitalize="words" />
                 </div>
 
                 <div class="grid-2">
@@ -80,18 +87,49 @@
                         <select class="select" id="yearSelect"></select>
                     </div>
                 </div>
+
+                <div class="field">
+                    <div class="label-row">
+                        <label class="label" for="copyToInput">Copy to</label>
+                        <button type="button" class="link-btn ripple" id="copyToReset">Restore default</button>
+                    </div>
+                    <textarea class="textarea" id="copyToInput" rows="5"></textarea>
+                    <div class="hint">One line per office or person. Shown at the bottom left.</div>
+                </div>
+
+                <div class="field">
+                    <span class="label">Signature</span>
+                    <div class="sig-box">
+                        <img id="sigPreview" class="sig-preview" alt="Your signature" hidden />
+                        <span class="sig-empty" id="sigEmpty">No signature added yet</span>
+                        <div class="sig-actions">
+                            <label class="btn btn-outline btn-sm ripple" for="sigInput">
+                                <i class="fas fa-upload"></i> Upload
+                            </label>
+                            <button type="button" class="btn btn-danger btn-sm ripple" id="sigRemove" hidden>
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                        <input type="file" id="sigInput" accept="image/*" class="sr-only" />
+                    </div>
+                    <div class="hint">PNG or JPG. A photo of your signature on white paper works well.</div>
+                </div>
+
+                <div class="field">
+                    <label class="label" for="roleInput">Role</label>
+                    <input class="input" type="text" id="roleInput"
+                           placeholder="e.g. Staff Co-ordinator - MM District" />
+                </div>
+
+                <button type="submit" class="btn btn-primary ripple submit-btn">
+                    <i class="fas fa-file-export"></i> <span>Generate itinerary</span>
+                </button>
             </form>
         </div>
-
-        <button class="btn btn-primary ripple submit-btn" id="generateBtn" type="button">
-            <i class="fas fa-file-export"></i> <span>Generate itinerary</span>
-        </button>
 
         <p class="end-note">“Serve the Lord wholeheartedly.” — Eph. 6:7</p>
     </main>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="/apps/uesi/staff-work/v1/assets/scripts/common.js?v={{ site.github.build_revision }}"></script>
     <script src="/apps/uesi/staff-work/v1/assets/scripts/gen.js?v={{ site.github.build_revision }}"></script>
 </body>

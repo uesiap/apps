@@ -258,3 +258,54 @@
 .sheet-opt.pdf i   { color: #dc382c; }
 .sheet-opt.excel i { color: #217346; }
 .sheet-opt.word i  { color: #2b579a; }
+
+/* ---------- Itinerary sign-off: Copy to (left), Submitted by (right) ---------- */
+.sign-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 22px 4px 8px;
+    font-size: 0.9rem;
+    color: #000;
+}
+
+.sign-left,
+.sign-right {
+    flex: 1;
+    min-width: 0;
+}
+
+.sign-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.sign-label {
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.sign-line,
+.sign-name {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.sign-name {
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+.sign-img {
+    display: block;
+    max-width: 160px;
+    max-height: 56px;
+    object-fit: contain;
+    margin: 2px 0;
+}
+
+.sign-space {
+    height: 40px;
+}
