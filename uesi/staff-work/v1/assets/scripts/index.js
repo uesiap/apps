@@ -14,20 +14,8 @@
     const VAPID_PUBLIC_KEY = 'BPHR6KT0pldq-HrY0PvrnhodCx0Qpb8OHCBHdM9RbfpyhywI1Tl3QW67_o42zCnl1nkpy30kjvJmzZf8AfzsGg0';
 
     const FORMS = {
-        field: {
-            formId: 'fieldForm',
-            type: 'Field_Report',
-            noun: 'field report',
-            datePrefix: 'f',
-            isField: true
-        },
-        itinerary: {
-            formId: 'itineraryForm',
-            type: 'Itinerary_Form',
-            noun: 'itinerary',
-            datePrefix: 'i',
-            isField: false
-        }
+        field: { formId: 'fieldForm', type: 'Field_Report', noun: 'field report', datePrefix: 'f', isField: true },
+        itinerary: { formId: 'itineraryForm', type: 'Itinerary_Form', noun: 'itinerary', datePrefix: 'i', isField: false }
     };
 
     if (!firebase.apps.length) {
@@ -40,11 +28,14 @@
     }
     const db = firebase.database();
 
+    let kraToken = 0;
+
     /* ---------- Helpers ---------- */
     const pad = (n) => String(n).padStart(2, '0');
     const toYMD = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-    const weekdayOf = (ymd) =>
-        new Date(ymd + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
+    const weekdayOf = (ymd) => new Date(ymd + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
+    const monthLabelOf = (ymd) => new Date(ymd + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const shorten = (s, n = 48) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
 
     function datesBetween(startStr, endStr) {
         const out = [];
@@ -65,6 +56,14 @@
         return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
     }
 
+    function normalizeList(v) {
+        if (!v) return [];
+        const items = Array.isArray(v)
+            ? v
+            : Object.keys(v).filter((k) => /^\d+$/.test(k)).sort((a, b) => a - b).map((k) => v[k]);
+        return items.map((s) => String(s || '').trim()).filter(Boolean);
+    }
+
     /* ---------- Auth-dependent UI ---------- */
     function renderAuth(session) {
         const body = document.body;
@@ -80,6 +79,7 @@
         } else {
             Drawer.close();
         }
+        refreshKraOptions();
     }
 
     /* ---------- Tabs ---------- */
@@ -91,14 +91,56 @@
             btn.classList.toggle('active', btn.dataset.tab === name);
         });
         if (updateHash) {
-            history.replaceState(
-                null, '',
-                name === 'itinerary' ? '#ItineraryForm' : '#FieldReport'
-            );
+            history.replaceState(null, '', name === 'itinerary' ? '#ItineraryForm' : '#FieldReport');
         }
     }
 
-    /* ---------- Date type toggle + KRA/place UI ---------- */
+    /* ---------- KRA options (per month) ---------- */
+    function currentFieldDate() {
+        const multi = document.querySelector('input[name="f_dateType"]:checked')?.value === 'multi';
+        return multi ? $('f_start_multi').value : $('f_date_single').value;
+    }
+
+    async function fetchKraList(ymd) {
+        const session = Session.read();
+        if (!session || !ymd) return [];
+        const [year, month] = ymd.split('-');
+        const safeEmail = session.email.replace(/\./g, '_');
+        const snap = await withTimeout(
+            db.ref(`${DB_ROOT}/${safeEmail}/userData/KRA_Objectives/${year}/${month}`).once('value'),
+            10000
+        );
+        return normalizeList(snap.val());
+    }
+
+    async function refreshKraOptions() {
+        const sel = $('f_kra');
+        if (!sel) return;
+
+        const token = ++kraToken;
+        const ymd = currentFieldDate();
+        let list = [];
+        try {
+            list = await fetchKraList(ymd);
+        } catch (err) {
+            console.warn('KRA list unavailable:', err);
+        }
+        if (token !== kraToken) return;
+
+        const prev = sel.value;
+        sel.replaceChildren(
+            new Option('Other than KRA', '0'),
+            ...list.map((t, i) => new Option(`KRA ${i + 1}: ${shorten(t)}`, String(i + 1)))
+        );
+        const stillThere = [...sel.options].some((o) => o.value === prev);
+        sel.value = stillThere ? prev : (list.length ? '1' : '0');
+
+        const showHint = Boolean(ymd && Session.read() && list.length === 0);
+        $('f_kra_hint').hidden = !showHint;
+        if (showHint) $('f_kra_month').textContent = monthLabelOf(ymd);
+    }
+
+    /* ---------- Date type toggle ---------- */
     function setupForm(key) {
         const cfg = FORMS[key];
         const p = cfg.datePrefix;
@@ -109,8 +151,7 @@
         const endIn = $(`${p}_end_multi`);
 
         const refresh = () => {
-            const isMulti =
-                document.querySelector(`input[name="${p}_dateType"]:checked`)?.value === 'multi';
+            const isMulti = document.querySelector(`input[name="${p}_dateType"]:checked`)?.value === 'multi';
             singleBox.classList.toggle('hidden', isMulti);
             multiBox.classList.toggle('hidden', !isMulti);
             singleIn.disabled = isMulti;
@@ -119,26 +160,18 @@
         };
 
         document.querySelectorAll(`input[name="${p}_dateType"]`).forEach((radio) => {
-            radio.addEventListener('change', refresh);
+            radio.addEventListener('change', () => {
+                refresh();
+                if (cfg.isField) refreshKraOptions();
+            });
         });
 
         cfg.refreshDates = refresh;
         refresh();
 
         if (cfg.isField) {
-            const kraSel = $('f_kra');
-            const placeField = $('f_place_field');
-            const placeInput = $('f_place');
-
-            const refreshKra = () => {
-                const isOther = kraSel.value === '0';
-                placeField.classList.toggle('hidden', !isOther);
-                if (!isOther) placeInput.value = '';
-            };
-            kraSel.addEventListener('change', refreshKra);
-            cfg.refreshKra = refreshKra;
-            refreshKra();
-
+            singleIn.addEventListener('change', refreshKraOptions);
+            startIn.addEventListener('change', refreshKraOptions);
             $('f_place').addEventListener('blur', (e) => {
                 const v = e.target.value.trim();
                 e.target.value = v ? v.charAt(0).toUpperCase() + v.slice(1) : '';
@@ -153,8 +186,7 @@
 
     function collectDates(key) {
         const p = FORMS[key].datePrefix;
-        const isMulti =
-            document.querySelector(`input[name="${p}_dateType"]:checked`)?.value === 'multi';
+        const isMulti = document.querySelector(`input[name="${p}_dateType"]:checked`)?.value === 'multi';
 
         if (!isMulti) {
             const d = $(`${p}_date_single`).value;
@@ -178,13 +210,10 @@
     function saveData(cfg, email, dates, payloadBuilder) {
         const safeEmail = email.replace(/\./g, '_');
         const updates = {};
-
         dates.forEach((date) => {
             const [year, month] = date.split('-');
-            const path = `${DB_ROOT}/${safeEmail}/userData/${cfg.type}/${year}/${month}/${date}`;
-            updates[path] = payloadBuilder(date);
+            updates[`${DB_ROOT}/${safeEmail}/userData/${cfg.type}/${year}/${month}/${date}`] = payloadBuilder(date);
         });
-
         return withTimeout(db.ref().update(updates), SAVE_TIMEOUT_MS);
     }
 
@@ -207,26 +236,25 @@
             catch (err) { notify(err.message, 'error'); return; }
 
             let payloadBuilder;
-            let successSpan = dates.length > 1 ? ` for ${dates.length} days` : '';
 
             if (cfg.isField) {
                 const kra = Number($('f_kra').value);
                 const place = $('f_place').value.trim();
                 const activity = $('f_activity').value.trim();
 
-                if (!activity) {
-                    notify('Please describe what happened in the activity field.', 'error');
+                if (kra === 0 && !place) {
+                    notify('Please enter the place & purpose for an "Other than KRA" entry.', 'error');
                     return;
                 }
-                if (kra === 0 && !place) {
-                    notify('Please enter the place for an "Other than KRA" entry.', 'error');
+                if (!activity) {
+                    notify('Please describe what happened in the activity field.', 'error');
                     return;
                 }
 
                 payloadBuilder = (date) => ({
                     day: weekdayOf(date),
                     kra,
-                    place: kra === 0 ? place : '',
+                    place,
                     activity
                 });
             } else {
@@ -253,14 +281,12 @@
             try {
                 await saveData(cfg, session.email, dates, payloadBuilder);
                 form.reset();
-                if (key === 'field') {
-                    setDefaults();
-                    cfg.refreshKra();
-                } else {
-                    setDefaults();
-                }
+                setDefaults();
                 cfg.refreshDates();
-                notify(`Your ${cfg.noun} has been saved${successSpan}.`, 'success', 'Submitted');
+                if (cfg.isField) refreshKraOptions();
+
+                const span = dates.length > 1 ? ` for ${dates.length} days` : '';
+                notify(`Your ${cfg.noun} has been saved${span}.`, 'success', 'Submitted');
             } catch (err) {
                 console.error('Save failed:', err);
                 notify(
@@ -366,7 +392,7 @@
                 brand = (real.find((b) => b.brand !== 'Chromium') || real[0] || {}).brand || '';
                 model = (await u.getHighEntropyValues(['model'])).model || '';
             }
-        } catch (_) { /* label stays partial */ }
+        } catch (_) {}
         if (!platform) platform = navigator.platform || '';
         return [platform, model, brand, `${screen.width}x${screen.height}`].join('|').slice(0, 200);
     }
@@ -375,12 +401,7 @@
         if (pushAttempted) return;
         pushAttempted = true;
 
-        if (
-            !('serviceWorker' in navigator) ||
-            !('PushManager' in window) ||
-            !('Notification' in window)
-        ) return;
-
+        if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
         if (Notification.permission === 'denied') return;
 
         const session = Session.read();
@@ -395,7 +416,6 @@
             }
 
             let subscription = await registration.pushManager.getSubscription();
-
             if (!subscription) {
                 subscription = await registration.pushManager.subscribe({
                     userVisibleOnly: true,
@@ -413,18 +433,13 @@
                     subscription: subscription.toJSON()
                 })
             });
-
-            if (!response.ok) {
-                throw new Error(`Subscription API returned HTTP ${response.status}`);
-            }
-
-            console.log('Push subscription registered successfully.');
+            if (!response.ok) throw new Error(`Subscription API returned HTTP ${response.status}`);
         } catch (err) {
             console.warn('Push setup failed:', err);
         }
     }
 
-    /* ---------- Drawer actions ---------- */
+    /* ---------- Drawer and tabs ---------- */
     $('drawer').addEventListener('click', (e) => {
         const nav = e.target.closest('[data-nav]');
         if (nav) {
@@ -447,9 +462,8 @@
     /* ---------- Service worker ---------- */
     function registerServiceWorker() {
         if (!('serviceWorker' in navigator)) return;
-        navigator.serviceWorker
-            .register(SW_PATH)
-            .catch((err) => console.error('SW registration failed:', err));
+        navigator.serviceWorker.register(SW_PATH).catch((err) =>
+            console.error('SW registration failed:', err));
     }
 
     /* ---------- Boot ---------- */

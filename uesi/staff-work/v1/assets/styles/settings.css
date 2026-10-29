@@ -39,3 +39,53 @@
     margin-top: 8px;
     min-height: 44px;
 }
+
+/* ---------- Dynamic KRA list ---------- */
+.kra-count {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+}
+
+.kra-list {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.kra-row {
+    background: #fff;
+    border: 1px solid var(--line-2);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.kra-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.kra-no {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink-2);
+}
+
+.kra-remove {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--danger);
+}
+
+.kra-remove:disabled {
+    opacity: 0.4;
+}
+
+.kra-add {
+    margin-bottom: 18px;
+}

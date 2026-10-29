@@ -33,7 +33,6 @@
         <span class="title">KRA Objectives</span>
     </header>
 
-    <!-- Logged-out gate -->
     <section class="guest-gate needs-guest">
         <div class="gate-icon"><i class="fas fa-lock"></i></div>
         <h1>Login required</h1>
@@ -46,7 +45,10 @@
     <main class="page needs-auth">
         <div class="card">
             <div class="card-title"><i class="fas fa-bullseye"></i> KRA Objectives</div>
-            <div class="card-sub">Set the 5 Key Resulting Area objectives for the month. These appear on the Field Report generated for that month.</div>
+            <div class="card-sub">
+                Set the KRA objectives for a month. Add or remove them as needed. They appear in the
+                Field Report entry form and on the report for that month.
+            </div>
 
             <form id="kraForm" novalidate autocomplete="off">
                 <div class="grid-2">
@@ -60,32 +62,12 @@
                     </div>
                 </div>
 
-                <div class="field">
-                    <label class="label" for="kra1">KRA 1</label>
-                    <textarea class="textarea" id="kra1" rows="3"
-                              placeholder="e.g. Establish EBS cells at ..."></textarea>
-                </div>
+                <div class="kra-count" id="kraCount"></div>
+                <div id="kraList" class="kra-list"></div>
 
-                <div class="field">
-                    <label class="label" for="kra2">KRA 2</label>
-                    <textarea class="textarea" id="kra2" rows="3"
-                              placeholder="e.g. Strengthen EBS cells at ..."></textarea>
-                </div>
-
-                <div class="field">
-                    <label class="label" for="kra3">KRA 3</label>
-                    <textarea class="textarea" id="kra3" rows="3"></textarea>
-                </div>
-
-                <div class="field">
-                    <label class="label" for="kra4">KRA 4</label>
-                    <textarea class="textarea" id="kra4" rows="3"></textarea>
-                </div>
-
-                <div class="field">
-                    <label class="label" for="kra5">KRA 5</label>
-                    <textarea class="textarea" id="kra5" rows="3"></textarea>
-                </div>
+                <button type="button" class="btn btn-outline ripple kra-add" id="addKraBtn">
+                    <i class="fas fa-plus"></i> Add KRA
+                </button>
 
                 <button type="submit" class="btn btn-primary ripple submit-btn">
                     <i class="fas fa-floppy-disk"></i> <span>Save objectives</span>

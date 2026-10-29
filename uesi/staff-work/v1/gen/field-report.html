@@ -45,12 +45,12 @@
     <main class="page needs-auth">
         <div class="card">
             <div class="card-title"><i class="fas fa-file-lines"></i> Report details</div>
-            <div class="card-sub">These fill the header of the Field Staff Report.</div>
+            <div class="card-sub">These fill the header and sign-off of the Field Staff Report. Saved on this device.</div>
 
             <form id="reportForm" novalidate autocomplete="off">
                 <div class="field">
                     <label class="label" for="staffName">Staff name</label>
-                    <input class="input input-readonly" type="text" id="staffName" />
+                    <input class="input input-readonly" type="text" id="staffName" readonly />
                 </div>
 
                 <div class="field">
@@ -65,9 +65,15 @@
                 </div>
 
                 <div class="field">
+                    <label class="label" for="stateInput">State</label>
+                    <input class="input" type="text" id="stateInput"
+                           placeholder="e.g. Telangana" autocapitalize="words" />
+                </div>
+
+                <div class="field">
                     <label class="label" for="regionInput">Region</label>
                     <input class="input" type="text" id="regionInput"
-                           placeholder="e.g. Hyderabad (Central Telangana)" autocapitalize="words" />
+                           placeholder="e.g. Malkajgiri" autocapitalize="words" />
                 </div>
 
                 <div class="grid-2">
@@ -80,26 +86,56 @@
                         <select class="select" id="yearSelect"></select>
                     </div>
                 </div>
+
+                <div class="field">
+                    <div class="label-row">
+                        <label class="label" for="copyToInput">Copy to</label>
+                        <button type="button" class="link-btn ripple" id="copyToReset">Restore default</button>
+                    </div>
+                    <textarea class="textarea" id="copyToInput" rows="5"></textarea>
+                    <div class="hint">One line per office or person. Shown at the bottom left.</div>
+                </div>
+
+                <div class="field">
+                    <span class="label">Signature</span>
+                    <div class="sig-box">
+                        <img id="sigPreview" class="sig-preview" alt="Your signature" hidden />
+                        <span class="sig-empty" id="sigEmpty">No signature added yet</span>
+                        <div class="sig-actions">
+                            <label class="btn btn-outline btn-sm ripple" for="sigInput">
+                                <i class="fas fa-upload"></i> Upload
+                            </label>
+                            <button type="button" class="btn btn-danger btn-sm ripple" id="sigRemove" hidden>
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                        <input type="file" id="sigInput" accept="image/*" class="sr-only" />
+                    </div>
+                    <div class="hint">PNG or JPG. A photo of your signature on white paper works well.</div>
+                </div>
+
+                <div class="field">
+                    <label class="label" for="roleInput">Role</label>
+                    <input class="input" type="text" id="roleInput"
+                           placeholder="e.g. Staff Co-ordinator - MM District" />
+                </div>
             </form>
         </div>
 
-        <!-- Praise & Prayer inline editor -->
         <div class="card" id="reflectionCard" hidden>
             <div class="card-title"><i class="fas fa-hands-praying"></i> Praise &amp; Prayer</div>
             <div class="card-sub" id="reflectionSub">
-                No reflection saved for this month yet. Fill it in now — it will be saved with the report.
+                No reflection saved for this month yet. Fill it in now; it will be saved with the report.
             </div>
 
             <div id="reflectionEditor">
                 <div class="field">
-                    <label class="label" for="praising">Praising Points</label>
-                    <textarea class="textarea" id="praising" rows="4"
-                              placeholder="One point per line"></textarea>
+                    <label class="label" for="praising">Praising points</label>
+                    <textarea class="textarea" id="praising" rows="4" placeholder="One point per line"></textarea>
                 </div>
                 <div class="field">
-                    <label class="label" for="prayer">Prayer Points</label>
-                    <textarea class="textarea" id="prayer" rows="4"
-                              placeholder="One point per line"></textarea>
+                    <label class="label" for="prayer">Prayer points</label>
+                    <textarea class="textarea" id="prayer" rows="4" placeholder="One point per line"></textarea>
                 </div>
             </div>
 

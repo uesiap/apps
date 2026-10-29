@@ -312,3 +312,31 @@
 .sign-space {
     height: 40px;
 }
+
+/* ---------- Field report updates ---------- */
+/* KRA objectives in black */
+.rpt .rpt-kra-body,
+.rpt .rpt-kra-body li,
+.rpt .rpt-kra-list,
+.rpt .rpt-kra-list li {
+    color: #000 !important;
+}
+
+/* "Other than KRA" section heading in the brand colour */
+.rpt .rpt-sec-head td {
+    background: #075E54;
+    color: #fff;
+    font-weight: 700;
+    text-align: left;
+}
+
+/* Praise and prayer: one column when only one list has points */
+.rpt-reflect.one {
+    display: block;
+}
+
+/* Signature nudge (matches the Word and PDF offset) */
+.sign-img {
+    position: relative;
+    left: -10px;
+}
