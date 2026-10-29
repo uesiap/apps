@@ -1,31 +1,16 @@
 // /apps/uesi/staff-work/v1/assets/scripts/final.js
+// Generated report preview and export (PDF, Excel, Word) for the field report and the itinerary.
+// <body data-kind="field|itinerary"> chooses the layout. Both share the sign-off block.
 (() => {
     'use strict';
 
     const { $, Session, notify, setLoading } = window.UI;
 
-    const KINDS = {
-        field: {
-            path: 'Field_Report',
-            title: 'FIELD STAFF REPORT',
-            sheet: 'Field Report',
-            label: 'Field Report',
-            isField: true,
-            dayHead: 'Date(s)',
-            midHead: 'KRA'
-        },
-        itinerary: {
-            path: 'Itinerary_Form',
-            title: 'FIELD STAFF ITINERARY',
-            sheet: 'Itinerary',
-            label: 'Itinerary',
-            isField: false,
-            dayHead: 'DATE(S)',
-            midHead: 'PLACE'
-        }
-    };
-    const kind = KINDS[document.body.dataset.kind] || KINDS.field;
-    const isItin = !kind.isField;
+    const IS_FIELD = document.body.dataset.kind !== 'itinerary';
+
+    const KIND = IS_FIELD
+        ? { path: 'Field_Report', title: 'FIELD STAFF REPORT', sheet: 'Field Report', label: 'Field Report' }
+        : { path: 'Itinerary_Form', title: 'FIELD STAFF ITINERARY', sheet: 'Itinerary', label: 'Itinerary' };
 
     const DB_ROOT = 'apps/uesi/staff-work/v1/users';
     const ORG = 'UNION OF EVANGELICAL STUDENTS OF INDIA';
@@ -46,14 +31,24 @@
         'Medchal - Malkajgiri District Co-ordinator'
     ];
 
-    // Column widths for the main table: [date, middle, activities]
-    const WIDTHS = {
-        field: { pct: ['12%', '8%', '80%'], mm: [28, 18, 136], tw: [1600, 1000, 7866] },
-        itinerary: { pct: ['14%', '22%', '64%'], mm: [24, 40, 118], tw: [1500, 2300, 6666] }
-    };
-    const W = isItin ? WIDTHS.itinerary : WIDTHS.field;
-    const SEC12_MM = [22, 48, 112];
-    const SEC12_TW = [1200, 2800, 6466];
+    // Main table columns. pct = web width, mm = PDF width, tw = Word width, xl = Excel width.
+    // Field totals: mm 182, tw 10466. Itinerary totals: mm 182, tw 10466.
+    const COLS = IS_FIELD
+        ? [
+            { key: 'date',  head: 'DATE(S)',                             pct: '12%', mm: 24,  tw: 1300, xl: 16, align: 'center' },
+            { key: 'place', head: 'PLACE & PURPOSE',                     pct: '22%', mm: 42,  tw: 2600, xl: 28, align: 'left' },
+            { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '60%', mm: 100, tw: 5866, xl: 66, align: 'left' },
+            { key: 'kra',   head: 'KRA',                                 pct: '6%',  mm: 16,  tw: 700,  xl: 8,  align: 'center' }
+        ]
+        : [
+            { key: 'date',  head: 'DATE(S)',                             pct: '14%', mm: 24,  tw: 1500, xl: 16, align: 'center' },
+            { key: 'place', head: 'PLACE',                               pct: '22%', mm: 40,  tw: 2300, xl: 28, align: 'left' },
+            { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '64%', mm: 118, tw: 6666, xl: 74, align: 'left' }
+        ];
+    const N = COLS.length;
+
+    // "Other than KRA" section (field only): date, place, particulars
+    const OTHER = { mm: [24, 42, 116], tw: [1300, 2600, 6566] };
 
     const LOGO_MM = 12;
     const LOGO_EMU = 548640;
@@ -61,6 +56,7 @@
     const SIG_MAX_H_MM = 20;
     const SIG_W_EMU = 1463040;
     const SIG_MAX_H_EMU = 548640;
+    const EXCEL_SIGN_INDENT = '\u00A0'.repeat(28);
 
     if (!firebase.apps.length) {
         firebase.initializeApp({
@@ -72,19 +68,19 @@
     }
     const db = firebase.database();
 
-    /* ---------- Request ---------- */
+    /* ---------- Request from the generate page ---------- */
     const params = new URLSearchParams(location.search);
     const request = {
         name: (params.get('name') || '').trim(),
         email: (params.get('email') || '').trim(),
         base: (params.get('base') || '').trim(),
-        region: (params.get('region') || '').trim(),
         state: (params.get('state') || '').trim(),
+        region: (params.get('region') || '').trim(),
         month: Number(params.get('month')),
         year: Number(params.get('year'))
     };
     const requestOk = Boolean(
-        request.base && request.region && (!isItin || request.state) &&
+        request.base && request.state && request.region &&
         Number.isInteger(request.month) && request.month >= 1 && request.month <= 12 &&
         Number.isInteger(request.year) && request.year >= 2000 && request.year <= 2100
     );
@@ -96,8 +92,8 @@
     /* ---------- Helpers ---------- */
     const pad = (n) => String(n).padStart(2, '0');
     const fmtDate = (ymd) => `${ymd.slice(8, 10)}/${ymd.slice(5, 7)}/${ymd.slice(0, 4)}`;
-    const dayOfWeek = (ymd) =>
-        new Date(ymd + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
+    const dayOfWeek = (ymd) => new Date(ymd + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
+    const dayGap = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 86400000);
     const safeName = (s) => s.replace(/[\\/:*?"<>|]+/g, '').trim();
     const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -105,13 +101,19 @@
     const storageGet = (key) => {
         try { return localStorage.getItem(key); } catch (_) { return null; }
     };
-
-    const orgLine = (m) => (isItin ? `${ORG} - ${m.state.toUpperCase()}` : ORG);
-    const midValue = (g) => (isItin ? g.place : String(g.kra));
-    const dayText = (dates) => dates.map((d) => String(Number(d.slice(8, 10)))).join(', ');
-    const fileBase = (m) => safeName(`${m.name} ${kind.label} - ${m.monthName} ${m.year}`);
     const sameKra = (a, b) => (a.kra ?? null) === (b.kra ?? null);
-    const dayGap = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 86400000);
+    const hasReflection = (m) => m.praising.length > 0 || m.prayer.length > 0;
+    const numbered = (items) => items.map((t, i) => `${i + 1}. ${t}`).join('\n');
+
+    const orgLine = (m) => `${ORG} - ${m.state.toUpperCase()}`;
+    const dayText = (dates) => dates.map((d) => String(Number(d.slice(8, 10)))).join(', ');
+    const cellText = (g, key) => {
+        if (key === 'date') return dayText(g.dates);
+        if (key === 'place') return g.place || '';
+        if (key === 'kra') return String(g.kra);
+        return g.activity || '—';
+    };
+    const fileBase = (m) => safeName(`${m.name} ${KIND.label} - ${m.monthName} ${m.year}`);
 
     function withTimeout(promise, ms) {
         let timer;
@@ -138,24 +140,32 @@
         return r;
     };
 
-    // Accepts the saved array of points, or plain text with one point per line
-    function toPoints(value) {
-        if (Array.isArray(value)) return value.map((p) => String(p).trim()).filter(Boolean);
-        if (typeof value === 'string') {
-            return value
-                .split('\n')
+    // Accepts a saved list, the older {"1": "..."} object, or plain text with one item per line
+    function normalizeList(v) {
+        if (!v) return [];
+        if (typeof v === 'string') {
+            return v.split('\n')
                 .map((line) => line.trim().replace(/^\d+[.)]\s*/, '').replace(/^[*\-•]\s*/, ''))
                 .filter(Boolean);
         }
-        return [];
+        const items = Array.isArray(v)
+            ? v
+            : Object.keys(v).filter((k) => /^\d+$/.test(k)).sort((a, b) => a - b).map((k) => v[k]);
+        return items.map((s) => String(s || '').trim()).filter(Boolean);
     }
 
-    // One text value for the activity column, numbered when there is more than one point
+    // Activity text: saved text, or the older purpose list (numbered when there are several points)
     function activityText(val) {
         if (typeof val.activity === 'string' && val.activity.trim()) return val.activity.trim();
-        const pts = toPoints(val.purpose);
-        if (pts.length > 1) return pts.map((p, i) => `${i + 1}. ${p}`).join('\n');
+        const pts = normalizeList(val.purpose);
+        if (pts.length > 1) return numbered(pts);
         return pts[0] || '';
+    }
+
+    function padRow(arr) {
+        const out = arr.slice();
+        while (out.length < N) out.push('');
+        return out;
     }
 
     /* ---------- Images ---------- */
@@ -206,7 +216,7 @@
         return { cx, cy };
     }
 
-    /* ---------- Grouping: same date-consecutive rows with the same details share one row ---------- */
+    /* ---------- Rows: consecutive days with the same details share one row ---------- */
     function groupConsecutive(entries) {
         const out = [];
         let i = 0;
@@ -238,25 +248,22 @@
         };
     }
 
-    function buildModel(entries, kraObjectives, reflection) {
+    function buildModel(entries, kraList, reflection) {
         const monthName = MONTHS[request.month - 1];
-        const mainEntries = kind.isField ? entries.filter((e) => e.kra !== 0) : entries;
-        const otherEntries = kind.isField ? entries.filter((e) => e.kra === 0) : [];
-
         return {
-            title: `${kind.title} - ${monthName.toUpperCase()} ${request.year}`,
+            title: `${KIND.title} - ${monthName.toUpperCase()} ${request.year}`,
             monthName,
             year: request.year,
             state: request.state,
             region: request.region,
             base: request.base,
             name: request.name || view.session.name,
-            mainGroups: groupConsecutive(mainEntries),
-            otherEntries,
-            kraObjectives,
+            kraList,
+            mainGroups: groupConsecutive(IS_FIELD ? entries.filter((e) => e.kra !== 0) : entries),
+            otherEntries: IS_FIELD ? entries.filter((e) => e.kra === 0) : [],
             praising: reflection.praising,
             prayer: reflection.prayer,
-            footer: isItin ? readFooter() : null
+            footer: readFooter()
         };
     }
 
@@ -272,14 +279,11 @@
         const base = `${DB_ROOT}/${safeEmail}/userData`;
 
         try {
-            const [entriesSnap, kraSnap, refSnap] = await withTimeout(
-                Promise.all([
-                    db.ref(`${base}/${kind.path}/${request.year}/${month}`).once('value'),
-                    kind.isField ? db.ref(`${base}/KRA_Objectives/${request.year}/${month}`).once('value') : null,
-                    kind.isField ? db.ref(`${base}/Monthly_Reflection/${request.year}/${month}`).once('value') : null
-                ]),
-                LOAD_TIMEOUT_MS
-            );
+            const [entriesSnap, kraSnap, refSnap] = await withTimeout(Promise.all([
+                db.ref(`${base}/${KIND.path}/${request.year}/${month}`).once('value'),
+                IS_FIELD ? db.ref(`${base}/KRA_Objectives/${request.year}/${month}`).once('value') : Promise.resolve(null),
+                IS_FIELD ? db.ref(`${base}/Monthly_Reflection/${request.year}/${month}`).once('value') : Promise.resolve(null)
+            ]), LOAD_TIMEOUT_MS);
 
             if (view.key !== key) return;
 
@@ -291,33 +295,19 @@
                 entries.push({
                     date,
                     day: val.day || dayOfWeek(date),
-                    kra: kind.isField ? Number(val.kra ?? 0) : null,
-                    // The itinerary form saves the place as "zone"
+                    kra: IS_FIELD ? Number(val.kra ?? 0) : null,
+                    // Older itinerary entries stored the place as "zone"
                     place: String(val.place || val.zone || '').trim(),
                     activity: activityText(val)
                 });
             });
             entries.sort((a, b) => a.date.localeCompare(b.date));
 
-            const kraObjectives = [];
-            if (kind.isField && kraSnap) {
-                const k = kraSnap.val() || {};
-                for (let i = 1; i <= 5; i++) {
-                    const text = String(k[String(i)] || '').trim();
-                    if (text) kraObjectives.push({ n: i, text });
-                }
-            }
+            const kraList = IS_FIELD && kraSnap ? normalizeList(kraSnap.val()) : [];
+            const r = IS_FIELD && refSnap ? (refSnap.val() || {}) : {};
+            const reflection = { praising: normalizeList(r.praising), prayer: normalizeList(r.prayer) };
 
-            let reflection = { praising: [], prayer: [] };
-            if (kind.isField && refSnap) {
-                const r = refSnap.val() || {};
-                reflection = {
-                    praising: Array.isArray(r.praising) ? r.praising.filter(Boolean).map(String) : [],
-                    prayer: Array.isArray(r.prayer) ? r.prayer.filter(Boolean).map(String) : []
-                };
-            }
-
-            model = buildModel(entries, kraObjectives, reflection);
+            model = buildModel(entries, kraList, reflection);
         } catch (err) {
             if (view.key !== key) return;
             console.error('Report load failed:', err);
@@ -329,7 +319,7 @@
     }
 
     /* =====================================================
-       Preview
+       Web preview
        ===================================================== */
     function brandRow(m) {
         const wrap = el('div', 'rpt-brand');
@@ -338,18 +328,18 @@
         img.alt = '';
         wrap.append(img, el('span', 'rpt-brand-text', orgLine(m)));
         const td = el('td');
-        td.colSpan = 3;
+        td.colSpan = N;
         td.append(wrap);
         return tr('', [td]);
     }
 
-    function docTitleRow(m) {
-        return tr('rpt-title', [cell(m.title, 3)]);
+    function titleRow(m) {
+        return tr('rpt-title', [cell(m.title, N)]);
     }
 
     function infoRow(m) {
         const td = el('td');
-        td.colSpan = 3;
+        td.colSpan = N;
 
         const grid = el('div', 'rpt-info-inner');
         const left = el('div');
@@ -368,82 +358,76 @@
         return tr('rpt-info', [td]);
     }
 
-    function kraObjectivesRow(m) {
-        const head = tr('rpt-kra-head', [cell('KRA (KEY RESULTING AREA) OBJECTIVES:', 3)]);
-
-        const list = el('ol', 'rpt-kra-list');
-        if (m.kraObjectives.length === 0) {
-            list.append(el('li', '', 'No KRA objectives were set for this month.'));
-        } else {
-            m.kraObjectives.forEach((k) => list.append(el('li', '', k.text)));
-        }
-
-        const bodyTd = el('td');
-        bodyTd.colSpan = 3;
-        bodyTd.append(list);
-
-        return [head, tr('rpt-kra-body', [bodyTd])];
+    function kraRows(m) {
+        const head = tr('rpt-kra-head', [cell('KRA (KEY RESULTING AREA) OBJECTIVES:', N)]);
+        const ol = el('ol', 'rpt-kra-list');
+        m.kraList.forEach((t) => ol.append(el('li', '', t)));
+        const td = el('td');
+        td.colSpan = N;
+        td.append(ol);
+        return [head, tr('rpt-kra-body', [td])];
     }
 
-    function headMainTable() {
+    function mainHeadRow() {
         const r = el('tr');
-        [kind.dayHead, kind.midHead, 'ACTIVITIES WITH DETAILS AND PROGRESS'].forEach((text, i) => {
-            const th = el('th', '', text);
-            th.style.width = W.pct[i];
+        COLS.forEach((c) => {
+            const th = el('th', '', c.head);
+            th.style.width = c.pct;
             r.append(th);
         });
         return r;
     }
 
-    function renderMainRows(groups) {
-        return groups.map((g) => {
-            const act = cell(g.activity || '—', 1, 'rpt-activity');
-            act.style.whiteSpace = 'pre-line';
-            act.style.textAlign = 'left';
-            return tr('', [
-                cell(dayText(g.dates), 1, 'nw'),
-                cell(midValue(g), 1, kind.isField ? 'nw' : ''),
-                act
-            ]);
-        });
+    function mainRows(groups) {
+        return groups.map((g) => tr('', COLS.map((c) => {
+            const cls = c.key === 'act' ? 'rpt-activity' : (c.key === 'date' || c.key === 'kra' ? 'nw' : '');
+            const td = el('td', cls, cellText(g, c.key));
+            if (c.align === 'left') td.style.textAlign = 'left';
+            if (c.key === 'act') td.style.whiteSpace = 'pre-line';
+            return td;
+        })));
     }
 
-    function section12Rows(otherEntries) {
-        const head = tr('rpt-sec12-head', [cell('12. Other than KRA:', 3)]);
+    function otherRows(list) {
+        const span = N - 2;
+        const head = tr('rpt-sec-head', [cell('Other than KRA', N)]);
 
-        const thRow = el('tr');
-        thRow.append(
-            el('th', '', 'DATE'),
-            el('th', '', 'PLACE AND PURPOSE'),
-            el('th', '', 'PARTICULARS, PROBLEMS AND HIGHLIGHTS')
-        );
+        const hdr = el('tr');
+        hdr.append(el('th', '', 'DATE'), el('th', '', 'PLACE AND PURPOSE'));
+        const particulars = el('th', '', 'PARTICULARS, PROBLEMS AND HIGHLIGHTS');
+        particulars.colSpan = span;
+        hdr.append(particulars);
 
-        const rows = otherEntries.map((e) => {
-            const act = cell(e.activity || '—', 1, 'rpt-activity');
-            act.style.whiteSpace = 'pre-line';
+        const rows = list.map((e) => {
+            const place = el('td', '', e.place);
+            place.style.textAlign = 'left';
+            const act = el('td', 'rpt-activity', e.activity || '—');
+            act.colSpan = span;
             act.style.textAlign = 'left';
-            return tr('', [cell(String(Number(e.date.slice(8, 10))), 1, 'nw'), cell(e.place), act]);
+            act.style.whiteSpace = 'pre-line';
+            return tr('', [cell(String(Number(e.date.slice(8, 10))), 1, 'nw'), place, act]);
         });
 
-        return [head, thRow, ...rows];
+        return [head, hdr, ...rows];
     }
 
+    // Praise and prayer: shows only the lists that have points
     function reflectRow(m) {
-        const td = el('td');
-        td.colSpan = 3;
+        const blocks = [];
+        if (m.praising.length) blocks.push(['PRAISING POINTS:', m.praising]);
+        if (m.prayer.length) blocks.push(['PRAYER POINTS:', m.prayer]);
 
-        const wrap = el('div', 'rpt-reflect');
-        const col = (title, items) => {
+        const td = el('td');
+        td.colSpan = N;
+        const wrap = el('div', 'rpt-reflect' + (blocks.length === 1 ? ' one' : ''));
+        blocks.forEach(([title, items]) => {
             const c = el('div', 'rpt-reflect-col');
             c.append(el('div', 'rpt-reflect-title', title));
             const list = el('ol', 'rpt-reflect-list');
-            if (items.length === 0) list.append(el('li', '', '—'));
-            else items.forEach((t) => list.append(el('li', '', t)));
+            items.forEach((t) => list.append(el('li', '', t)));
             c.append(list);
-            return c;
-        };
-
-        wrap.append(col('PRAISING POINTS:', m.praising), col('PRAYER POINTS:', m.prayer));
+            wrap.append(c);
+        });
         td.append(wrap);
         return tr('', [td]);
     }
@@ -473,31 +457,31 @@
     }
 
     function renderPaper(m) {
-        const table = el('table', 'rpt');
-
         const thead = el('thead');
-        thead.append(brandRow(m), docTitleRow(m), infoRow(m));
+        thead.append(brandRow(m), titleRow(m), infoRow(m));
 
         const tbody = el('tbody');
-        if (kind.isField) tbody.append(...kraObjectivesRow(m));
-        tbody.append(headMainTable(), ...renderMainRows(m.mainGroups));
-        if (kind.isField) tbody.append(...section12Rows(m.otherEntries), reflectRow(m));
+        if (IS_FIELD && m.kraList.length) tbody.append(...kraRows(m));
+        tbody.append(mainHeadRow(), ...mainRows(m.mainGroups));
+        if (m.otherEntries.length) tbody.append(...otherRows(m.otherEntries));
+        if (hasReflection(m)) tbody.append(reflectRow(m));
 
+        const table = el('table', 'rpt');
         table.append(thead, tbody);
 
         const scroll = el('div', 'rpt-scroll');
         scroll.append(table);
 
-        const nodes = [scroll];
-        if (m.footer) nodes.push(footerNode(m.footer));
-        $('paper').replaceChildren(...nodes);
+        $('paper').replaceChildren(scroll, footerNode(m.footer));
     }
 
     /* ---------- Render state ---------- */
     function render() {
         const authed = Boolean(view.session);
-        const hasData = authed && requestOk && view.loaded && !view.error && model &&
-            (model.mainGroups.length > 0 || model.otherEntries.length > 0);
+        const hasData = Boolean(
+            authed && requestOk && view.loaded && !view.error && model &&
+            (model.mainGroups.length > 0 || model.otherEntries.length > 0)
+        );
         const noData = authed && requestOk && view.loaded && !view.error && !hasData;
 
         $('loadState').hidden = !(authed && requestOk && !view.loaded);
@@ -547,11 +531,11 @@
        ===================================================== */
     function drawFooterPdf(doc, f, sig, startY) {
         const LEFT_X = 14;
-        const RIGHT_EDGE = 196;           // A4 width (210) minus the 14 mm margin
+        const RIGHT_EDGE = 196; // A4 width (210) minus the 14 mm margin
 
         doc.setFontSize(10);
 
-        // Measure the widest item in the Submitted by block, then align that block to the right margin
+        // The Submitted by block is aligned so its widest line ends at the right margin
         doc.setFont('times', 'bold');
         const labelW = doc.getTextWidth('Submitted by,');
         const nameW = doc.getTextWidth(f.name);
@@ -573,14 +557,12 @@
             y = 16;
         }
 
-        // Copy to (left)
         doc.setTextColor(0, 0, 0);
         doc.setFont('times', 'bold');
         doc.text('Copy to,', LEFT_X, y);
         doc.setFont('times', 'normal');
         f.copyTo.forEach((line, i) => doc.text(line, LEFT_X, y + 6 + i * 5));
 
-        // Submitted by (right, flush to the margin)
         doc.setFont('times', 'bold');
         doc.text('Submitted by,', RIGHT_X, y);
         let ry = y + 2;
@@ -607,8 +589,17 @@
         doc.setFont('times', 'normal');
         doc.setFontSize(9);
 
-        const PAD = 2;
-        const MM = W.mm;
+        const base = {
+            font: 'times', fontSize: 9, lineColor: [68, 68, 68], lineWidth: 0.2,
+            cellPadding: 2, valign: 'middle', textColor: [0, 0, 0]
+        };
+        const headStyle = {
+            fillColor: [242, 242, 242], textColor: [0, 0, 0],
+            fontStyle: 'bold', lineColor: [68, 68, 68], lineWidth: 0.2, halign: 'center'
+        };
+        const sectionHead = {
+            fillColor: [7, 94, 84], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'left'
+        };
 
         // Brand line: logo beside the organisation text, centred
         const brand = orgLine(m);
@@ -622,14 +613,6 @@
         if (logo) doc.addImage(logo.dataUrl, logo.fmt, x0, y + 2, LOGO_MM, LOGO_MM);
         doc.text(brand, x0 + (logo ? LOGO_MM + gap : 0), y + 8, { baseline: 'middle' });
         y += 16;
-
-        if (!isItin) {
-            doc.setFont('times', 'bold');
-            doc.setFontSize(14);
-            doc.setTextColor(7, 94, 84);
-            doc.text(`${ORG} — ${m.region}`, 105, y + 4, { align: 'center' });
-            y += 8;
-        }
 
         doc.setFont('times', 'bold');
         doc.setFontSize(15);
@@ -647,10 +630,7 @@
             ],
             theme: 'grid',
             margin: { left: 14, right: 14 },
-            styles: {
-                font: 'times', fontSize: 9, lineColor: [68, 68, 68], lineWidth: 0.2,
-                cellPadding: 2, textColor: [0, 0, 0], valign: 'middle'
-            },
+            styles: base,
             columnStyles: {
                 0: { fontStyle: 'bold', fillColor: [248, 248, 248], cellWidth: 25 },
                 1: { cellWidth: 66 },
@@ -660,27 +640,19 @@
         });
         y = doc.lastAutoTable.finalY + 2;
 
-        // KRA objectives (field report only)
-        if (kind.isField) {
-            const objBody = m.kraObjectives.length === 0
-                ? [[{ content: 'No KRA objectives were set for this month.', colSpan: 3, styles: { halign: 'left' } }]]
-                : m.kraObjectives.map((k) => ([
-                    { content: '', styles: { cellWidth: 4, lineWidth: 0, cellPadding: 0 } },
-                    { content: `${k.n}.`, styles: { cellWidth: 8, lineWidth: 0, halign: 'right' } },
-                    { content: k.text, styles: { halign: 'left', lineWidth: 0 } }
-                ]));
-
+        // KRA objectives (field report only, only when set)
+        if (IS_FIELD && m.kraList.length) {
             doc.autoTable({
                 startY: y,
-                head: [[{
-                    content: 'KRA (KEY RESULTING AREA) OBJECTIVES:', colSpan: 3,
-                    styles: { fontStyle: 'bold', fillColor: [238, 242, 241], textColor: [7, 94, 84], halign: 'left' }
-                }]],
-                body: objBody,
+                head: [[{ content: 'KRA (KEY RESULTING AREA) OBJECTIVES:', colSpan: N, styles: sectionHead }]],
+                body: m.kraList.map((t, i) => [{
+                    content: `${i + 1}. ${t}`,
+                    colSpan: N,
+                    styles: { halign: 'left', textColor: [0, 0, 0] }
+                }]),
                 theme: 'grid',
                 margin: { left: 14, right: 14 },
-                styles: { font: 'times', fontSize: 9, lineColor: [68, 68, 68], lineWidth: 0.2, cellPadding: 2, valign: 'top' },
-                columnStyles: { 0: { cellWidth: 4 }, 1: { cellWidth: 8 }, 2: { cellWidth: 170 } }
+                styles: { ...base, valign: 'top' }
             });
             y = doc.lastAutoTable.finalY + 2;
         }
@@ -688,106 +660,66 @@
         // Main table
         doc.autoTable({
             startY: y,
-            head: [[
-                { content: kind.dayHead, styles: { fontStyle: 'bold', halign: 'center' } },
-                { content: kind.midHead, styles: { fontStyle: 'bold', halign: 'center' } },
-                { content: 'ACTIVITIES WITH DETAILS AND PROGRESS', styles: { fontStyle: 'bold', halign: 'center' } }
-            ]],
-            body: m.mainGroups.map((g) => [
-                { content: dayText(g.dates), styles: { halign: 'center' } },
-                { content: midValue(g), styles: { halign: 'center' } },
-                { content: g.activity || '—', styles: { halign: 'left' } }
-            ]),
+            head: [COLS.map((c) => ({ content: c.head }))],
+            body: m.mainGroups.map((g) => COLS.map((c) => ({
+                content: cellText(g, c.key),
+                styles: { halign: c.align }
+            }))),
             theme: 'grid',
             margin: { left: 14, right: 14 },
-            styles: {
-                font: 'times', fontSize: 9, lineColor: [68, 68, 68], lineWidth: 0.2,
-                cellPadding: PAD, valign: 'middle', textColor: [0, 0, 0]
-            },
-            headStyles: {
-                fillColor: [242, 242, 242], textColor: [0, 0, 0],
-                fontStyle: 'bold', lineColor: [68, 68, 68], lineWidth: 0.2
-            },
-            columnStyles: {
-                0: { cellWidth: MM[0], halign: 'center' },
-                1: { cellWidth: MM[1], halign: 'center' },
-                2: { cellWidth: MM[2], halign: 'left' }
-            },
+            styles: base,
+            headStyles: headStyle,
+            columnStyles: Object.fromEntries(COLS.map((c, i) => [i, { cellWidth: c.mm, halign: c.align }])),
             rowPageBreak: 'avoid'
         });
         y = doc.lastAutoTable.finalY + 2;
 
-        // Field report only: section 12 and praise / prayer
-        if (kind.isField) {
-            const secBody = m.otherEntries.map((e) => [
-                { content: String(Number(e.date.slice(8, 10))), styles: { halign: 'center' } },
-                { content: e.place, styles: { halign: 'left' } },
-                { content: e.activity || '—', styles: { halign: 'left' } }
-            ]);
-            if (secBody.length === 0) {
-                secBody.push([
-                    { content: '—', styles: { halign: 'center' } },
-                    { content: '—', styles: { halign: 'center' } },
-                    { content: 'No "Other than KRA" entries for this month.', styles: { halign: 'center', fontStyle: 'italic' } }
-                ]);
-            }
-
+        // Other than KRA (field report only, only when there are entries)
+        if (m.otherEntries.length) {
             doc.autoTable({
                 startY: y,
                 head: [
-                    [{
-                        content: '12. Other than KRA:', colSpan: 3,
-                        styles: { fillColor: [7, 94, 84], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'left' }
-                    }],
-                    [
-                        { content: 'DATE', styles: { fontStyle: 'bold', halign: 'center' } },
-                        { content: 'PLACE AND PURPOSE', styles: { fontStyle: 'bold', halign: 'center' } },
-                        { content: 'PARTICULARS, PROBLEMS AND HIGHLIGHTS', styles: { fontStyle: 'bold', halign: 'center' } }
-                    ]
+                    [{ content: 'Other than KRA', colSpan: 3, styles: sectionHead }],
+                    [{ content: 'DATE' }, { content: 'PLACE AND PURPOSE' }, { content: 'PARTICULARS, PROBLEMS AND HIGHLIGHTS' }]
                 ],
-                body: secBody,
+                body: m.otherEntries.map((e) => [
+                    { content: String(Number(e.date.slice(8, 10))), styles: { halign: 'center' } },
+                    { content: e.place, styles: { halign: 'left' } },
+                    { content: e.activity || '—', styles: { halign: 'left' } }
+                ]),
                 theme: 'grid',
                 margin: { left: 14, right: 14 },
-                styles: {
-                    font: 'times', fontSize: 9, lineColor: [68, 68, 68], lineWidth: 0.2,
-                    cellPadding: PAD, valign: 'middle', textColor: [0, 0, 0]
-                },
-                headStyles: {
-                    fillColor: [242, 242, 242], textColor: [0, 0, 0],
-                    fontStyle: 'bold', lineColor: [68, 68, 68], lineWidth: 0.2
-                },
+                styles: base,
+                headStyles: headStyle,
                 columnStyles: {
-                    0: { cellWidth: SEC12_MM[0], halign: 'center' },
-                    1: { cellWidth: SEC12_MM[1] },
-                    2: { cellWidth: SEC12_MM[2] }
+                    0: { cellWidth: OTHER.mm[0] },
+                    1: { cellWidth: OTHER.mm[1] },
+                    2: { cellWidth: OTHER.mm[2] }
                 },
                 rowPageBreak: 'avoid'
             });
             y = doc.lastAutoTable.finalY + 2;
+        }
 
-            const numbered = (items) => items.length
-                ? items.map((t, i) => `${i + 1}. ${t}`).join('\n')
-                : '—';
+        // Praise and prayer (only the lists that have points)
+        if (hasReflection(m)) {
+            const blocks = [];
+            if (m.praising.length) blocks.push(`PRAISING POINTS:\n${numbered(m.praising)}`);
+            if (m.prayer.length) blocks.push(`PRAYER POINTS:\n${numbered(m.prayer)}`);
+            const w = blocks.length === 2 ? 91 : 182;
 
             doc.autoTable({
                 startY: y,
-                body: [[
-                    { content: `PRAISING POINTS:\n${numbered(m.praising)}`, styles: { halign: 'left', valign: 'top' } },
-                    { content: `PRAYER POINTS:\n${numbered(m.prayer)}`, styles: { halign: 'left', valign: 'top' } }
-                ]],
+                body: [blocks.map((text) => ({ content: text, styles: { halign: 'left', valign: 'top' } }))],
                 theme: 'grid',
                 margin: { left: 14, right: 14 },
-                styles: {
-                    font: 'times', fontSize: 9, lineColor: [68, 68, 68], lineWidth: 0.2,
-                    cellPadding: 3, valign: 'top', textColor: [0, 0, 0]
-                },
-                columnStyles: { 0: { cellWidth: 91 }, 1: { cellWidth: 91 } }
+                styles: { ...base, cellPadding: 3, valign: 'top' },
+                columnStyles: Object.fromEntries(blocks.map((_, i) => [i, { cellWidth: w }]))
             });
+            y = doc.lastAutoTable.finalY + 2;
         }
 
-        // Itinerary sign-off
-        if (m.footer) drawFooterPdf(doc, m.footer, sig, doc.lastAutoTable.finalY);
-
+        drawFooterPdf(doc, m.footer, sig, y);
         doc.save(`${fileBase(m)}.pdf`);
     }
 
@@ -800,73 +732,71 @@
         const aoa = [];
         const merges = [];
 
-        const pushMerged = (text) => {
+        // A row of text merged across all columns
+        const wide = (text) => {
             const r = aoa.length;
             aoa.push([text]);
-            merges.push({ s: { r, c: 0 }, e: { r, c: 2 } });
+            merges.push({ s: { r, c: 0 }, e: { r, c: N - 1 } });
         };
 
-        pushMerged(isItin ? orgLine(m) : `${ORG} — ${m.region}`);
-        pushMerged(m.title);
-        pushMerged(`NAME: ${m.name}   |   BASE: ${m.base}   |   REGION: ${m.region}   |   MONTH: ${m.monthName}, ${m.year}`);
+        wide(orgLine(m));
+        wide(m.title);
+        wide(`NAME: ${m.name}   |   BASE: ${m.base}   |   REGION: ${m.region}   |   MONTH: ${m.monthName}, ${m.year}`);
         aoa.push([]);
 
-        if (kind.isField) {
-            pushMerged('KRA (KEY RESULTING AREA) OBJECTIVES:');
-            if (m.kraObjectives.length === 0) {
-                pushMerged('No KRA objectives were set for this month.');
-            } else {
-                m.kraObjectives.forEach((k) => {
-                    const r = aoa.length;
-                    aoa.push([`${k.n}.`, '', k.text]);
-                    merges.push({ s: { r, c: 1 }, e: { r, c: 1 } });
-                });
-            }
+        if (IS_FIELD && m.kraList.length) {
+            wide('KRA (KEY RESULTING AREA) OBJECTIVES:');
+            m.kraList.forEach((t, i) => wide(`${i + 1}. ${t}`));
             aoa.push([]);
         }
 
-        aoa.push([kind.dayHead, kind.midHead, 'ACTIVITIES WITH DETAILS AND PROGRESS']);
-        m.mainGroups.forEach((g) => aoa.push([dayText(g.dates), midValue(g), g.activity || '']));
+        aoa.push(COLS.map((c) => c.head));
+        m.mainGroups.forEach((g) => aoa.push(COLS.map((c) => cellText(g, c.key))));
 
-        if (kind.isField) {
+        if (m.otherEntries.length) {
             aoa.push([]);
-            pushMerged('12. Other than KRA:');
-            aoa.push(['DATE', 'PLACE AND PURPOSE', 'PARTICULARS, PROBLEMS AND HIGHLIGHTS']);
-            if (m.otherEntries.length === 0) {
-                aoa.push(['—', '—', 'No entries for this month.']);
-            } else {
-                m.otherEntries.forEach((e) => aoa.push([
-                    String(Number(e.date.slice(8, 10))), e.place, e.activity || ''
-                ]));
-            }
-            aoa.push([]);
-            aoa.push([
-                'PRAISING POINTS:\n' + (m.praising.length ? m.praising.map((t, i) => `${i + 1}. ${t}`).join('\n') : '—'),
-                'PRAYER POINTS:\n' + (m.prayer.length ? m.prayer.map((t, i) => `${i + 1}. ${t}`).join('\n') : '—'),
-                ''
-            ]);
-        }
-
-        if (m.footer) {
-            const f = m.footer;
-            const INDENT = '\u00A0'.repeat(46);   // pushes the Submitted by block toward the right edge
-            const left = ['Copy to,', ...f.copyTo];
-            const right = ['Submitted by,', '', f.name, ...(f.role ? [f.role] : [])];
-            aoa.push([]);
-            for (let i = 0; i < Math.max(left.length, right.length); i++) {
+            wide('Other than KRA');
+            const hr = aoa.length;
+            aoa.push(padRow(['DATE', 'PLACE AND PURPOSE', 'PARTICULARS, PROBLEMS AND HIGHLIGHTS']));
+            merges.push({ s: { r: hr, c: 2 }, e: { r: hr, c: N - 1 } });
+            m.otherEntries.forEach((e) => {
                 const r = aoa.length;
-                aoa.push([left[i] || '', '', right[i] ? INDENT + right[i] : '']);
-                merges.push({ s: { r, c: 0 }, e: { r, c: 1 } });
+                aoa.push(padRow([String(Number(e.date.slice(8, 10))), e.place, e.activity || '']));
+                merges.push({ s: { r, c: 2 }, e: { r, c: N - 1 } });
+            });
+        }
+
+        if (hasReflection(m)) {
+            aoa.push([]);
+            if (m.praising.length) {
+                wide('PRAISING POINTS:');
+                m.praising.forEach((t, i) => wide(`${i + 1}. ${t}`));
             }
+            if (m.prayer.length) {
+                wide('PRAYER POINTS:');
+                m.prayer.forEach((t, i) => wide(`${i + 1}. ${t}`));
+            }
+        }
+
+        // Copy to (left, first two columns) and Submitted by (right)
+        const f = m.footer;
+        const left = ['Copy to,', ...f.copyTo];
+        const right = ['Submitted by,', '', f.name, ...(f.role ? [f.role] : [])];
+        aoa.push([]);
+        for (let i = 0; i < Math.max(left.length, right.length); i++) {
+            const r = aoa.length;
+            aoa.push(padRow([left[i] || '', '', right[i] ? EXCEL_SIGN_INDENT + right[i] : '']));
+            merges.push({ s: { r, c: 0 }, e: { r, c: 1 } });
+            if (N > 3) merges.push({ s: { r, c: 2 }, e: { r, c: N - 1 } });
         }
 
         const ws = XLSX.utils.aoa_to_sheet(aoa);
         ws['!merges'] = merges;
-        ws['!cols'] = [{ wch: 14 }, { wch: isItin ? 24 : 12 }, { wch: 80 }];
+        ws['!cols'] = COLS.map((c) => ({ wch: c.xl }));
         ws['!rows'] = aoa.map((_, i) => (i < 3 ? { hpt: 26 } : {}));
 
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, kind.sheet);
+        XLSX.utils.book_append_sheet(wb, ws, KIND.sheet);
         XLSX.writeFile(wb, `${fileBase(m)}.xlsx`);
     }
 
@@ -893,9 +823,15 @@
         else if (o.right) jc = '<w:jc w:val="right"/>';
         else if (o.left) jc = '<w:jc w:val="left"/>';
 
-        return '<w:p><w:pPr><w:spacing w:before="0" w:after="0"/>' +
-            ind + jc +
+        return '<w:p><w:pPr><w:spacing w:before="0" w:after="0"/>' + ind + jc +
             '</w:pPr>' + runs + '</w:p>';
+    }
+
+    // One paragraph per line of text (keeps line breaks in activities)
+    function textParas(text, align) {
+        return String(text || '').split('\n')
+            .map((line) => docxPara(docxRun(line), align === 'center' ? { center: true } : { left: true }))
+            .join('');
     }
 
     function docxCell(width, paragraphs, o = {}) {
@@ -927,7 +863,7 @@
             '</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
     }
 
-    const buildTable = (rowsXml, widths) => {
+    function buildTable(rowsXml, widths) {
         const border = (side) => `<w:${side} w:val="single" w:sz="4" w:space="0" w:color="444444"/>`;
         return '<w:tbl><w:tblPr>' +
             `<w:tblW w:w="${widths.reduce((a, b) => a + b, 0)}" w:type="dxa"/>` +
@@ -935,10 +871,10 @@
             '<w:tblLayout w:type="fixed"/></w:tblPr>' +
             `<w:tblGrid>${widths.map((w) => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>` +
             rowsXml.join('') + '</w:tbl>';
-    };
+    }
 
     function docxFooter(f, sig, textW) {
-        // Right column is a fixed width (about 67 mm), flush to the right margin
+        // Right column is a fixed width, flush to the right margin
         const rightW = 3800;
         const leftW = textW - rightW;
 
@@ -949,7 +885,7 @@
         if (sig) {
             const { cx, cy } = sigEmu(sig);
             right.push('<w:p><w:pPr><w:spacing w:before="0" w:after="0"/><w:ind w:right="300"/><w:jc w:val="right"/></w:pPr>' +
-            docxImage('rIdSig', cx, cy, 2, 'Signature') + '</w:p>');
+                docxImage('rIdSig', cx, cy, 2, 'Signature') + '</w:p>');
         } else {
             right.push(docxPara('', { right: true }));
         }
@@ -970,98 +906,83 @@
             '</w:tr></w:tbl>';
     }
 
+    function reflParas(title, items) {
+        return docxPara(docxRun(title, { b: true, color: '075E54' }), { left: true }) +
+            items.map((t, i) => docxPara(docxRun(`${i + 1}. ${t}`), { left: true, hang: true })).join('');
+    }
+
     function buildDocumentXml(m, logo, sig) {
-        const TW = W.tw;
+        const TW = COLS.map((c) => c.tw);
         const MAIN_W = TW.reduce((a, b) => a + b, 0);
-        const SEC_W = SEC12_TW.reduce((a, b) => a + b, 0);
         const rows = [];
 
         const brandRuns = (logo ? docxImage('rIdLogo', LOGO_EMU, LOGO_EMU, 1, 'UESI Logo') + docxRun('  ') : '') +
             docxRun(orgLine(m), { b: true, sz: 24 });
-        rows.push(docxRow([docxCell(MAIN_W, docxPara(brandRuns, { center: true }), { span: 3 })], { height: 900 }));
+        rows.push(docxRow([docxCell(MAIN_W, docxPara(brandRuns, { center: true }), { span: N })], { height: 900 }));
 
-        if (!isItin) {
-            rows.push(docxRow([docxCell(MAIN_W, docxPara(docxRun(`${ORG} — ${m.region}`, { b: true, sz: 26 }), { center: true }), { span: 3 })]));
-        }
-        rows.push(docxRow([docxCell(MAIN_W, docxPara(docxRun(m.title, { b: true, sz: 30, color: '075E54' }), { center: true }), { span: 3 })]));
+        rows.push(docxRow([docxCell(MAIN_W,
+            docxPara(docxRun(m.title, { b: true, sz: 30, color: '075E54' }), { center: true }), { span: N })]));
 
         rows.push(docxRow([docxCell(MAIN_W, docxPara(
-            docxRun('NAME: ', { b: true }) + docxRun(m.name) + docxRun('      BASE: ', { b: true }) + docxRun(m.base),
+            docxRun('NAME: ', { b: true }) + docxRun(m.name) +
+            docxRun('      BASE: ', { b: true }) + docxRun(m.base),
             { left: true }
-        ), { span: 3 })]));
+        ), { span: N })]));
+
         rows.push(docxRow([docxCell(MAIN_W, docxPara(
             docxRun('REGION: ', { b: true }) + docxRun(m.region) +
             docxRun('      MONTH: ', { b: true }) + docxRun(`${m.monthName}, ${m.year}`),
             { left: true }
-        ), { span: 3 })]));
+        ), { span: N })]));
 
-        if (kind.isField) {
+        if (IS_FIELD && m.kraList.length) {
             rows.push(docxRow([docxCell(MAIN_W, docxPara(
                 docxRun('KRA (KEY RESULTING AREA) OBJECTIVES:', { b: true, color: '075E54' }), { left: true }
-            ), { span: 3, shade: true })]));
-            if (m.kraObjectives.length === 0) {
-                rows.push(docxRow([docxCell(MAIN_W, docxPara(docxRun('No KRA objectives were set for this month.'), { left: true }), { span: 3 })]));
-            } else {
-                m.kraObjectives.forEach((k) => rows.push(docxRow([docxCell(MAIN_W, docxPara(
-                    docxRun(`${k.n}. `, { b: true }) + docxRun(k.text), { left: true, hang: true }
-                ), { span: 3 })])));
-            }
+            ), { span: N, shade: true })]));
+            m.kraList.forEach((t, i) => rows.push(docxRow([docxCell(MAIN_W, docxPara(
+                docxRun(`${i + 1}. `, { b: true }) + docxRun(t), { left: true, hang: true }
+            ), { span: N })])));
         }
 
-        const heads = [kind.dayHead, kind.midHead, 'ACTIVITIES WITH DETAILS AND PROGRESS'];
-        rows.push(docxRow(heads.map((h, i) =>
-            docxCell(TW[i], docxPara(docxRun(h, { b: true }), { center: true }), { shade: true })
+        rows.push(docxRow(COLS.map((c, i) =>
+            docxCell(TW[i], docxPara(docxRun(c.head, { b: true }), { center: true }), { shade: true })
         )));
 
-        const lines = (text) => (text || '—').split('\n').map((l) => docxPara(docxRun(l), { left: true })).join('');
-        m.mainGroups.forEach((g) => {
-            rows.push(docxRow([
-                docxCell(TW[0], docxPara(docxRun(dayText(g.dates)), { center: true }), { vAlign: 'top' }),
-                docxCell(TW[1], docxPara(docxRun(midValue(g)), { center: true }), { vAlign: 'top' }),
-                docxCell(TW[2], lines(g.activity), { vAlign: 'top' })
-            ]));
-        });
+        m.mainGroups.forEach((g) => rows.push(docxRow(COLS.map((c, i) =>
+            docxCell(TW[i], textParas(cellText(g, c.key), c.align), { vAlign: 'top' })
+        ))));
 
         let extra = '';
 
-        if (kind.isField) {
-            const secRows = [];
-            secRows.push(docxRow([docxCell(SEC_W, docxPara(docxRun('12. Other than KRA:', { b: true, color: 'FFFFFF' }), { left: true }), { span: 3, shadeBrand: true })]));
-            secRows.push(docxRow([
-                docxCell(SEC12_TW[0], docxPara(docxRun('DATE', { b: true }), { center: true }), { shade: true }),
-                docxCell(SEC12_TW[1], docxPara(docxRun('PLACE AND PURPOSE', { b: true }), { center: true }), { shade: true }),
-                docxCell(SEC12_TW[2], docxPara(docxRun('PARTICULARS, PROBLEMS AND HIGHLIGHTS', { b: true }), { center: true }), { shade: true })
-            ]));
-            if (m.otherEntries.length === 0) {
-                secRows.push(docxRow([
-                    docxCell(SEC12_TW[0], docxPara(docxRun('—'), { center: true })),
-                    docxCell(SEC12_TW[1], docxPara(docxRun('—'), { center: true })),
-                    docxCell(SEC12_TW[2], docxPara(docxRun('No entries for this month.'), { center: true }))
-                ]));
-            } else {
-                m.otherEntries.forEach((e) => secRows.push(docxRow([
-                    docxCell(SEC12_TW[0], docxPara(docxRun(String(Number(e.date.slice(8, 10)))), { center: true }), { vAlign: 'top' }),
-                    docxCell(SEC12_TW[1], docxPara(docxRun(e.place), { left: true }), { vAlign: 'top' }),
-                    docxCell(SEC12_TW[2], lines(e.activity), { vAlign: 'top' })
-                ])));
-            }
-
-            const reflCell = (title, items) => docxPara(docxRun(title, { b: true, color: '075E54' }), { left: true }) +
-                (items.length
-                    ? items.map((t, i) => docxPara(docxRun(`${i + 1}. ${t}`), { left: true, hang: true })).join('')
-                    : docxPara(docxRun('—'), { left: true }));
-
-            const half = Math.floor(SEC_W / 2);
-            const refRows = [docxRow([
-                docxCell(half, reflCell('PRAISING POINTS:', m.praising), { vAlign: 'top' }),
-                docxCell(SEC_W - half, reflCell('PRAYER POINTS:', m.prayer), { vAlign: 'top' })
-            ])];
-
-            extra = buildTable(secRows, SEC12_TW) + docxPara('') +
-                buildTable(refRows, [half, SEC_W - half]);
+        if (m.otherEntries.length) {
+            const oW = OTHER.tw.reduce((a, b) => a + b, 0);
+            const oRows = [];
+            oRows.push(docxRow([docxCell(oW,
+                docxPara(docxRun('Other than KRA', { b: true, color: 'FFFFFF' }), { left: true }),
+                { span: 3, shadeBrand: true })]));
+            oRows.push(docxRow(['DATE', 'PLACE AND PURPOSE', 'PARTICULARS, PROBLEMS AND HIGHLIGHTS'].map((h, i) =>
+                docxCell(OTHER.tw[i], docxPara(docxRun(h, { b: true }), { center: true }), { shade: true })
+            )));
+            m.otherEntries.forEach((e) => oRows.push(docxRow([
+                docxCell(OTHER.tw[0], textParas(String(Number(e.date.slice(8, 10))), 'center'), { vAlign: 'top' }),
+                docxCell(OTHER.tw[1], textParas(e.place, 'left'), { vAlign: 'top' }),
+                docxCell(OTHER.tw[2], textParas(e.activity || '—', 'left'), { vAlign: 'top' })
+            ])));
+            extra += docxPara('') + buildTable(oRows, OTHER.tw);
         }
 
-        const footer = m.footer ? docxPara('') + docxFooter(m.footer, sig, MAIN_W) : '';
+        if (hasReflection(m)) {
+            const blocks = [];
+            if (m.praising.length) blocks.push(['PRAISING POINTS:', m.praising]);
+            if (m.prayer.length) blocks.push(['PRAYER POINTS:', m.prayer]);
+            const half = Math.floor(MAIN_W / 2);
+            const widths = blocks.length === 2 ? [half, MAIN_W - half] : [MAIN_W];
+            const cells = blocks.map(([title, items], i) =>
+                docxCell(widths[i], reflParas(title, items), { vAlign: 'top' }));
+            extra += docxPara('') + buildTable([docxRow(cells)], widths);
+        }
+
+        const footer = docxPara('') + docxFooter(m.footer, sig, MAIN_W);
 
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
             '<w:document ' +
@@ -1071,7 +992,7 @@
             'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ' +
             'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
             '<w:body>' +
-            buildTable(rows, TW) + docxPara('') +
+            buildTable(rows, TW) +
             extra +
             footer +
             docxPara('') +
@@ -1133,11 +1054,11 @@
 
         try {
             const logo = await loadLogo();
-            const sig = model.footer?.signatureUrl
+            const sig = model.footer.signatureUrl
                 ? await imageInfo(model.footer.signatureUrl).catch(() => null)
                 : null;
 
-            await new Promise((r) => setTimeout(r, 50));
+            await new Promise((r) => setTimeout(r, 50)); // lets the spinner paint
 
             if (type === 'pdf') exportPdf(model, logo, sig);
             if (type === 'excel') exportExcel(model);

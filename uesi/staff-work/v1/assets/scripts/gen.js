@@ -1,14 +1,20 @@
 // /apps/uesi/staff-work/v1/assets/scripts/gen.js
+// Generate page for the field report and the itinerary.
+// <body data-kind="field|itinerary"> chooses the target page and the field-only extras.
 (() => {
     'use strict';
 
     const { $, Session, notify, setLoading } = window.UI;
 
+    const KIND = document.body.dataset.kind === 'itinerary' ? 'itinerary' : 'field';
+    const IS_FIELD = KIND === 'field';
+
     const TARGETS = {
-        field:     '/apps/uesi/staff-work/v1/gen/final/field-report',
+        field: '/apps/uesi/staff-work/v1/gen/final/field-report',
         itinerary: '/apps/uesi/staff-work/v1/gen/final/itinerary'
     };
 
+    // Saved on this device and shared by both reports
     const KEYS = {
         base: 'reportBase_v1',
         state: 'reportState_v1',
@@ -37,11 +43,9 @@
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
 
-    const kind = document.body.dataset.kind === 'itinerary' ? 'itinerary' : 'field';
-    const isItin = kind === 'itinerary';
-    const target = TARGETS[kind];
     const pad = (n) => String(n).padStart(2, '0');
 
+    // Small store wrapper: storage can be blocked in some browsers
     const store = {
         get(key, fallback = '') {
             try {
@@ -64,9 +68,6 @@
         }
     };
 
-    // Works whether the button sits inside or outside the form
-    const genBtn = () => $('generateBtn') || document.querySelector('#reportForm .submit-btn');
-
     if (!firebase.apps.length) {
         firebase.initializeApp({
             apiKey: '0AzyPiDT3wSi6WAuNX7YzbyJcvUgV0nyoxMwahn0',
@@ -78,7 +79,12 @@
     const db = firebase.database();
 
     let session = null;
+    let busy = false;
     let reflectionData = { praising: [], prayer: [] };
+
+    const genBtn = () => $('generateBtn') || document.querySelector('#reportForm .submit-btn');
+    const valOf = (id) => ($(id) ? $(id).value.trim() : '');
+    const setVal = (id, v) => { if ($(id)) $(id).value = v; };
 
     function withTimeout(promise, ms) {
         let timer;
@@ -88,6 +94,20 @@
         return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
     }
 
+    // Accepts a saved list, the older {"1": "..."} object, or plain text with one item per line
+    function normalizeList(v) {
+        if (!v) return [];
+        if (typeof v === 'string') {
+            return v.split('\n')
+                .map((line) => line.trim().replace(/^\d+[.)]\s*/, '').replace(/^[*\-•]\s*/, ''))
+                .filter(Boolean);
+        }
+        const items = Array.isArray(v)
+            ? v
+            : Object.keys(v).filter((k) => /^\d+$/.test(k)).sort((a, b) => a - b).map((k) => v[k]);
+        return items.map((s) => String(s || '').trim()).filter(Boolean);
+    }
+
     /* ---------- Auth ---------- */
     function renderAuth(s) {
         const body = document.body;
@@ -95,16 +115,16 @@
         body.classList.add(s ? 'is-authed' : 'is-guest');
 
         session = s;
-        $('staffName').value = s ? s.name : '';
-        $('staffEmail').value = s ? s.email : '';
+        setVal('staffName', s ? s.name : '');
+        setVal('staffEmail', s ? s.email : '');
 
-        if (s && !isItin) {
+        if (s && IS_FIELD) {
             checkKraHint();
             loadReflection();
         }
     }
 
-    /* ---------- Month / Year ---------- */
+    /* ---------- Month and year ---------- */
     function fillDateSelects() {
         const now = new Date();
         $('monthSelect').replaceChildren(
@@ -118,42 +138,37 @@
         );
     }
 
-    /* ---------- Saved details ---------- */
+    /* ---------- Saved details (same for both reports) ---------- */
     function readCopyTo() {
         const saved = store.get(KEYS.copyTo, null);
         return saved === null ? DEFAULT_COPY_TO.join('\n') : saved;
     }
 
     function restoreSaved() {
-        $('baseInput').value = store.get(KEYS.base);
-        $('regionInput').value = store.get(KEYS.region, isItin ? DEFAULT_REGION : '');
-
-        if (isItin) {
-            $('stateInput').value = store.get(KEYS.state);
-            $('roleInput').value = store.get(KEYS.role);
-            $('copyToInput').value = readCopyTo();
-            showSignature(store.get(KEYS.signature));
-        }
+        setVal('baseInput', store.get(KEYS.base));
+        setVal('stateInput', store.get(KEYS.state));
+        setVal('regionInput', store.get(KEYS.region, DEFAULT_REGION));
+        setVal('roleInput', store.get(KEYS.role));
+        setVal('copyToInput', readCopyTo());
+        showSignature(store.get(KEYS.signature));
     }
 
     function bindSaving() {
         const save = (id, key) => $(id)?.addEventListener('input', (e) => store.set(key, e.target.value));
         save('baseInput', KEYS.base);
-        save('regionInput', KEYS.region);
         save('stateInput', KEYS.state);
+        save('regionInput', KEYS.region);
         save('roleInput', KEYS.role);
         save('copyToInput', KEYS.copyTo);
 
-        if (!isItin) return;
-
-        $('copyToReset').addEventListener('click', () => {
+        $('copyToReset')?.addEventListener('click', () => {
             store.remove(KEYS.copyTo);
-            $('copyToInput').value = DEFAULT_COPY_TO.join('\n');
+            setVal('copyToInput', DEFAULT_COPY_TO.join('\n'));
             notify('The copy to list is back to the default.', 'success', 'Restored');
         });
 
-        $('sigInput').addEventListener('change', onSignatureChosen);
-        $('sigRemove').addEventListener('click', () => {
+        $('sigInput')?.addEventListener('change', onSignatureChosen);
+        $('sigRemove')?.addEventListener('click', () => {
             store.remove(KEYS.signature);
             showSignature('');
         });
@@ -162,10 +177,12 @@
     /* ---------- Signature ---------- */
     function showSignature(dataUrl) {
         const has = Boolean(dataUrl);
-        $('sigPreview').src = has ? dataUrl : '';
-        $('sigPreview').hidden = !has;
-        $('sigEmpty').hidden = has;
-        $('sigRemove').hidden = !has;
+        if ($('sigPreview')) {
+            $('sigPreview').src = has ? dataUrl : '';
+            $('sigPreview').hidden = !has;
+        }
+        if ($('sigEmpty')) $('sigEmpty').hidden = has;
+        if ($('sigRemove')) $('sigRemove').hidden = !has;
     }
 
     // Scales the picture down and places it on white, so it prints cleanly and fits storage
@@ -173,19 +190,16 @@
         return new Promise((resolve, reject) => {
             const url = URL.createObjectURL(file);
             const img = new Image();
-
             img.onload = () => {
                 URL.revokeObjectURL(url);
                 const scale = Math.min(1, SIG_MAX_PX / Math.max(img.naturalWidth, img.naturalHeight));
                 const canvas = document.createElement('canvas');
                 canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
                 canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
-
                 const ctx = canvas.getContext('2d');
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
                 let data = canvas.toDataURL('image/png');
                 if (data.length > SIG_MAX_CHARS) data = canvas.toDataURL('image/jpeg', 0.85);
                 resolve(data);
@@ -230,9 +244,9 @@
         }
     }
 
-    /* ---------- KRA hint (field report, per month) ---------- */
+    /* ---------- KRA hint (field report only) ---------- */
     async function checkKraHint() {
-        if (!session) return;
+        if (!IS_FIELD || !session || !$('kraHint')) return;
         const year = $('yearSelect').value;
         const month = $('monthSelect').value;
         if (!year || !month) return;
@@ -242,16 +256,15 @@
 
         try {
             const snap = await withTimeout(db.ref(path).once('value'), TIMEOUT_MS);
-            const data = snap.val() || {};
-            const hasAny = Object.values(data).some((v) => String(v || '').trim());
+            const hasAny = normalizeList(snap.val()).length > 0;
             $('kraHint').hidden = hasAny;
-            $('kraHintYear').textContent = `${MONTHS[Number(month) - 1]} ${year}`;
+            if ($('kraHintYear')) $('kraHintYear').textContent = `${MONTHS[Number(month) - 1]} ${year}`;
         } catch {
             $('kraHint').hidden = true;
         }
     }
 
-    /* ---------- Reflection (praise / prayer, field report) ---------- */
+    /* ---------- Praise and prayer (field report only) ---------- */
     function parsePoints(raw) {
         return String(raw || '')
             .split('\n')
@@ -267,7 +280,7 @@
     };
 
     async function loadReflection() {
-        if (!session || isItin) return;
+        if (!IS_FIELD || !session || !$('reflectionCard')) return;
 
         const year = $('yearSelect').value;
         const month = pad($('monthSelect').value);
@@ -280,8 +293,8 @@
             const snap = await withTimeout(db.ref(path).once('value'), TIMEOUT_MS);
             const data = snap.val() || {};
             reflectionData = {
-                praising: Array.isArray(data.praising) ? data.praising : [],
-                prayer: Array.isArray(data.prayer) ? data.prayer : []
+                praising: normalizeList(data.praising),
+                prayer: normalizeList(data.prayer)
             };
         } catch (err) {
             console.error('Reflection load failed:', err);
@@ -291,6 +304,8 @@
     }
 
     function renderReflection() {
+        if (!IS_FIELD || !$('reflectionCard')) return;
+
         const hasAny = reflectionData.praising.length > 0 || reflectionData.prayer.length > 0;
 
         $('reflectionCard').hidden = false;
@@ -309,7 +324,8 @@
     }
 
     async function saveReflectionIfEdited() {
-        if (isItin || $('reflectionEditor').hidden) return;
+        const editor = $('reflectionEditor');
+        if (!IS_FIELD || !session || !editor || editor.hidden) return;
 
         const praising = parsePoints($('praising').value);
         const prayer = parsePoints($('prayer').value);
@@ -328,38 +344,29 @@
         }
     }
 
-    $('editReflectionBtn')?.addEventListener('click', () => {
-        $('praising').value = toPointLines(reflectionData.praising);
-        $('prayer').value = toPointLines(reflectionData.prayer);
-        $('reflectionEditor').hidden = false;
-        $('reflectionSummary').hidden = true;
-    });
-
     /* ---------- Generate ---------- */
-    async function onGenerate() {
-        const btn = genBtn();
-        if (btn?.disabled) return; // stops a second tap while preparing
+    async function onGenerate(e) {
+        e?.preventDefault?.();
+        if (busy) return;
 
         if (!session) {
             notify('Please login to generate a report.', 'error');
             return;
         }
 
-        const base = $('baseInput').value.trim();
-        const region = $('regionInput').value.trim();
-        const state = isItin ? $('stateInput').value.trim() : '';
+        const base = valOf('baseInput');
+        const state = valOf('stateInput');
+        const region = valOf('regionInput');
         const month = $('monthSelect').value;
         const year = $('yearSelect').value;
 
-        if (isItin && !state) {
-            notify('Please enter your state.', 'error');
-            return;
-        }
-        if (!base || !region) {
-            notify('Please enter your base and region.', 'error');
+        if (!base || !state || !region) {
+            notify('Please enter your base, state and region.', 'error');
             return;
         }
 
+        busy = true;
+        const btn = genBtn();
         setLoading(btn, true, 'Preparing…');
 
         try {
@@ -368,31 +375,49 @@
             console.warn('Could not save reflection before generate:', err);
         }
 
-        const params = { name: session.name, email: session.email, base, region, month, year };
-        if (isItin) params.state = state;
+        const query = new URLSearchParams({
+            name: session.name,
+            email: session.email,
+            base,
+            state,
+            region,
+            month,
+            year
+        });
 
-        window.location.href = `${target}?${new URLSearchParams(params).toString()}`;
+        window.location.href = `${TARGETS[KIND]}?${query.toString()}`;
     }
 
     /* ---------- Boot ---------- */
-    $('backBtn').addEventListener('click', () => {
+    $('backBtn')?.addEventListener('click', () => {
         if (history.length > 1) history.back();
         else location.href = Session.HOME_URL;
     });
-    $('loginBtn').addEventListener('click', () => Session.login());
-    genBtn()?.addEventListener('click', onGenerate);
-    $('reportForm').addEventListener('submit', (e) => e.preventDefault());
+    $('loginBtn')?.addEventListener('click', () => Session.login());
+    $('generateBtn')?.addEventListener('click', onGenerate);
+    $('reportForm')?.addEventListener('submit', onGenerate);
+
+    $('editReflectionBtn')?.addEventListener('click', () => {
+        setVal('praising', toPointLines(reflectionData.praising));
+        setVal('prayer', toPointLines(reflectionData.prayer));
+        $('reflectionEditor').hidden = false;
+        $('reflectionSummary').hidden = true;
+    });
 
     fillDateSelects();
     restoreSaved();
     bindSaving();
 
-    if (!isItin) {
+    if (IS_FIELD) {
         $('monthSelect').addEventListener('change', () => { checkKraHint(); loadReflection(); });
         $('yearSelect').addEventListener('change', () => { checkKraHint(); loadReflection(); });
     }
 
-    window.addEventListener('pageshow', () => setLoading(genBtn(), false));
+    // Clears the loading state if the browser restores this page from history
+    window.addEventListener('pageshow', () => {
+        busy = false;
+        setLoading(genBtn(), false);
+    });
 
     Session.watch(renderAuth);
 })();
