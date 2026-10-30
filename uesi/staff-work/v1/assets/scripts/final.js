@@ -32,13 +32,13 @@
     ];
 
     // Main table columns. pct = web width, mm = PDF width, tw = Word width, xl = Excel width.
-    // Field totals: mm 182, tw 10466. Itinerary totals: mm 182, tw 10466.
+    // Both layouts total 182 mm (PDF) and 10466 twips (Word).
     const COLS = IS_FIELD
         ? [
-            { key: 'date',  head: 'DATE(S)',                             pct: '12%', mm: 24,  tw: 1300, xl: 16, align: 'center' },
-            { key: 'place', head: 'PLACE & PURPOSE',                     pct: '22%', mm: 42,  tw: 2600, xl: 28, align: 'left' },
-            { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '60%', mm: 100, tw: 5866, xl: 66, align: 'left' },
-            { key: 'kra',   head: 'KRA',                                 pct: '6%',  mm: 16,  tw: 700,  xl: 8,  align: 'center' }
+            { key: 'date',  head: 'DATE(S)',                             pct: '9%',  mm: 16,  tw: 900,  xl: 8,  align: 'center' },
+            { key: 'place', head: 'PLACE & PURPOSE',                     pct: '16%', mm: 30,  tw: 1700, xl: 16, align: 'left' },
+            { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '70%', mm: 124, tw: 7166, xl: 70, align: 'left' },
+            { key: 'kra',   head: 'KRA',                                 pct: '5%',  mm: 12,  tw: 700,  xl: 6,  align: 'center' }
         ]
         : [
             { key: 'date',  head: 'DATE(S)',                             pct: '14%', mm: 24,  tw: 1500, xl: 16, align: 'center' },
@@ -47,8 +47,8 @@
         ];
     const N = COLS.length;
 
-    // "Other than KRA" section (field only): date, place, particulars
-    const OTHER = { mm: [24, 42, 116], tw: [1300, 2600, 6566] };
+    // "Other than KRA" section (field only): date, place, particulars. Matches the main table widths.
+    const OTHER = { mm: [16, 30, 136], tw: [900, 1700, 7866] };
 
     const LOGO_MM = 12;
     const LOGO_EMU = 548640;
@@ -597,8 +597,9 @@
             fillColor: [242, 242, 242], textColor: [0, 0, 0],
             fontStyle: 'bold', lineColor: [68, 68, 68], lineWidth: 0.2, halign: 'center'
         };
+        // Light section heading with black text (KRA objectives and Other than KRA)
         const sectionHead = {
-            fillColor: [7, 94, 84], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'left'
+            fillColor: [238, 242, 241], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'left'
         };
 
         // Brand line: logo beside the organisation text, centred
@@ -837,8 +838,8 @@
     function docxCell(width, paragraphs, o = {}) {
         let tcPr = `<w:tcW w:w="${width}" w:type="dxa"/>`;
         if (o.span) tcPr += `<w:gridSpan w:val="${o.span}"/>`;
-        if (o.shade) tcPr += '<w:shd w:val="clear" w:color="auto" w:fill="F2F2F2"/>';
-        if (o.shadeBrand) tcPr += '<w:shd w:val="clear" w:color="auto" w:fill="075E54"/>';
+        if (o.shade) tcPr += '<w:shd w:val="clear" w:color="auto" w:fill="EEF2F1"/>';
+        if (o.shadeHead) tcPr += '<w:shd w:val="clear" w:color="auto" w:fill="F2F2F2"/>';
         tcPr += `<w:vAlign w:val="${o.vAlign || 'center'}"/>`;
         return `<w:tc><w:tcPr>${tcPr}</w:tcPr>${paragraphs}</w:tc>`;
     }
@@ -937,7 +938,7 @@
 
         if (IS_FIELD && m.kraList.length) {
             rows.push(docxRow([docxCell(MAIN_W, docxPara(
-                docxRun('KRA (KEY RESULTING AREA) OBJECTIVES:', { b: true, color: '075E54' }), { left: true }
+                docxRun('KRA (KEY RESULTING AREA) OBJECTIVES:', { b: true }), { left: true }
             ), { span: N, shade: true })]));
             m.kraList.forEach((t, i) => rows.push(docxRow([docxCell(MAIN_W, docxPara(
                 docxRun(`${i + 1}. `, { b: true }) + docxRun(t), { left: true, hang: true }
@@ -945,7 +946,7 @@
         }
 
         rows.push(docxRow(COLS.map((c, i) =>
-            docxCell(TW[i], docxPara(docxRun(c.head, { b: true }), { center: true }), { shade: true })
+            docxCell(TW[i], docxPara(docxRun(c.head, { b: true }), { center: true }), { shadeHead: true })
         )));
 
         m.mainGroups.forEach((g) => rows.push(docxRow(COLS.map((c, i) =>
@@ -958,10 +959,10 @@
             const oW = OTHER.tw.reduce((a, b) => a + b, 0);
             const oRows = [];
             oRows.push(docxRow([docxCell(oW,
-                docxPara(docxRun('Other than KRA', { b: true, color: 'FFFFFF' }), { left: true }),
-                { span: 3, shadeBrand: true })]));
+                docxPara(docxRun('Other than KRA', { b: true }), { left: true }),
+                { span: 3, shade: true })]));
             oRows.push(docxRow(['DATE', 'PLACE AND PURPOSE', 'PARTICULARS, PROBLEMS AND HIGHLIGHTS'].map((h, i) =>
-                docxCell(OTHER.tw[i], docxPara(docxRun(h, { b: true }), { center: true }), { shade: true })
+                docxCell(OTHER.tw[i], docxPara(docxRun(h, { b: true }), { center: true }), { shadeHead: true })
             )));
             m.otherEntries.forEach((e) => oRows.push(docxRow([
                 docxCell(OTHER.tw[0], textParas(String(Number(e.date.slice(8, 10))), 'center'), { vAlign: 'top' }),

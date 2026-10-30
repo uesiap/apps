@@ -2,7 +2,7 @@
 (() => {
     'use strict';
 
-    const { $, Session, notify, setLoading } = window.UI;
+    const { $, Session, notify, confirm: askConfirm, setLoading } = window.UI;
 
     const DB_ROOT = 'apps/uesi/staff-work/v1/users';
     const TIMEOUT_MS = 20000;
@@ -40,8 +40,14 @@
         return [];
     };
 
-    const fromPoints = (arr) =>
-        arr.map((p, i) => `${i + 1}. ${p}`).join('\n');
+    const fromPoints = (arr) => arr.map((p, i) => `${i + 1}. ${p}`).join('\n');
+
+    function parsePoints(raw) {
+        return raw
+            .split('\n')
+            .map((line) => line.trim().replace(/^\d+[.)]\s*/, '').replace(/^[*\-•]\s*/, ''))
+            .filter(Boolean);
+    }
 
     let session = null;
     let loadToken = 0;
@@ -59,6 +65,11 @@
         );
     }
 
+    function pathFor(year, month) {
+        const safeEmail = session.email.replace(/\./g, '_');
+        return `${DB_ROOT}/${safeEmail}/userData/Monthly_Reflection/${year}/${pad(month)}`;
+    }
+
     async function load() {
         if (!session) return;
 
@@ -67,14 +78,10 @@
         const month = $('monthSelect').value;
         if (!year || !month) return;
 
-        const safeEmail = session.email.replace(/\./g, '_');
-        const path =
-            `${DB_ROOT}/${safeEmail}/userData/Monthly_Reflection/${year}/${pad(month)}`;
-
         $('loadState').hidden = false;
 
         try {
-            const snap = await withTimeout(db.ref(path).once('value'), TIMEOUT_MS);
+            const snap = await withTimeout(db.ref(pathFor(year, month)).once('value'), TIMEOUT_MS);
             if (token !== loadToken) return;
 
             const data = snap.val() || {};
@@ -89,13 +96,6 @@
         }
     }
 
-    function parsePoints(raw) {
-        return raw
-            .split('\n')
-            .map((line) => line.trim().replace(/^\d+[.)]\s*/, '').replace(/^[*\-•]\s*/, ''))
-            .filter(Boolean);
-    }
-
     async function onSubmit(e) {
         e.preventDefault();
 
@@ -105,25 +105,34 @@
         }
 
         const year = $('yearSelect').value;
-        const month = pad($('monthSelect').value);
+        const month = $('monthSelect').value;
+        const monthName = MONTHS[Number(month) - 1];
 
         const praising = parsePoints($('praising').value);
         const prayer = parsePoints($('prayer').value);
+        const empty = praising.length === 0 && prayer.length === 0;
 
-        if (praising.length === 0 && prayer.length === 0) {
-            notify('Please enter at least one point.', 'error');
-            return;
+        // Clearing both boxes removes the saved reflection for that month (after a confirmation)
+        if (empty) {
+            const ok = await askConfirm({
+                title: `Clear ${monthName} ${year}?`,
+                text: 'The praise and prayer points for this month will be removed from the report.',
+                tone: 'warning',
+                okText: 'Clear'
+            });
+            if (!ok) return;
         }
-
-        const safeEmail = session.email.replace(/\./g, '_');
-        const path =
-            `${DB_ROOT}/${safeEmail}/userData/Monthly_Reflection/${year}/${month}`;
 
         const btn = e.target.querySelector('.submit-btn');
         setLoading(btn, true, 'Saving…');
         try {
-            await withTimeout(db.ref(path).set({ praising, prayer }), TIMEOUT_MS);
-            notify('Reflection saved.', 'success', 'Saved');
+            const value = empty ? null : { praising, prayer };
+            await withTimeout(db.ref(pathFor(year, month)).set(value), TIMEOUT_MS);
+            notify(
+                empty ? `Reflection cleared for ${monthName} ${year}.` : 'Reflection saved.',
+                'success',
+                'Saved'
+            );
         } catch (err) {
             console.error('Reflection save failed:', err);
             notify(
