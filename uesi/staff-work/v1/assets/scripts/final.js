@@ -34,21 +34,21 @@
     // Main table columns. pct = web width, mm = PDF width, tw = Word width, xl = Excel width.
     // Both layouts total 182 mm (PDF) and 10466 twips (Word).
     const COLS = IS_FIELD
-        ? [
-            { key: 'date',  head: 'DATE(S)',                             pct: '9%',  mm: 16,  tw: 900,  xl: 8,  align: 'center' },
-            { key: 'place', head: 'PLACE & PURPOSE',                     pct: '16%', mm: 30,  tw: 1700, xl: 16, align: 'left' },
-            { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '70%', mm: 124, tw: 7166, xl: 70, align: 'left' },
-            { key: 'kra',   head: 'KRA',                                 pct: '5%',  mm: 12,  tw: 700,  xl: 6,  align: 'center' }
-        ]
-        : [
-            { key: 'date',  head: 'DATE(S)',                             pct: '14%', mm: 24,  tw: 1500, xl: 16, align: 'center' },
-            { key: 'place', head: 'PLACE',                               pct: '22%', mm: 40,  tw: 2300, xl: 28, align: 'left' },
-            { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '64%', mm: 118, tw: 6666, xl: 74, align: 'left' }
-        ];
+    ? [
+        { key: 'date',  head: 'DATE(S)',                             pct: '9%',  mm: 16,  tw: 900,  xl: 8,  align: 'center' },
+        { key: 'place', head: 'PLACE & PURPOSE',                     pct: '12%', mm: 24,  tw: 1300, xl: 12, align: 'center' },
+        { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '74%', mm: 130, tw: 7566, xl: 74, align: 'left' },
+        { key: 'kra',   head: 'KRA',                                 pct: '5%',  mm: 12,  tw: 700,  xl: 6,  align: 'center' }
+    ]
+    : [
+        { key: 'date',  head: 'DATE(S)',                             pct: '14%', mm: 24,  tw: 1500, xl: 16, align: 'center' },
+        { key: 'place', head: 'PLACE',                               pct: '22%', mm: 40,  tw: 2300, xl: 28, align: 'center' },
+        { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '64%', mm: 118, tw: 6666, xl: 74, align: 'left' }
+    ];
     const N = COLS.length;
 
     // "Other than KRA" section (field only): date, place, particulars. Matches the main table widths.
-    const OTHER = { mm: [16, 30, 136], tw: [900, 1700, 7866] };
+    const OTHER = { mm: [16, 24, 142], tw: [900, 1300, 8266] };
 
     const LOGO_MM = 12;
     const LOGO_EMU = 548640;
@@ -411,7 +411,7 @@
 
         const rows = list.map((e) => {
             const place = el('td', '', e.place);
-            place.style.textAlign = 'left';
+            place.style.textAlign = 'center';   
             const act = el('td', 'rpt-activity', e.activity || '—');
             act.colSpan = span;
             act.style.textAlign = 'left';
@@ -684,6 +684,7 @@
             ],
             theme: 'grid',
             margin: { left: 14, right: 14 },
+            tableWidth: 182,
             styles: base,
             columnStyles: {
                 0: { fontStyle: 'bold', fillColor: [248, 248, 248], cellWidth: 25 },
@@ -742,7 +743,7 @@
                 ],
                 body: m.otherEntries.map((e) => [
                     { content: String(Number(e.date.slice(8, 10))), styles: { halign: 'center' } },
-                    { content: e.place, styles: { halign: 'left' } },
+                    { content: e.place, styles: { halign: 'center' } },
                     { content: e.activity || '—', styles: { halign: 'left' } }
                 ]),
                 theme: 'grid',
@@ -1033,7 +1034,7 @@
             )));
             m.otherEntries.forEach((e) => oRows.push(docxRow([
                 docxCell(OTHER.tw[0], textParas(String(Number(e.date.slice(8, 10))), 'center'), { vAlign: 'top' }),
-                docxCell(OTHER.tw[1], textParas(e.place, 'left'), { vAlign: 'top' }),
+                docxCell(OTHER.tw[1], textParas(e.place, 'center'), { vAlign: 'top' }),
                 docxCell(OTHER.tw[2], textParas(e.activity || '—', 'left'), { vAlign: 'top' })
             ])));
             extra += docxPara('') + buildTable(oRows, OTHER.tw);

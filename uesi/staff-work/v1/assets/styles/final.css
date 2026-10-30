@@ -369,3 +369,14 @@
     border: 0;
     padding: 0;
 }
+
+/* ---------- Fixed column widths in the web preview ---------- */
+.rpt {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.rpt td:nth-child(2),
+.rpt th:nth-child(2) {
+    text-align: center;
+}
