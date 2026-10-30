@@ -578,14 +578,14 @@
         const blockW = Math.max(labelW, nameW, roleW, sig ? SIG_W_MM : 0);
         const RIGHT_X = RIGHT_EDGE - blockW;
 
-        const blockH = Math.max(
-            6 + f.copyTo.length * 5,
-            6 + (sig ? sigH + 2 : 8) + 6 + (f.role ? 5 : 0)
-        );
+        // Height of each column, so the footer only moves to a new page when it really cannot fit
+        const copyH = 6 + f.copyTo.length * 5;
+        const rightH = 2 + (sig ? sigH + 2 : 8) + 6 + (f.role ? 5 : 0) + 4;
+        const blockH = Math.max(copyH, rightH);
 
         const pageH = doc.internal.pageSize.getHeight();
-        let y = startY + 10;
-        if (y + blockH > pageH - 14) {
+        let y = startY + 6;
+        if (y + blockH > pageH - 8) {
             doc.addPage();
             y = 16;
         }
