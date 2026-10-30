@@ -107,6 +107,18 @@
     // One KRA objective split into its own lines, keeping the user's line breaks
     const kraLines = (t) => String(t).split('\n').map((s) => s.trim()).filter(Boolean);
 
+    // Joins hard line breaks from copy-paste so activity text fills its column.
+    // A line that starts with a number like "2." or "2)" still begins a new line.
+    const reflowActivity = (text) => {
+        const lines = String(text || '').split('\n').map((s) => s.trim()).filter(Boolean);
+        const out = [];
+        lines.forEach((line) => {
+            if (out.length && !/^\d+[.)]\s/.test(line)) out[out.length - 1] += ' ' + line;
+            else out.push(line);
+        });
+        return out.join('\n');
+    };
+
     const orgLine = (m) => `${ORG} - ${m.state.toUpperCase()}`;
     const dayText = (dates) => dates.map((d) => String(Number(d.slice(8, 10)))).join(', ');
     const cellText = (g, key) => {
@@ -158,7 +170,7 @@
 
     // Activity text: saved text, or the older purpose list (numbered when there are several points)
     function activityText(val) {
-        if (typeof val.activity === 'string' && val.activity.trim()) return val.activity.trim();
+        if (typeof val.activity === 'string' && val.activity.trim()) return reflowActivity(val.activity);
         const pts = normalizeList(val.purpose);
         if (pts.length > 1) return numbered(pts);
         return pts[0] || '';
@@ -467,6 +479,16 @@
         return wrap;
     }
 
+    function colgroupNode() {
+        const cg = el('colgroup');
+        COLS.forEach((c) => {
+            const col = el('col');
+            col.style.width = c.pct;
+            cg.append(col);
+        });
+        return cg;
+    }
+
     function renderPaper(m) {
         const thead = el('thead');
         thead.append(brandRow(m), titleRow(m), infoRow(m));
@@ -478,7 +500,7 @@
         if (hasReflection(m)) tbody.append(reflectRow(m));
 
         const table = el('table', 'rpt');
-        table.append(thead, tbody);
+        table.append(colgroupNode(), thead, tbody);
 
         const scroll = el('div', 'rpt-scroll');
         scroll.append(table);
@@ -696,25 +718,9 @@
         y = doc.lastAutoTable.finalY + 2;
 
         // KRA objectives (field report only, only when set)
-        // if (IS_FIELD && m.kraList.length) {
-        //     doc.autoTable({
-        //         startY: y,
-        //         head: [[{ content: 'KRA (KEY RESULTING AREA) OBJECTIVES:', colSpan: N, styles: sectionHead }]],
-        //         body: m.kraList.map((t, i) => [{
-        //             content: `${i + 1}. ${t}`,
-        //             colSpan: N,
-        //             styles: { halign: 'left', textColor: [0, 0, 0] }
-        //         }]),
-        //         theme: 'grid',
-        //         margin: { left: 14, right: 14 },
-        //         styles: { ...base, valign: 'top' }
-        //     });
-        //     y = doc.lastAutoTable.finalY + 2;
-        // }
-        // KRA objectives (field report only, only when set)
-    if (IS_FIELD && m.kraList.length) {
-        y = drawKraPdf(doc, m, y) + 2;
-    }
+        if (IS_FIELD && m.kraList.length) {
+            y = drawKraPdf(doc, m, y) + 2;
+        }
 
         // Main table
         doc.autoTable({
