@@ -1,12 +1,14 @@
 // /apps/uesi/staff-work/v1/assets/scripts/view.js
+// Lists saved field reports and itinerary entries.
+// <body data-kind="field|itinerary"> chooses the labels and fields.
 (() => {
     'use strict';
 
     const { $, Session, notify, confirm: askConfirm, setLoading } = window.UI;
 
     const KINDS = {
-        field:     { path: 'Field_Report',   noun: 'field report', isField: true },
-        itinerary: { path: 'Itinerary_Form', noun: 'itinerary',    isField: false }
+        field:     { path: 'Field_Report',   isField: true },
+        itinerary: { path: 'Itinerary_Form', isField: false }
     };
     const kind = KINDS[document.body.dataset.kind] || KINDS.field;
 
@@ -16,6 +18,14 @@
     const MONTHS = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const KRA_OPTIONS = [
+        ['1', '1 — First KRA'],
+        ['2', '2 — Second KRA'],
+        ['3', '3 — Third KRA'],
+        ['4', '4 — Fourth KRA'],
+        ['5', '5 — Fifth KRA'],
+        ['0', 'Other than KRA (Section 12)']
     ];
 
     if (!firebase.apps.length) {
@@ -94,7 +104,8 @@
                         date,
                         day: val.day || weekdayOf(date),
                         kra: kind.isField ? Number(val.kra ?? 0) : null,
-                        place: String(val.place || '').trim(),
+                        // Older itinerary entries stored the place as "zone"
+                        place: String(val.place || val.zone || '').trim(),
                         activity: String(val.activity || '').trim()
                     });
                 });
@@ -182,13 +193,12 @@
         body.style.flexDirection = 'column';
         body.style.gap = '12px';
 
-        if (kind.isField && entry.kra === 0 && entry.place) {
+        if (entry.place) {
             const place = el('div', 'entry-place');
-            place.append(faIcon('fa-location-dot'), el('span', '', entry.place));
-            body.append(place);
-        } else if (!kind.isField && entry.place) {
-            const place = el('div', 'entry-place');
-            place.append(faIcon('fa-map-pin'), el('span', '', entry.place));
+            place.append(
+                faIcon(kind.isField ? 'fa-location-dot' : 'fa-map-pin'),
+                el('span', '', entry.place)
+            );
             body.append(place);
         }
 
@@ -221,38 +231,18 @@
             kraSel.name = 'kra';
             kraSel.id = `kra-${uid}`;
             kraLabel.htmlFor = kraSel.id;
-            [
-                ['1', '1 — First KRA'],
-                ['2', '2 — Second KRA'],
-                ['3', '3 — Third KRA'],
-                ['4', '4 — Fourth KRA'],
-                ['5', '5 — Fifth KRA'],
-                ['0', 'Other than KRA (Section 12)']
-            ].forEach(([v, l]) => kraSel.append(new Option(l, v)));
+            KRA_OPTIONS.forEach(([v, l]) => kraSel.append(new Option(l, v)));
             kraSel.value = String(entry.kra);
             kraWrap.append(kraLabel, kraSel);
             controls.push(kraWrap);
-
-            const place = el('input', 'input');
-            place.type = 'text';
-            place.name = 'place';
-            place.value = entry.place;
-            const placeWrap = labelled('Place', place, `place-${uid}`);
-            controls.push(placeWrap);
-
-            const sync = () => {
-                const isOther = kraSel.value === '0';
-                placeWrap.classList.toggle('hidden', !isOther);
-            };
-            kraSel.addEventListener('change', sync);
-            sync();
-        } else {
-            const place = el('input', 'input');
-            place.type = 'text';
-            place.name = 'place';
-            place.value = entry.place;
-            controls.push(labelled('Place & Purpose', place, `place-${uid}`));
         }
+
+        // One place field for both reports
+        const place = el('input', 'input');
+        place.type = 'text';
+        place.name = 'place';
+        place.value = entry.place;
+        controls.push(labelled('Place & Purpose', place, `place-${uid}`));
 
         const activity = el('textarea', 'textarea');
         activity.name = 'activity';
@@ -396,28 +386,28 @@
     async function saveEntry(form) {
         const id = form.closest('.entry').dataset.id;
         const activity = form.elements.activity.value.trim();
-        const place = form.elements.place?.value.trim() || '';
+        const place = form.elements.place.value.trim();
 
         if (!activity) {
             notify('Please describe the activity.', 'error');
             return;
         }
 
-        let kra = null;
+        let payload;
         if (kind.isField) {
-            kra = Number(form.elements.kra.value);
+            const kra = Number(form.elements.kra.value);
             if (kra === 0 && !place) {
                 notify('Please enter the place for an "Other than KRA" entry.', 'error');
                 return;
             }
-        } else if (!place) {
-            notify('Please enter the place & purpose.', 'error');
-            return;
+            payload = { kra, place, activity };
+        } else {
+            if (!place) {
+                notify('Please enter the place & purpose.', 'error');
+                return;
+            }
+            payload = { place, activity };
         }
-
-        const payload = kind.isField
-            ? { kra, place: kra === 0 ? place : '', activity }
-            : { place, activity };
 
         const btn = form.querySelector('[type="submit"]');
         setLoading(btn, true, 'Saving…');

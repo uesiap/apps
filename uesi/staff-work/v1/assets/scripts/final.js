@@ -104,6 +104,8 @@
     const sameKra = (a, b) => (a.kra ?? null) === (b.kra ?? null);
     const hasReflection = (m) => m.praising.length > 0 || m.prayer.length > 0;
     const numbered = (items) => items.map((t, i) => `${i + 1}. ${t}`).join('\n');
+    // One KRA objective split into its own lines, keeping the user's line breaks
+    const kraLines = (t) => String(t).split('\n').map((s) => s.trim()).filter(Boolean);
 
     const orgLine = (m) => `${ORG} - ${m.state.toUpperCase()}`;
     const dayText = (dates) => dates.map((d) => String(Number(d.slice(8, 10)))).join(', ');
@@ -360,11 +362,20 @@
 
     function kraRows(m) {
         const head = tr('rpt-kra-head', [cell('KRA (KEY RESULTING AREA) OBJECTIVES:', N)]);
-        const ol = el('ol', 'rpt-kra-list');
-        m.kraList.forEach((t) => ol.append(el('li', '', t)));
         const td = el('td');
         td.colSpan = N;
-        td.append(ol);
+
+        const box = el('div', 'kra-plain');
+        m.kraList.forEach((t, i) => {
+            const item = el('div', 'kra-item');
+            item.append(
+                el('span', 'kra-num', `${i + 1}.`),
+                el('div', 'kra-text', kraLines(t).join('\n'))
+            );
+            box.append(item);
+        });
+
+        td.append(box);
         return [head, tr('rpt-kra-body', [td])];
     }
 
@@ -581,6 +592,48 @@
         }
     }
 
+    // KRA objectives as plain text (no table), with the outer number once and sub-lines indented
+    function drawKraPdf(doc, m, startY) {
+        const LEFT = 14;
+        const WIDTH = 182;
+        const NUM_W = 8;
+        const TEXT_W = WIDTH - NUM_W - 2;
+        const PAGE_LIMIT = 280;
+        let y = startY;
+
+        // Light heading bar
+        doc.setFillColor(238, 242, 241);
+        doc.setDrawColor(68, 68, 68);
+        doc.rect(LEFT, y, WIDTH, 7, 'FD');
+        doc.setFont('times', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text('KRA (KEY RESULTING AREA) OBJECTIVES:', LEFT + 2, y + 4.8);
+        y += 12;
+
+        m.kraList.forEach((t, i) => {
+            const lines = kraLines(t).flatMap((line) => doc.splitTextToSize(line, TEXT_W));
+            const blockH = Math.max(1, lines.length) * 5;
+            if (y + blockH > PAGE_LIMIT) {
+                doc.addPage();
+                y = 16;
+            }
+
+            doc.setFont('times', 'bold');
+            doc.setFontSize(10);
+            doc.text(`${i + 1}.`, LEFT + 1, y);
+
+            doc.setFont('times', 'normal');
+            lines.forEach((line) => {
+                doc.text(line, LEFT + NUM_W, y);
+                y += 5;
+            });
+            y += 2;
+        });
+
+        return y;
+    }
+
     function exportPdf(m, logo, sig) {
         if (!window.jspdf || !window.jspdf.jsPDF) throw new Error('jsPDF not loaded');
 
@@ -642,21 +695,25 @@
         y = doc.lastAutoTable.finalY + 2;
 
         // KRA objectives (field report only, only when set)
-        if (IS_FIELD && m.kraList.length) {
-            doc.autoTable({
-                startY: y,
-                head: [[{ content: 'KRA (KEY RESULTING AREA) OBJECTIVES:', colSpan: N, styles: sectionHead }]],
-                body: m.kraList.map((t, i) => [{
-                    content: `${i + 1}. ${t}`,
-                    colSpan: N,
-                    styles: { halign: 'left', textColor: [0, 0, 0] }
-                }]),
-                theme: 'grid',
-                margin: { left: 14, right: 14 },
-                styles: { ...base, valign: 'top' }
-            });
-            y = doc.lastAutoTable.finalY + 2;
-        }
+        // if (IS_FIELD && m.kraList.length) {
+        //     doc.autoTable({
+        //         startY: y,
+        //         head: [[{ content: 'KRA (KEY RESULTING AREA) OBJECTIVES:', colSpan: N, styles: sectionHead }]],
+        //         body: m.kraList.map((t, i) => [{
+        //             content: `${i + 1}. ${t}`,
+        //             colSpan: N,
+        //             styles: { halign: 'left', textColor: [0, 0, 0] }
+        //         }]),
+        //         theme: 'grid',
+        //         margin: { left: 14, right: 14 },
+        //         styles: { ...base, valign: 'top' }
+        //     });
+        //     y = doc.lastAutoTable.finalY + 2;
+        // }
+        // KRA objectives (field report only, only when set)
+    if (IS_FIELD && m.kraList.length) {
+        y = drawKraPdf(doc, m, y) + 2;
+    }
 
         // Main table
         doc.autoTable({
@@ -747,7 +804,7 @@
 
         if (IS_FIELD && m.kraList.length) {
             wide('KRA (KEY RESULTING AREA) OBJECTIVES:');
-            m.kraList.forEach((t, i) => wide(`${i + 1}. ${t}`));
+            m.kraList.forEach((t, i) => wide(`${i + 1}. ${kraLines(t).join(' / ')}`));
             aoa.push([]);
         }
 
@@ -912,43 +969,53 @@
             items.map((t, i) => docxPara(docxRun(`${i + 1}. ${t}`), { left: true, hang: true })).join('');
     }
 
+    function kraXml(m) {
+    if (!(IS_FIELD && m.kraList.length)) return '';
+    const MAIN_W = COLS.reduce((a, c) => a + c.tw, 0);
+
+    const heading = buildTable(
+        [docxRow([docxCell(MAIN_W,
+            docxPara(docxRun('KRA (KEY RESULTING AREA) OBJECTIVES:', { b: true }), { left: true }),
+            { shade: true })])],
+        [MAIN_W]
+    );
+
+    const items = m.kraList.map((t, i) => {
+        const lines = kraLines(t);
+        return lines.map((line, k) => k === 0
+            ? docxPara(docxRun(`${i + 1}.`, { b: true }) + '<w:r><w:tab/></w:r>' + docxRun(line), { hang: true })
+            : docxPara(docxRun(line), { ind: 284 })
+        ).join('');
+    }).join(docxPara(''));
+
+    return docxPara('') + heading + docxPara('') + items;
+    }
+
     function buildDocumentXml(m, logo, sig) {
         const TW = COLS.map((c) => c.tw);
         const MAIN_W = TW.reduce((a, b) => a + b, 0);
-        const rows = [];
 
+        const headRows = [];
         const brandRuns = (logo ? docxImage('rIdLogo', LOGO_EMU, LOGO_EMU, 1, 'UESI Logo') + docxRun('  ') : '') +
             docxRun(orgLine(m), { b: true, sz: 24 });
-        rows.push(docxRow([docxCell(MAIN_W, docxPara(brandRuns, { center: true }), { span: N })], { height: 900 }));
-
-        rows.push(docxRow([docxCell(MAIN_W,
+        headRows.push(docxRow([docxCell(MAIN_W, docxPara(brandRuns, { center: true }), { span: N })], { height: 900 }));
+        headRows.push(docxRow([docxCell(MAIN_W,
             docxPara(docxRun(m.title, { b: true, sz: 30, color: '075E54' }), { center: true }), { span: N })]));
-
-        rows.push(docxRow([docxCell(MAIN_W, docxPara(
+        headRows.push(docxRow([docxCell(MAIN_W, docxPara(
             docxRun('NAME: ', { b: true }) + docxRun(m.name) +
             docxRun('      BASE: ', { b: true }) + docxRun(m.base),
             { left: true }
         ), { span: N })]));
-
-        rows.push(docxRow([docxCell(MAIN_W, docxPara(
+        headRows.push(docxRow([docxCell(MAIN_W, docxPara(
             docxRun('REGION: ', { b: true }) + docxRun(m.region) +
             docxRun('      MONTH: ', { b: true }) + docxRun(`${m.monthName}, ${m.year}`),
             { left: true }
         ), { span: N })]));
 
-        if (IS_FIELD && m.kraList.length) {
-            rows.push(docxRow([docxCell(MAIN_W, docxPara(
-                docxRun('KRA (KEY RESULTING AREA) OBJECTIVES:', { b: true }), { left: true }
-            ), { span: N, shade: true })]));
-            m.kraList.forEach((t, i) => rows.push(docxRow([docxCell(MAIN_W, docxPara(
-                docxRun(`${i + 1}. `, { b: true }) + docxRun(t), { left: true, hang: true }
-            ), { span: N })])));
-        }
-
+        const rows = [];
         rows.push(docxRow(COLS.map((c, i) =>
             docxCell(TW[i], docxPara(docxRun(c.head, { b: true }), { center: true }), { shadeHead: true })
         )));
-
         m.mainGroups.forEach((g) => rows.push(docxRow(COLS.map((c, i) =>
             docxCell(TW[i], textParas(cellText(g, c.key), c.align), { vAlign: 'top' })
         ))));
@@ -993,6 +1060,9 @@
             'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ' +
             'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
             '<w:body>' +
+            buildTable(headRows, TW) +
+            kraXml(m) +
+            docxPara('') +
             buildTable(rows, TW) +
             extra +
             footer +

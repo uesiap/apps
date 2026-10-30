@@ -340,3 +340,32 @@
     position: relative;
     left: -10px;
 }
+
+/* ---------- KRA objectives as plain text (no table) ---------- */
+.kra-plain {
+    padding: 10px 12px;
+    color: #000;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.kra-item {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.kra-num {
+    font-weight: 700;
+}
+
+.kra-text {
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.rpt .rpt-kra-body td {
+    border: 0;
+    padding: 0;
+}
