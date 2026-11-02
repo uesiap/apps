@@ -95,7 +95,7 @@
         }
     }
 
-    /* ---------- KRA options (per month) ---------- */
+    /* ---------- KRA checkboxes (multi-select, per month) ---------- */
     function currentFieldDate() {
         const multi = document.querySelector('input[name="f_dateType"]:checked')?.value === 'multi';
         return multi ? $('f_start_multi').value : $('f_date_single').value;
@@ -113,9 +113,50 @@
         return normalizeList(snap.val());
     }
 
+    // Returns the ticked values as numbers: [1, 2] for KRA 1 and 2, [0] for Other than KRA
+    function selectedKra() {
+        return [...document.querySelectorAll('#f_kra_list input:checked')]
+            .map((i) => Number(i.value))
+            .sort((a, b) => a - b);
+    }
+
+    function syncKraStyles(box) {
+        box.querySelectorAll('.kra-opt').forEach((lab) => {
+            lab.classList.toggle('is-on', lab.querySelector('input').checked);
+        });
+    }
+
+    // "Other than KRA" and the KRA numbers cannot be ticked together
+    function onKraToggle(input) {
+        const box = $('f_kra_list');
+        const isOther = input.value === '0';
+        if (input.checked) {
+            box.querySelectorAll('input').forEach((o) => {
+                if ((o.value === '0') !== isOther) o.checked = false;
+            });
+        }
+        syncKraStyles(box);
+    }
+
+    function kraOption(value, text) {
+        const label = document.createElement('label');
+        label.className = 'kra-opt';
+
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.value = String(value);
+        input.addEventListener('change', () => onKraToggle(input));
+
+        const span = document.createElement('span');
+        span.textContent = text;
+
+        label.append(input, span);
+        return label;
+    }
+
     async function refreshKraOptions() {
-        const sel = $('f_kra');
-        if (!sel) return;
+        const box = $('f_kra_list');
+        if (!box) return;
 
         const token = ++kraToken;
         const ymd = currentFieldDate();
@@ -127,13 +168,19 @@
         }
         if (token !== kraToken) return;
 
-        const prev = sel.value;
-        sel.replaceChildren(
-            new Option('Other than KRA', '0'),
-            ...list.map((t, i) => new Option(`KRA ${i + 1}: ${shorten(t)}`, String(i + 1)))
+        // Keep ticks that still exist for this month; otherwise default to KRA 1 or Other
+        const prev = selectedKra();
+        const keep = prev.filter((n) => n === 0 || n <= list.length);
+        const ticked = keep.length ? keep : (list.length ? [1] : [0]);
+
+        box.replaceChildren(
+            kraOption(0, 'Other than KRA'),
+            ...list.map((t, i) => kraOption(i + 1, `KRA ${i + 1}: ${shorten(t)}`))
         );
-        const stillThere = [...sel.options].some((o) => o.value === prev);
-        sel.value = stillThere ? prev : (list.length ? '1' : '0');
+        box.querySelectorAll('input').forEach((inp) => {
+            inp.checked = ticked.includes(Number(inp.value));
+        });
+        syncKraStyles(box);
 
         const showHint = Boolean(ymd && Session.read() && list.length === 0);
         $('f_kra_hint').hidden = !showHint;
@@ -238,11 +285,15 @@
             let payloadBuilder;
 
             if (cfg.isField) {
-                const kra = Number($('f_kra').value);
+                const kra = selectedKra();
                 const place = $('f_place').value.trim();
                 const activity = $('f_activity').value.trim();
 
-                if (kra === 0 && !place) {
+                if (kra.length === 0) {
+                    notify('Please tick at least one KRA.', 'error');
+                    return;
+                }
+                if (kra.includes(0) && !place) {
                     notify('Please enter the place & purpose for an "Other than KRA" entry.', 'error');
                     return;
                 }

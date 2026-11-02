@@ -380,3 +380,12 @@
 .rpt th:nth-child(2) {
     text-align: center;
 }
+
+/* ---------- KRA first line in bold (web preview) ---------- */
+.kra-first {
+    font-weight: 700;
+}
+
+.kra-sub {
+    font-weight: 400;
+}

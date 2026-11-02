@@ -20,11 +20,11 @@
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
     const KRA_OPTIONS = [
-        ['1', '1 — First KRA'],
-        ['2', '2 — Second KRA'],
-        ['3', '3 — Third KRA'],
-        ['4', '4 — Fourth KRA'],
-        ['5', '5 — Fifth KRA'],
+        ['1', 'KRA 1 — First KRA'],
+        ['2', 'KRA 2 — Second KRA'],
+        ['3', 'KRA 3 — Third KRA'],
+        ['4', 'KRA 4 — Fourth KRA'],
+        ['5', 'KRA 5 — Fifth KRA'],
         ['0', 'Other than KRA (Section 12)']
     ];
 
@@ -47,6 +47,15 @@
         filtersReady: false,
         editingId: null
     };
+
+    /* ---------- KRA helpers (list of numbers; old single values still work) ---------- */
+    const kraArr = (v) => {
+        if (v === null || v === undefined || v === '') return [];
+        const list = Array.isArray(v) ? v : (typeof v === 'object' ? Object.values(v) : [v]);
+        return [...new Set(list.map(Number).filter((n) => Number.isInteger(n) && n >= 0))]
+            .sort((a, b) => a - b);
+    };
+    const kraText = (v) => kraArr(v).map((n) => (n === 0 ? 'Other' : `KRA ${n}`)).join(', ');
 
     /* ---------- DOM helpers ---------- */
     function el(tag, className, text) {
@@ -103,7 +112,7 @@
                         id: `${yearSnap.key}/${monthSnap.key}/${date}`,
                         date,
                         day: val.day || weekdayOf(date),
-                        kra: kind.isField ? Number(val.kra ?? 0) : null,
+                        kra: kind.isField ? kraArr(val.kra ?? 0) : null,
                         // Older itinerary entries stored the place as "zone"
                         place: String(val.place || val.zone || '').trim(),
                         activity: String(val.activity || '').trim()
@@ -180,9 +189,9 @@
         head.append(date, meta);
 
         if (kind.isField) {
-            const kra = el('span', `entry-kra${entry.kra === 0 ? ' other' : ''}`,
-                entry.kra === 0 ? 'Other' : `KRA ${entry.kra}`);
-            head.append(kra);
+            const isOther = entry.kra.includes(0);
+            head.append(el('span', `entry-kra${isOther ? ' other' : ''}`,
+                isOther ? 'Other' : kraText(entry.kra)));
         }
         return head;
     }
@@ -217,6 +226,40 @@
         return bar;
     }
 
+    // Multi-select KRA checkboxes, same rules as the entry form
+    function buildKraChecks(selected) {
+        const box = el('div', 'kra-check');
+        const chosen = kraArr(selected);
+
+        KRA_OPTIONS.forEach(([value, text]) => {
+            const label = el('label', 'kra-opt');
+            const input = el('input');
+            input.type = 'checkbox';
+            input.name = 'kra';
+            input.value = value;
+            input.checked = chosen.includes(Number(value));
+            label.append(input, el('span', '', text));
+            box.append(label);
+        });
+
+        const sync = () => box.querySelectorAll('.kra-opt').forEach((lab) => {
+            lab.classList.toggle('is-on', lab.querySelector('input').checked);
+        });
+
+        box.addEventListener('change', (e) => {
+            const input = e.target;
+            if (input.checked) {
+                const isOther = input.value === '0';
+                box.querySelectorAll('input').forEach((o) => {
+                    if ((o.value === '0') !== isOther) o.checked = false;
+                });
+            }
+            sync();
+        });
+        sync();
+        return box;
+    }
+
     function buildEditor(entry) {
         const uid = Math.random().toString(36).slice(2, 8);
         const form = el('form', 'entry-editor');
@@ -226,18 +269,10 @@
 
         if (kind.isField) {
             const kraWrap = el('div', 'field');
-            const kraLabel = el('label', 'label', 'KRA');
-            const kraSel = el('select', 'select');
-            kraSel.name = 'kra';
-            kraSel.id = `kra-${uid}`;
-            kraLabel.htmlFor = kraSel.id;
-            KRA_OPTIONS.forEach(([v, l]) => kraSel.append(new Option(l, v)));
-            kraSel.value = String(entry.kra);
-            kraWrap.append(kraLabel, kraSel);
+            kraWrap.append(el('span', 'label', 'KRA'), buildKraChecks(entry.kra));
             controls.push(kraWrap);
         }
 
-        // One place field for both reports
         const place = el('input', 'input');
         place.type = 'text';
         place.name = 'place';
@@ -395,8 +430,15 @@
 
         let payload;
         if (kind.isField) {
-            const kra = Number(form.elements.kra.value);
-            if (kra === 0 && !place) {
+            const kra = [...form.querySelectorAll('input[name="kra"]:checked')]
+                .map((i) => Number(i.value))
+                .sort((a, b) => a - b);
+
+            if (kra.length === 0) {
+                notify('Please tick at least one KRA.', 'error');
+                return;
+            }
+            if (kra.includes(0) && !place) {
                 notify('Please enter the place for an "Other than KRA" entry.', 'error');
                 return;
             }

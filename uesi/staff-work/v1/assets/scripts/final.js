@@ -101,7 +101,15 @@
     const storageGet = (key) => {
         try { return localStorage.getItem(key); } catch (_) { return null; }
     };
-    const sameKra = (a, b) => (a.kra ?? null) === (b.kra ?? null);
+    const kraArr = (v) => {
+    if (v === null || v === undefined || v === '') return [];
+    const list = Array.isArray(v) ? v : (typeof v === 'object' ? Object.values(v) : [v]);
+    return [...new Set(list.map(Number).filter((n) => Number.isInteger(n) && n >= 0))]
+        .sort((a, b) => a - b);
+    };
+    const kraKey = (v) => kraArr(v).join(',');
+    const kraText = (v) => kraArr(v).map((n) => (n === 0 ? 'Other' : String(n))).join(', ');
+    const sameKra = (a, b) => kraKey(a.kra) === kraKey(b.kra);
     const hasReflection = (m) => m.praising.length > 0 || m.prayer.length > 0;
     const numbered = (items) => items.map((t, i) => `${i + 1}. ${t}`).join('\n');
     // One KRA objective split into its own lines, keeping the user's line breaks
@@ -124,7 +132,7 @@
     const cellText = (g, key) => {
         if (key === 'date') return dayText(g.dates);
         if (key === 'place') return g.place || '';
-        if (key === 'kra') return String(g.kra);
+        if (key === 'kra') return kraText(g.kra);
         return g.activity || '—';
     };
     const fileBase = (m) => safeName(`${m.name} ${KIND.label} - ${m.monthName} ${m.year}`);
@@ -273,8 +281,8 @@
             base: request.base,
             name: request.name || view.session.name,
             kraList,
-            mainGroups: groupConsecutive(IS_FIELD ? entries.filter((e) => e.kra !== 0) : entries),
-            otherEntries: IS_FIELD ? entries.filter((e) => e.kra === 0) : [],
+            mainGroups: groupConsecutive(IS_FIELD ? entries.filter((e) => !e.kra.includes(0)) : entries),
+            otherEntries: IS_FIELD ? entries.filter((e) => e.kra.includes(0)) : [],
             praising: reflection.praising,
             prayer: reflection.prayer,
             footer: readFooter()
@@ -309,7 +317,7 @@
                 entries.push({
                     date,
                     day: val.day || dayOfWeek(date),
-                    kra: IS_FIELD ? Number(val.kra ?? 0) : null,
+                    kra: IS_FIELD ? kraArr(val.kra ?? 0) : null,
                     // Older itinerary entries stored the place as "zone"
                     place: String(val.place || val.zone || '').trim(),
                     activity: activityText(val)
@@ -379,11 +387,13 @@
 
         const box = el('div', 'kra-plain');
         m.kraList.forEach((t, i) => {
+            const lines = kraLines(t);
+            const body = el('div', 'kra-text');
+            body.append(el('div', 'kra-first', lines[0] || ''));
+            lines.slice(1).forEach((line) => body.append(el('div', 'kra-sub', line)));
+
             const item = el('div', 'kra-item');
-            item.append(
-                el('span', 'kra-num', `${i + 1}.`),
-                el('div', 'kra-text', kraLines(t).join('\n'))
-            );
+            item.append(el('span', 'kra-num', `${i + 1}.`), body);
             box.append(item);
         });
 
@@ -634,8 +644,14 @@
         y += 12;
 
         m.kraList.forEach((t, i) => {
-            const lines = kraLines(t).flatMap((line) => doc.splitTextToSize(line, TEXT_W));
-            const blockH = Math.max(1, lines.length) * 5;
+            // First line of each objective is bold; the rest are regular
+            const blocks = kraLines(t).map((line, k) => ({
+                bold: k === 0,
+                lines: doc.splitTextToSize(line, TEXT_W)
+            }));
+            const totalLines = blocks.reduce((n, b) => n + b.lines.length, 0);
+            const blockH = Math.max(1, totalLines) * 5;
+
             if (y + blockH > PAGE_LIMIT) {
                 doc.addPage();
                 y = 16;
@@ -645,10 +661,12 @@
             doc.setFontSize(10);
             doc.text(`${i + 1}.`, LEFT + 1, y);
 
-            doc.setFont('times', 'normal');
-            lines.forEach((line) => {
-                doc.text(line, LEFT + NUM_W, y);
-                y += 5;
+            blocks.forEach((b) => {
+                doc.setFont('times', b.bold ? 'bold' : 'normal');
+                b.lines.forEach((line) => {
+                    doc.text(line, LEFT + NUM_W, y);
+                    y += 5;
+                });
             });
             y += 2;
         });
@@ -977,15 +995,28 @@
     }
 
     function kraXml(m) {
-    if (!(IS_FIELD && m.kraList.length)) return '';
-    const MAIN_W = COLS.reduce((a, c) => a + c.tw, 0);
+        if (!(IS_FIELD && m.kraList.length)) return '';
+        const MAIN_W = COLS.reduce((a, c) => a + c.tw, 0);
 
-    const heading = buildTable(
-        [docxRow([docxCell(MAIN_W,
-            docxPara(docxRun('KRA (KEY RESULTING AREA) OBJECTIVES:', { b: true }), { left: true }),
-            { shade: true })])],
-        [MAIN_W]
-    );
+        const heading = buildTable(
+            [docxRow([docxCell(MAIN_W,
+                docxPara(docxRun('KRA (KEY RESULTING AREA) OBJECTIVES:', { b: true }), { left: true }),
+                { shade: true })])],
+            [MAIN_W]
+        );
+
+        const items = m.kraList.map((t, i) => {
+            const lines = kraLines(t);
+            return lines.map((line, k) => k === 0
+                ? docxPara(
+                    docxRun(`${i + 1}.`, { b: true }) + '<w:r><w:tab/></w:r>' + docxRun(line, { b: true }),
+                    { hang: true })
+                : docxPara(docxRun(line), { ind: 284 })
+            ).join('');
+        }).join(docxPara(''));
+
+        return docxPara('') + heading + docxPara('') + items;
+    }
 
     const items = m.kraList.map((t, i) => {
         const lines = kraLines(t);
