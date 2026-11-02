@@ -191,3 +191,9 @@
 .entry-actions .btn {
     min-width: 0;
 }
+
+.kra-tag:not(.other) {
+    font-weight: 700;
+    color: var(--brand);
+    white-space: nowrap;
+}

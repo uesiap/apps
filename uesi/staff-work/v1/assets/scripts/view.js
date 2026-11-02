@@ -235,22 +235,12 @@
         return head;
     }
 
-    // One tag per KRA: the number in bold, then the start of the objective text
+    // Normal view: only the KRA numbers. The objective text appears in the editor checkboxes.
     function buildKraTags(entry) {
         const box = el('div', 'kra-tags');
-        const monthKey = monthKeyOf(entry.date);
-
         entry.kra.forEach((n) => {
-            if (n === 0) {
-                box.append(el('span', 'kra-tag other', 'Other than KRA'));
-                return;
-            }
-            const full = kraTextFor(monthKey, n);
-            const tag = el('span', 'kra-tag');
-            tag.title = full ? `KRA ${n}: ${full}` : `KRA ${n}`;
-            tag.append(el('b', '', `KRA ${n}`));
-            if (full) tag.append(el('span', '', shorten(full, TAG_SNIPPET)));
-            box.append(tag);
+            if (n === 0) box.append(el('span', 'kra-tag other', 'Other than KRA'));
+            else box.append(el('span', 'kra-tag', `KRA ${n}`));
         });
         return box;
     }
