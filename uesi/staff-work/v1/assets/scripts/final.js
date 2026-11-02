@@ -994,6 +994,7 @@
             items.map((t, i) => docxPara(docxRun(`${i + 1}. ${t}`), { left: true, hang: true })).join('');
     }
 
+    // KRAXML
     function kraXml(m) {
         if (!(IS_FIELD && m.kraList.length)) return '';
         const MAIN_W = COLS.reduce((a, c) => a + c.tw, 0);
