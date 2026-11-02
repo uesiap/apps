@@ -194,6 +194,24 @@
 
 .kra-tag:not(.other) {
     font-weight: 700;
-    color: var(--brand);
+    color: white;
     white-space: nowrap;
+    margin-right: 2px;
+    background-color: var(--brand);
+    border-radius: 10px;
+    padding-left: 8px;
+    padding-right: 8px
+}
+
+.kra-tags {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 100%;
+    min-width: 0;
+    gap: 6px;
+}
+
+.kra-tags * {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
