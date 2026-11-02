@@ -34,17 +34,17 @@
     // Main table columns. pct = web width, mm = PDF width, tw = Word width, xl = Excel width.
     // Both layouts total 182 mm (PDF) and 10466 twips (Word).
     const COLS = IS_FIELD
-    ? [
-        { key: 'date',  head: 'DATE(S)',                             pct: '9%',  mm: 16,  tw: 900,  xl: 8,  align: 'center' },
-        { key: 'place', head: 'PLACE & PURPOSE',                     pct: '12%', mm: 24,  tw: 1300, xl: 12, align: 'center' },
-        { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '74%', mm: 130, tw: 7566, xl: 74, align: 'left' },
-        { key: 'kra',   head: 'KRA',                                 pct: '5%',  mm: 12,  tw: 700,  xl: 6,  align: 'center' }
-    ]
-    : [
-        { key: 'date',  head: 'DATE(S)',                             pct: '14%', mm: 24,  tw: 1500, xl: 16, align: 'center' },
-        { key: 'place', head: 'PLACE',                               pct: '22%', mm: 40,  tw: 2300, xl: 28, align: 'center' },
-        { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '64%', mm: 118, tw: 6666, xl: 74, align: 'left' }
-    ];
+        ? [
+            { key: 'date',  head: 'DATE(S)',                             pct: '9%',  mm: 16,  tw: 900,  xl: 8,  align: 'center' },
+            { key: 'place', head: 'PLACE & PURPOSE',                     pct: '12%', mm: 24,  tw: 1300, xl: 12, align: 'center' },
+            { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '74%', mm: 130, tw: 7566, xl: 74, align: 'left' },
+            { key: 'kra',   head: 'KRA',                                 pct: '5%',  mm: 12,  tw: 700,  xl: 6,  align: 'center' }
+        ]
+        : [
+            { key: 'date',  head: 'DATE(S)',                             pct: '14%', mm: 24,  tw: 1500, xl: 16, align: 'center' },
+            { key: 'place', head: 'PLACE',                               pct: '22%', mm: 40,  tw: 2300, xl: 28, align: 'center' },
+            { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '64%', mm: 118, tw: 6666, xl: 74, align: 'left' }
+        ];
     const N = COLS.length;
 
     // "Other than KRA" section (field only): date, place, particulars. Matches the main table widths.
@@ -101,17 +101,21 @@
     const storageGet = (key) => {
         try { return localStorage.getItem(key); } catch (_) { return null; }
     };
+
+    // KRA values are stored as a list of numbers (e.g. [1, 2]); older single values still work
     const kraArr = (v) => {
-    if (v === null || v === undefined || v === '') return [];
-    const list = Array.isArray(v) ? v : (typeof v === 'object' ? Object.values(v) : [v]);
-    return [...new Set(list.map(Number).filter((n) => Number.isInteger(n) && n >= 0))]
-        .sort((a, b) => a - b);
+        if (v === null || v === undefined || v === '') return [];
+        const list = Array.isArray(v) ? v : (typeof v === 'object' ? Object.values(v) : [v]);
+        return [...new Set(list.map(Number).filter((n) => Number.isInteger(n) && n >= 0))]
+            .sort((a, b) => a - b);
     };
     const kraKey = (v) => kraArr(v).join(',');
     const kraText = (v) => kraArr(v).map((n) => (n === 0 ? 'Other' : String(n))).join(', ');
     const sameKra = (a, b) => kraKey(a.kra) === kraKey(b.kra);
+
     const hasReflection = (m) => m.praising.length > 0 || m.prayer.length > 0;
     const numbered = (items) => items.map((t, i) => `${i + 1}. ${t}`).join('\n');
+
     // One KRA objective split into its own lines, keeping the user's line breaks
     const kraLines = (t) => String(t).split('\n').map((s) => s.trim()).filter(Boolean);
 
@@ -433,7 +437,7 @@
 
         const rows = list.map((e) => {
             const place = el('td', '', e.place);
-            place.style.textAlign = 'center';   
+            place.style.textAlign = 'center';
             const act = el('td', 'rpt-activity', e.activity || '—');
             act.colSpan = span;
             act.style.textAlign = 'left';
@@ -624,7 +628,7 @@
         }
     }
 
-    // KRA objectives as plain text (no table), with the outer number once and sub-lines indented
+    // KRA objectives as plain text (no table). The first line of each objective is bold.
     function drawKraPdf(doc, m, startY) {
         const LEFT = 14;
         const WIDTH = 182;
@@ -644,7 +648,6 @@
         y += 12;
 
         m.kraList.forEach((t, i) => {
-            // First line of each objective is bold; the rest are regular
             const blocks = kraLines(t).map((line, k) => ({
                 bold: k === 0,
                 lines: doc.splitTextToSize(line, TEXT_W)
@@ -994,7 +997,6 @@
             items.map((t, i) => docxPara(docxRun(`${i + 1}. ${t}`), { left: true, hang: true })).join('');
     }
 
-    // KRAXML
     function kraXml(m) {
         if (!(IS_FIELD && m.kraList.length)) return '';
         const MAIN_W = COLS.reduce((a, c) => a + c.tw, 0);
@@ -1018,17 +1020,6 @@
 
         return docxPara('') + heading + docxPara('') + items;
     }
-
-    const items = m.kraList.map((t, i) => {
-        const lines = kraLines(t);
-        return lines.map((line, k) => k === 0
-            ? docxPara(docxRun(`${i + 1}.`, { b: true }) + '<w:r><w:tab/></w:r>' + docxRun(line), { hang: true })
-            : docxPara(docxRun(line), { ind: 284 })
-        ).join('');
-    }).join(docxPara(''));
-
-    return docxPara('') + heading + docxPara('') + items;
-    
 
     function buildDocumentXml(m, logo, sig) {
         const TW = COLS.map((c) => c.tw);
