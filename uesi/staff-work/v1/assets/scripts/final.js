@@ -1028,7 +1028,7 @@
     }).join(docxPara(''));
 
     return docxPara('') + heading + docxPara('') + items;
-    }
+    
 
     function buildDocumentXml(m, logo, sig) {
         const TW = COLS.map((c) => c.tw);
