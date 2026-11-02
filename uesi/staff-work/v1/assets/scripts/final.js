@@ -676,25 +676,27 @@
         return y;
     }
 
-    // Moves to a new page if the table header and its first row would not both fit on this page
-    function ensureTableStart(doc, y, firstGroup) {
-        const pageLimit = doc.internal.pageSize.getHeight() - 14;
-        doc.setFont('times', 'normal');
-        doc.setFontSize(9);
+    // Measures the header and first row in a scratch PDF using the same settings as the real table.
+    // Returns true only if both fit on the current page.
+    function firstRowFits(y, m) {
+        const { jsPDF } = window.jspdf;
+        const tmp = new jsPDF('p', 'mm', 'a4');
+        const g = m.mainGroups[0];
+        const columnStyles = Object.fromEntries(COLS.map((c, i) => [i, { cellWidth: c.mm, halign: c.align }]));
 
-        let lines = 1;
-        COLS.forEach((c) => {
-            const n = doc.splitTextToSize(String(cellText(firstGroup, c.key)), c.mm - 4).length;
-            lines = Math.max(lines, n);
+        tmp.autoTable({
+            startY: y,
+            head: [COLS.map((c) => ({ content: c.head }))],
+            body: [COLS.map((c) => ({ content: cellText(g, c.key), styles: { halign: c.align } }))],
+            theme: 'grid',
+            margin: { left: 14, right: 14 },
+            styles: { font: 'times', fontSize: 9, cellPadding: 2, valign: 'middle' },
+            headStyles: { fontStyle: 'bold', halign: 'center' },
+            columnStyles,
+            rowPageBreak: 'avoid'
         });
 
-        const headerH = 10;                    // header row, including its two-line titles
-        const rowH = lines * 4.2 + 4;          // first data row
-        if (y + headerH + rowH > pageLimit) {
-            doc.addPage();
-            return 16;
-        }
-        return y;
+        return tmp.internal.getNumberOfPages() === 1;
     }
 
     function exportPdf(m, logo, sig) {
@@ -738,7 +740,11 @@
         y += 12;
         doc.setTextColor(0, 0, 0);
 
-        // Info block
+        // Main table
+        if (m.mainGroups.length && !firstRowFits(y, m)) {
+            doc.addPage();
+            y = 16;
+        }
         doc.autoTable({
             startY: y,
             body: [

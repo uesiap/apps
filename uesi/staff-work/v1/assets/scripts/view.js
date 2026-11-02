@@ -183,8 +183,8 @@
         const months = [...new Set(state.entries.map((e) => monthIndexOf(e.date)))].sort((a, b) => a - b);
         const years = [...new Set(state.entries.map((e) => yearOf(e.date)))].sort((a, b) => b - a);
 
-        fillSelect(monthSel, [['', 'All months'], ...months.map((m) => [String(m), MONTHS[m]])]);
-        fillSelect(yearSel, [['', 'All years'], ...years.map((y) => [String(y), String(y)])]);
+        fillSelect(monthSel, [['', 'Month'], ...months.map((m) => [String(m), MONTHS[m]])]);
+        fillSelect(yearSel, [['', 'Year'], ...years.map((y) => [String(y), String(y)])]);
 
         monthSel.value = prevM !== '' && months.includes(Number(prevM)) ? prevM : '';
         yearSel.value = prevY !== '' && years.includes(Number(prevY)) ? prevY : '';
