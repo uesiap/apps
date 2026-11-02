@@ -60,7 +60,7 @@
         const top = Math.max(kraCountOf(entry.date), ...entry.kra, 1);
         const opts = [];
         for (let i = 1; i <= top; i++) opts.push([String(i), `KRA ${i}`]);
-        opts.push(['0', 'Other than KRA (Section 12)']);
+        opts.push(['0', 'Other than KRA']);
         return opts;
     }
 
