@@ -15,6 +15,8 @@
     const DB_ROOT = 'apps/uesi/staff-work/v1/users';
     const SAVE_TIMEOUT_MS = 20000;
     const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+    const TAG_SNIPPET = 46;     // characters shown on each KRA tag
+    const CHECK_SNIPPET = 64;   // characters shown next to each checkbox
     const MONTHS = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
@@ -34,7 +36,7 @@
         entries: [],
         ref: null,
         kraRef: null,
-        kraCounts: {},      // { "2026/10": 7, ... } number of KRA objectives per month
+        kraTexts: {},      // { "2026/10": ["To train students...", "Equip and mentor...", ...] }
         listeningKey: null,
         loaded: false,
         error: false,
@@ -50,26 +52,44 @@
         return [...new Set(list.map(Number).filter((n) => Number.isInteger(n) && n >= 0))]
             .sort((a, b) => a - b);
     };
-    const kraText = (v) => kraArr(v).map((n) => (n === 0 ? 'Other' : `KRA ${n}`)).join(', ');
+
+    // Shortens text to a snippet, cutting at a word boundary
+    const shorten = (s, n) => {
+        const one = String(s || '').replace(/\s+/g, ' ').trim();
+        if (one.length <= n) return one;
+        const cut = one.slice(0, n).replace(/\s+\S*$/, '');
+        return `${cut || one.slice(0, n)}…`;
+    };
+
+    // Objective text for a month key and KRA number, e.g. ("2026/10", 3)
+    const kraTextFor = (monthKey, n) => (state.kraTexts[monthKey] || [])[n - 1] || '';
+
+    const monthKeyOf = (ymd) => `${ymd.slice(0, 4)}/${ymd.slice(5, 7)}`;
 
     // Number of KRA objectives set for the month of a date (YYYY-MM-DD)
-    const kraCountOf = (ymd) => state.kraCounts[`${ymd.slice(0, 4)}/${ymd.slice(5, 7)}`] || 0;
+    const kraCountOf = (ymd) => (state.kraTexts[monthKeyOf(ymd)] || []).length;
 
     // Choices for the editor: every KRA of that month, plus any higher number already saved
     function kraChoices(entry) {
         const top = Math.max(kraCountOf(entry.date), ...entry.kra, 1);
         const opts = [];
-        for (let i = 1; i <= top; i++) opts.push([String(i), `KRA ${i}`]);
-        opts.push(['0', 'Other than KRA']);
+        for (let i = 1; i <= top; i++) {
+            const snippet = shorten(kraTextFor(monthKeyOf(entry.date), i), CHECK_SNIPPET);
+            opts.push([String(i), snippet ? `KRA ${i} · ${snippet}` : `KRA ${i}`, kraTextFor(monthKeyOf(entry.date), i)]);
+        }
+        opts.push(['0', 'Other than KRA', '']);
         return opts;
     }
 
-    // Counts the non-empty KRA objectives in a saved month
-    function countObjectives(v) {
-        if (!v) return 0;
-        if (Array.isArray(v)) return v.filter((s) => String(s || '').trim()).length;
-        return Object.keys(v)
-            .filter((k) => /^\d+$/.test(k) && String(v[k] || '').trim()).length;
+    // Trims trailing blank objectives, but keeps blanks in the middle so numbers stay correct
+    function parseKraTexts(v) {
+        if (!v) return [];
+        const items = Array.isArray(v)
+            ? v
+            : Object.keys(v).filter((k) => /^\d+$/.test(k)).sort((a, b) => a - b).map((k) => v[k]);
+        const texts = items.map((s) => String(s || '').trim());
+        while (texts.length && !texts[texts.length - 1]) texts.pop();
+        return texts;
     }
 
     /* ---------- DOM helpers ---------- */
@@ -139,14 +159,14 @@
         return out;
     }
 
-    function parseKraCounts(snap) {
-        const counts = {};
+    function parseKraSnapshot(snap) {
+        const texts = {};
         snap.forEach((yearSnap) => {
             yearSnap.forEach((monthSnap) => {
-                counts[`${yearSnap.key}/${monthSnap.key}`] = countObjectives(monthSnap.val());
+                texts[`${yearSnap.key}/${monthSnap.key}`] = parseKraTexts(monthSnap.val());
             });
         });
-        return counts;
+        return texts;
     }
 
     /* ---------- Filters ---------- */
@@ -212,13 +232,27 @@
 
         const head = el('header', 'entry-head');
         head.append(date, meta);
-
-        if (kind.isField) {
-            const isOther = entry.kra.includes(0);
-            head.append(el('span', `entry-kra${isOther ? ' other' : ''}`,
-                isOther ? 'Other' : kraText(entry.kra)));
-        }
         return head;
+    }
+
+    // One tag per KRA: the number in bold, then the start of the objective text
+    function buildKraTags(entry) {
+        const box = el('div', 'kra-tags');
+        const monthKey = monthKeyOf(entry.date);
+
+        entry.kra.forEach((n) => {
+            if (n === 0) {
+                box.append(el('span', 'kra-tag other', 'Other than KRA'));
+                return;
+            }
+            const full = kraTextFor(monthKey, n);
+            const tag = el('span', 'kra-tag');
+            tag.title = full ? `KRA ${n}: ${full}` : `KRA ${n}`;
+            tag.append(el('b', '', `KRA ${n}`));
+            if (full) tag.append(el('span', '', shorten(full, TAG_SNIPPET)));
+            box.append(tag);
+        });
+        return box;
     }
 
     function buildBody(entry) {
@@ -248,19 +282,21 @@
         return bar;
     }
 
-    // Multi-select KRA checkboxes, same rules as the entry form
+    // Multi-select KRA checkboxes with a snippet of each objective
     function buildKraChecks(entry) {
         const box = el('div', 'kra-check');
         const chosen = kraArr(entry.kra);
 
-        kraChoices(entry).forEach(([value, text]) => {
+        kraChoices(entry).forEach(([value, text, full]) => {
             const label = el('label', 'kra-opt');
             const input = el('input');
             input.type = 'checkbox';
             input.name = 'kra';
             input.value = value;
             input.checked = chosen.includes(Number(value));
-            label.append(input, el('span', '', text));
+            const span = el('span', '', text);
+            if (full) span.title = full;
+            label.append(input, span);
             box.append(label);
         });
 
@@ -326,6 +362,7 @@
         if (state.editingId === entry.id) {
             card.append(buildEditor(entry));
         } else {
+            if (kind.isField) card.append(buildKraTags(entry));
             card.append(buildBody(entry), buildActions());
         }
         return card;
@@ -367,7 +404,7 @@
 
         detach();
         state.entries = [];
-        state.kraCounts = {};
+        state.kraTexts = {};
         state.loaded = false;
         state.error = false;
         state.filtersReady = false;
@@ -382,12 +419,12 @@
         const safeEmail = session.email.replace(/\./g, '_');
         const userRoot = `${DB_ROOT}/${safeEmail}/userData`;
 
-        // KRA objectives per month, so the editor shows every KRA that was set
+        // KRA objective text per month, used for tags and editor choices
         if (kind.isField) {
             state.kraRef = db.ref(`${userRoot}/KRA_Objectives`);
             state.kraRef.on('value', (snap) => {
-                state.kraCounts = parseKraCounts(snap);
-                if (state.editingId) render();
+                state.kraTexts = parseKraSnapshot(snap);
+                render();
             });
         }
 

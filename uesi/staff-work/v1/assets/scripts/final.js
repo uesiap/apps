@@ -32,13 +32,12 @@
     ];
 
     // Main table columns. pct = web width, mm = PDF width, tw = Word width, xl = Excel width.
-    // Both layouts total 182 mm (PDF) and 10466 twips (Word).
     const COLS = IS_FIELD
         ? [
             { key: 'date',  head: 'DATE(S)',                             pct: '9%',  mm: 16,  tw: 900,  xl: 8,  align: 'center' },
             { key: 'place', head: 'PLACE & PURPOSE',                     pct: '12%', mm: 24,  tw: 1300, xl: 12, align: 'center' },
-            { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '74%', mm: 130, tw: 7566, xl: 74, align: 'left' },
-            { key: 'kra',   head: 'KRA',                                 pct: '5%',  mm: 12,  tw: 700,  xl: 6,  align: 'center' }
+            { key: 'act',   head: 'ACTIVITIES WITH DETAILS AND PROGRESS', pct: '70%', mm: 124, tw: 7166, xl: 70, align: 'left' },
+            { key: 'kra',   head: 'KRA',                                 pct: '9%',  mm: 18,  tw: 1100, xl: 10, align: 'center' }
         ]
         : [
             { key: 'date',  head: 'DATE(S)',                             pct: '14%', mm: 24,  tw: 1500, xl: 16, align: 'center' },
@@ -674,6 +673,27 @@
             y += 2;
         });
 
+        return y;
+    }
+
+    // Moves to a new page if the table header and its first row would not both fit on this page
+    function ensureTableStart(doc, y, firstGroup) {
+        const pageLimit = doc.internal.pageSize.getHeight() - 14;
+        doc.setFont('times', 'normal');
+        doc.setFontSize(9);
+
+        let lines = 1;
+        COLS.forEach((c) => {
+            const n = doc.splitTextToSize(String(cellText(firstGroup, c.key)), c.mm - 4).length;
+            lines = Math.max(lines, n);
+        });
+
+        const headerH = 10;                    // header row, including its two-line titles
+        const rowH = lines * 4.2 + 4;          // first data row
+        if (y + headerH + rowH > pageLimit) {
+            doc.addPage();
+            return 16;
+        }
         return y;
     }
 
