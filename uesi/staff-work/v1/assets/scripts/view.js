@@ -19,14 +19,6 @@
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
-    const KRA_OPTIONS = [
-        ['1', 'KRA 1 — First KRA'],
-        ['2', 'KRA 2 — Second KRA'],
-        ['3', 'KRA 3 — Third KRA'],
-        ['4', 'KRA 4 — Fourth KRA'],
-        ['5', 'KRA 5 — Fifth KRA'],
-        ['0', 'Other than KRA (Section 12)']
-    ];
 
     if (!firebase.apps.length) {
         firebase.initializeApp({
@@ -41,6 +33,8 @@
     const state = {
         entries: [],
         ref: null,
+        kraRef: null,
+        kraCounts: {},      // { "2026/10": 7, ... } number of KRA objectives per month
         listeningKey: null,
         loaded: false,
         error: false,
@@ -48,7 +42,8 @@
         editingId: null
     };
 
-    /* ---------- KRA helpers (list of numbers; old single values still work) ---------- */
+    /* ---------- KRA helpers ---------- */
+    // Stored values are a list of numbers (e.g. [1, 2, 7]); older single values still work
     const kraArr = (v) => {
         if (v === null || v === undefined || v === '') return [];
         const list = Array.isArray(v) ? v : (typeof v === 'object' ? Object.values(v) : [v]);
@@ -56,6 +51,26 @@
             .sort((a, b) => a - b);
     };
     const kraText = (v) => kraArr(v).map((n) => (n === 0 ? 'Other' : `KRA ${n}`)).join(', ');
+
+    // Number of KRA objectives set for the month of a date (YYYY-MM-DD)
+    const kraCountOf = (ymd) => state.kraCounts[`${ymd.slice(0, 4)}/${ymd.slice(5, 7)}`] || 0;
+
+    // Choices for the editor: every KRA of that month, plus any higher number already saved
+    function kraChoices(entry) {
+        const top = Math.max(kraCountOf(entry.date), ...entry.kra, 1);
+        const opts = [];
+        for (let i = 1; i <= top; i++) opts.push([String(i), `KRA ${i}`]);
+        opts.push(['0', 'Other than KRA (Section 12)']);
+        return opts;
+    }
+
+    // Counts the non-empty KRA objectives in a saved month
+    function countObjectives(v) {
+        if (!v) return 0;
+        if (Array.isArray(v)) return v.filter((s) => String(s || '').trim()).length;
+        return Object.keys(v)
+            .filter((k) => /^\d+$/.test(k) && String(v[k] || '').trim()).length;
+    }
 
     /* ---------- DOM helpers ---------- */
     function el(tag, className, text) {
@@ -122,6 +137,16 @@
         });
         out.sort((a, b) => a.date.localeCompare(b.date));
         return out;
+    }
+
+    function parseKraCounts(snap) {
+        const counts = {};
+        snap.forEach((yearSnap) => {
+            yearSnap.forEach((monthSnap) => {
+                counts[`${yearSnap.key}/${monthSnap.key}`] = countObjectives(monthSnap.val());
+            });
+        });
+        return counts;
     }
 
     /* ---------- Filters ---------- */
@@ -198,9 +223,6 @@
 
     function buildBody(entry) {
         const body = el('div', 'entry-body');
-        body.style.display = 'flex';
-        body.style.flexDirection = 'column';
-        body.style.gap = '12px';
 
         if (entry.place) {
             const place = el('div', 'entry-place');
@@ -227,11 +249,11 @@
     }
 
     // Multi-select KRA checkboxes, same rules as the entry form
-    function buildKraChecks(selected) {
+    function buildKraChecks(entry) {
         const box = el('div', 'kra-check');
-        const chosen = kraArr(selected);
+        const chosen = kraArr(entry.kra);
 
-        KRA_OPTIONS.forEach(([value, text]) => {
+        kraChoices(entry).forEach(([value, text]) => {
             const label = el('label', 'kra-opt');
             const input = el('input');
             input.type = 'checkbox';
@@ -269,7 +291,7 @@
 
         if (kind.isField) {
             const kraWrap = el('div', 'field');
-            kraWrap.append(el('span', 'label', 'KRA'), buildKraChecks(entry.kra));
+            kraWrap.append(el('span', 'label', 'KRA'), buildKraChecks(entry));
             controls.push(kraWrap);
         }
 
@@ -331,14 +353,21 @@
             !state.loaded || !$('monthSelect').value || !$('yearSelect').value;
     }
 
-    /* ---------- Data listener ---------- */
+    /* ---------- Data listeners ---------- */
+    function detach() {
+        if (state.ref) state.ref.off();
+        if (state.kraRef) state.kraRef.off();
+        state.ref = null;
+        state.kraRef = null;
+    }
+
     function attach(session) {
         const key = session ? session.email : null;
         if (key === state.listeningKey) return;
 
-        if (state.ref) state.ref.off();
-        state.ref = null;
+        detach();
         state.entries = [];
+        state.kraCounts = {};
         state.loaded = false;
         state.error = false;
         state.filtersReady = false;
@@ -351,8 +380,18 @@
         }
 
         const safeEmail = session.email.replace(/\./g, '_');
-        state.ref = db.ref(`${DB_ROOT}/${safeEmail}/userData/${kind.path}`);
+        const userRoot = `${DB_ROOT}/${safeEmail}/userData`;
 
+        // KRA objectives per month, so the editor shows every KRA that was set
+        if (kind.isField) {
+            state.kraRef = db.ref(`${userRoot}/KRA_Objectives`);
+            state.kraRef.on('value', (snap) => {
+                state.kraCounts = parseKraCounts(snap);
+                if (state.editingId) render();
+            });
+        }
+
+        state.ref = db.ref(`${userRoot}/${kind.path}`);
         state.ref.on(
             'value',
             (snap) => {

@@ -149,3 +149,45 @@
     margin-top: 24px;
 }
 .end-note a { color: #197afe; }
+
+/* ---------- Keep the list inside the screen width ---------- */
+.list {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+    .list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.entry {
+    min-width: 0;
+}
+
+/* Long KRA lists wrap onto more lines instead of stretching the page */
+.entry-head {
+    flex-wrap: wrap;
+}
+
+.entry-meta {
+    flex: 1 1 140px;
+    min-width: 0;
+}
+
+.entry-kra {
+    white-space: normal;
+    max-width: 100%;
+    line-height: 1.35;
+    border-radius: 12px;
+    overflow-wrap: anywhere;
+    text-align: left;
+}
+
+.entry-actions {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.entry-actions .btn {
+    min-width: 0;
+}
